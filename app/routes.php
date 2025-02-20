@@ -94,7 +94,7 @@ return function (App $app) {
         $data = json_decode($request->getBody()->getContents(), true);
         $userId = $args['id'];
 
-        // ✅ Ensure license number updates only for drivers
+        //Ensure license number updates only for drivers
         if ($data['role'] === 'driver' && empty($data['license_number'])) {
             return $response->withJson(['error' => 'License number is required for drivers'], 400);
         }
@@ -116,7 +116,7 @@ return function (App $app) {
      * Profile Page
      */
     /**
-     * ✅ Profile Page (Fetching MongoDB Preferences)
+     *Profile Page (Fetching MongoDB Preferences)
      */
     $app->get('/profile', function ($request, $response) use ($twig) {
         if (session_status() === PHP_SESSION_NONE) {
@@ -165,10 +165,10 @@ return function (App $app) {
      */
     $app->get('/menu', function ($request, $response, $args) use ($container) {
         if (session_status() === PHP_SESSION_NONE) {
-            session_start(); // ✅ Ensure session starts
+            session_start(); //Ensure session starts
         }
 
-        // ✅ Debugging: Log session data
+        //Debugging: Log session data
         error_log("🔍 Menu Page Session Data: " . json_encode($_SESSION));
 
         $user = $_SESSION['user'] ?? null;
@@ -185,21 +185,21 @@ return function (App $app) {
 
     // POST - Handle Ride Request Submission
     $app->post('/request-ride', function ($request, $response) use ($container) {
-        // ✅ Ensure session is started
+        //Ensure session is started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // ✅ Check if user is logged in
+        //Check if user is logged in
         if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'user') {
             $response->getBody()->write(json_encode(["error" => "Non autorisé / Unauthorized"]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
         }
 
-        // ✅ Get passenger ID
+        //Get passenger ID
         $passenger_id = $_SESSION['user']['id'];
 
-        // ✅ Parse request data
+        //Parse request data
         $data = json_decode($request->getBody()->getContents(), true);
         if (empty($data['pickup_location']) || empty($data['dropoff_location'])) {
             $response->getBody()->write(json_encode(["error" => "Champs requis manquants / Missing required fields"]));
@@ -207,7 +207,7 @@ return function (App $app) {
         }
 
         try {
-            // ✅ Insert ride request
+            //Insert ride request
             $stmt = $container->get('db')->prepare("
                 INSERT INTO rides (passenger_id, pickup_location, dropoff_location, status) 
                 VALUES (:passenger_id, :pickup, :dropoff, 'pending')
@@ -267,14 +267,14 @@ return function (App $app) {
             session_start();
         }
 
-        // ✅ Destroy session properly
+        //Destroy session properly
         $_SESSION = [];
         session_destroy();
         setcookie(session_name(), '', time() - 42000, '/home');
 
         $payload = json_encode(["message" => "Logout successful"]);
 
-        // ✅ Proper response handling for JSON output
+        //Proper response handling for JSON output
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
     });

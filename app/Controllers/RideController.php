@@ -23,8 +23,8 @@ class RideController
     }
 
     /**
-     * ✅ Passager demande un trajet.
-     * ✅ Passenger requests a ride.
+     * Passager demande un trajet.
+     * Passenger requests a ride.
      */
     public function requestRide(Request $request, Response $response): Response
     {
@@ -46,8 +46,8 @@ class RideController
     }
 
     /**
-     * ✅ Conducteur consulte les trajets ouverts.
-     * ✅ Driver views open ride requests.
+     * Conducteur consulte les trajets ouverts.
+     * Driver views open ride requests.
      */
     public function getOpenRides(Request $request, Response $response): Response
     {
@@ -58,8 +58,8 @@ class RideController
     }
 
     /**
-     * ✅ Historique des trajets du passager.
-     * ✅ Passenger ride history.
+     * Historique des trajets du passager.
+     *  Passenger ride history.
      */
     public function getPassengerRideHistory(Request $request, Response $response): Response 
     {
@@ -82,8 +82,8 @@ class RideController
     }
 
     /**
-     * ✅ Le conducteur accepte un trajet.
-     * ✅ Driver accepts a ride.
+     * Le conducteur accepte un trajet.
+     * Driver accepts a ride.
      */
     public function acceptRide(Request $request, Response $response, array $args): Response
     {
@@ -118,8 +118,8 @@ class RideController
     }
 
     /**
-     * ✅ Marquer un trajet comme terminé.
-     * ✅ Mark ride as completed.
+     *  Marquer un trajet comme terminé.
+     * Mark ride as completed.
      */
     public function completeRide(Request $request, Response $response, array $args): Response
     {
@@ -132,8 +132,8 @@ class RideController
     }
 
     /**
-     * ✅ Annuler un trajet (par le passager avant acceptation).
-     * ✅ Cancel a ride (by passenger before acceptance).
+     * Annuler un trajet (par le passager avant acceptation).
+     * Cancel a ride (by passenger before acceptance).
      */
     public function cancelRide(Request $request, Response $response, array $args): Response
     {
@@ -146,19 +146,19 @@ class RideController
     }
 
     /**
-     * ✅ Historique des trajets du conducteur.
-     * ✅ Driver ride history.
+     *  Historique des trajets du conducteur.
+     *  Driver ride history.
      */
     public function getDriverRideHistory(Request $request, Response $response): Response {
-        // ✅ Ensure session is started
+        // Ensure session is started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
     
-        // ✅ Debugging: Log session data
+        //  Debugging: Log session data
         error_log("🔍 Checking Session for Driver: " . json_encode($_SESSION));
     
-        // ✅ Ensure the user is authenticated and a driver
+        // Ensure the user is authenticated and a driver
         if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'driver') {
             error_log("🚨 No valid driver session found.");
             return $this->jsonResponse($response, ['error' => 'Non autorisé / Unauthorized'], 401);
@@ -166,7 +166,7 @@ class RideController
     
         $driver_id = $_SESSION['user']['id'];
     
-        // ✅ Fetch driver's ride history
+        //  Fetch driver's ride history
         $stmt = $this->db->prepare("SELECT * FROM rides WHERE driver_id = :driver_id AND status IN ('accepted', 'completed')");
         $stmt->execute(['driver_id' => $driver_id]);
         $rides = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -177,8 +177,8 @@ class RideController
     
 
     /**
-     * ✅ Fonction utilitaire pour renvoyer une réponse JSON.
-     * ✅ Utility function to send a JSON response.
+     * Fonction utilitaire pour renvoyer une réponse JSON.
+     * Utility function to send a JSON response.
      */
     private function jsonResponse(Response $response, array $data, int $statusCode = 200): Response
     {

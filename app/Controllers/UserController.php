@@ -36,17 +36,17 @@ class UserController {
         $data = json_decode($body, true) ?? [];
         error_log("🔍 Données analysées : " . json_encode($data));
     
-        // ✅ Vérification des champs obligatoires (Basic fields validation)
+        //  Vérification des champs obligatoires (Basic fields validation)
         if (empty($data['name']) || empty($data['email']) || empty($data['password']) || empty($data['role'])) {
             return $this->jsonResponse($response, ['error' => 'Champs requis manquants / Missing required fields'], 400);
         }
 
         try {
-            // ✅ Hash du mot de passe / Password hashing
+            //  Hash du mot de passe / Password hashing
             $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
             
-            // ✅ Vérification et assignation du rôle utilisateur
-            // ✅ Role validation and assignment
+            //  Vérification et assignation du rôle utilisateur
+            //  Role validation and assignment
             $role = strtolower(trim($data['role']));
             if ($role === "passenger") {
                 $role = "user"; 
@@ -54,8 +54,8 @@ class UserController {
                 return $this->jsonResponse($response, ['error' => 'Rôle non valide / Invalid role'], 400);
             }
 
-            // ✅ Enregistrement de l'utilisateur dans la base de données
-            // ✅ Insert user into database
+            //  Enregistrement de l'utilisateur dans la base de données
+            //  Insert user into database
             $stmt = $this->db->prepare("INSERT INTO users (name, email, password, role, phone_number) 
                                         VALUES (:name, :email, :password, :role, :phone_number)");
             $stmt->execute([
@@ -68,8 +68,8 @@ class UserController {
 
             $userId = $this->db->lastInsertId();
 
-            // ✅ Si le rôle est conducteur, vérifier et enregistrer les détails du véhicule
-            // ✅ If role is driver, validate and insert vehicle details
+            //  Si le rôle est conducteur, vérifier et enregistrer les détails du véhicule
+            //  If role is driver, validate and insert vehicle details
             if ($role === "driver") {
                 if (
                     empty($data['make']) || empty($data['model']) || empty($data['year']) ||
@@ -121,12 +121,12 @@ class UserController {
                 return $this->jsonResponse($response, ['error' => 'Identifiants invalides / Invalid credentials'], 401);
             }
     
-            // ✅ Start session (Handled in middleware, but ensure it's active)
+            //  Start session (Handled in middleware, but ensure it's active)
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
     
-            // ✅ Store user session
+            //  Store user session
             $_SESSION['user'] = [
                 "id" => $user['id'],
                 "name" => $user['name'],
