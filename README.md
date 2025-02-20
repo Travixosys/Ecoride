@@ -1,7 +1,3 @@
-
-# Ecoridepool-Ride-web-app
-=======
-
 # EcoRide - Plateforme de Covoiturage
 
 ## Présentation du Projet
