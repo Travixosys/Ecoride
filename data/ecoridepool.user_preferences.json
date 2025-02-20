@@ -1,0 +1,128 @@
+[{
+  "_id": {
+    "$oid": "67b77e6e2cbc6a25442a3a47"
+  },
+  "user_id": 3,
+  "preferences": {
+    "smoking_allowed": false,
+    "music_preference": "Salsa",
+    "chat_preference": "Minimal"
+  }
+},
+{
+  "_id": {
+    "$oid": "67b783b645ae67ef05fc4818"
+  },
+  "user_id": 3,
+  "preferred_music": "Classical",
+  "allow_pets": false,
+  "smoking_preference": "Yes"
+},
+{
+  "_id": {
+    "$oid": "67b783b645ae67ef05fc481a"
+  },
+  "user_id": 3,
+  "preferred_music": "Electronic",
+  "allow_pets": false,
+  "smoking_preference": "No"
+},
+{
+  "_id": {
+    "$oid": "67b788aa45ae67ef05fc4821"
+  },
+  "user_id": 4,
+  "preferences": {
+    "smoking_allowed": false,
+    "music_preference": "Hip-Hop",
+    "chat_preference": "Casual"
+  }
+},
+{
+  "_id": {
+    "$oid": "67b788aa45ae67ef05fc4822"
+  },
+  "user_id": 5,
+  "preferences": {
+    "smoking_allowed": true,
+    "music_preference": "Electronic",
+    "chat_preference": "Casual"
+  }
+},
+{
+  "_id": {
+    "$oid": "67b788aa45ae67ef05fc4823"
+  },
+  "user_id": 6,
+  "preferences": {
+    "smoking_allowed": false,
+    "music_preference": "Hip-Hop",
+    "chat_preference": "Minimal"
+  }
+},
+{
+  "_id": {
+    "$oid": "67b788aa45ae67ef05fc4824"
+  },
+  "user_id": 7,
+  "preferences": {
+    "smoking_allowed": true,
+    "music_preference": "Hip-Hop",
+    "chat_preference": "Minimal"
+  }
+},
+{
+  "_id": {
+    "$oid": "67b788aa45ae67ef05fc4825"
+  },
+  "user_id": 8,
+  "preferences": {
+    "smoking_allowed": false,
+    "music_preference": "Jazz",
+    "chat_preference": "Minimal"
+  }
+},
+{
+  "_id": {
+    "$oid": "67b788aa45ae67ef05fc4826"
+  },
+  "user_id": 9,
+  "preferences": {
+    "smoking_allowed": false,
+    "music_preference": "Rock",
+    "chat_preference": "Casual"
+  }
+},
+{
+  "_id": {
+    "$oid": "67b788aa45ae67ef05fc4827"
+  },
+  "user_id": 10,
+  "preferences": {
+    "smoking_allowed": true,
+    "music_preference": "Jazz",
+    "chat_preference": "Talkative"
+  }
+},
+{
+  "_id": {
+    "$oid": "67b788aa45ae67ef05fc4828"
+  },
+  "user_id": 11,
+  "preferences": {
+    "smoking_allowed": false,
+    "music_preference": "Pop",
+    "chat_preference": "Minimal"
+  }
+},
+{
+  "_id": {
+    "$oid": "67b788aa45ae67ef05fc4829"
+  },
+  "user_id": 12,
+  "preferences": {
+    "smoking_allowed": false,
+    "music_preference": "Pop",
+    "chat_preference": "Talkative"
+  }
+}]

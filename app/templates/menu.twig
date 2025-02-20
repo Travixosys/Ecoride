@@ -1,0 +1,24 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md text-center">
+    <h2 class="text-xl font-semibold text-gray-800">Menu</h2>
+
+    <ul class="mt-4 space-y-4">
+        <li><a href="/profile" class="block text-lg font-medium text-green-700 hover:underline">My Profile</a></li>
+        <li>
+            <a href="{{ user.role == 'driver' ? '/driver/ride-history' : '/ride-history' }}" 
+            class="block text-lg font-medium text-green-700 hover:underline">
+            Ride History
+            </a>
+        </li>
+        <li><a href="/support" class="block text-lg font-medium text-green-700 hover:underline">Support</a></li>
+    </ul>
+
+     <!-- Logout Button -->
+    <button onclick="logout()" class="mt-4 w-full bg-red-600 text-white py-2 rounded hover:bg-red-500">
+        Logout
+    </button>
+    
+</div>
+{% endblock %}

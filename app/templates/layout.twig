@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EcoRide{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+    <!-- Compact Header -->
+    <header class="bg-green-800 text-white text-center py-4 shadow-md">
+        <h1 class="text-xl font-semibold">EcoRide</h1>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col items-center justify-center px-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bottom Navigation (Consistent & Clickable) -->
+    <nav class="fixed bottom-0 w-full bg-gray-900 text-white flex justify-around py-3">
+        <a href="/" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
+            🏠 <span class="text-sm">Home</span>
+        </a>
+        <a href="/carpool" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
+            🚗 <span class="text-sm">Carpool</span>
+        </a>
+        <a href="/menu" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
+            📖 <span class="text-sm">Menu</span>
+        </a>
+    </nav>
+
+{% if user %}
+    <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded">Logout</button>
+{% endif %}
+
+<script>
+    function logout() {
+        fetch('/logout', { method: 'POST', credentials: 'same-origin' })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                window.location.href = "/login";
+            })
+            .catch(error => alert("❌ Logout Failed"));
+    }
+</script>
+
+
+</body>
+</html>

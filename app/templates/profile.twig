@@ -1,0 +1,43 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-6">
+    <!-- User Info -->
+    <div class="text-center">
+        <img src="https://via.placeholder.com/100" alt="Profile Picture" class="w-24 h-24 rounded-full mx-auto">
+        <h2 class="text-xl font-semibold mt-2">{{ user.name ?? "Guest User" }}</h2>
+        <p class="text-gray-600">{{ user.role | capitalize }}</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="flex justify-around my-4">
+        <div class="text-center">
+            <p class="text-lg font-bold">⭐ {{ user.rating ?? "5.0" }}</p>
+            <p class="text-sm text-gray-500">Rating</p>
+        </div>
+        <div class="text-center">
+            <p class="text-lg font-bold">🚗 {{ user.rides ?? "0" }}</p>
+            <p class="text-sm text-gray-500">Rides Completed</p>
+        </div>
+    </div>
+
+    <!-- Preferences Section -->
+    <div class="mt-4">
+        <h3 class="text-lg font-semibold">Preferences</h3>
+        <p><strong>Smoking:</strong> {{ preferences.smoking_preference|default('Not Set') }}</p>
+        <p><strong>Pets:</strong> {{ preferences.pets_allowed|default('Not Set') }}</p>
+        <p><strong>Music:</strong> {{ preferences.music_preference|default('Not Set') }}</p>
+        <p><strong>Chat:</strong> {{ preferences.chat_preference|default('Not Set') }}</p>
+    </div>
+
+   
+
+
+    <!-- Profile Actions -->
+    <div class="mt-4 space-y-3">
+        <a href="/edit-profile" class="block text-center bg-green-600 text-white py-2 rounded-md hover:bg-green-500">
+            Edit Profile
+        </a>
+    </div>
+</div>
+{% endblock %}
