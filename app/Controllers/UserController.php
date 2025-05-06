@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\User;
+use App\Models\Vehicle;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Container\ContainerInterface;
@@ -12,10 +13,12 @@ use PDOException;
 class UserController {
     private PDO $db;
     private User $userModel;
+    private Vehicle $vehicleModel;
 
     public function __construct(ContainerInterface $container) {
         $this->db = $container->get('db');
         $this->userModel = new User($this->db);
+        $this->vehicleModel = new Vehicle($this->db);
     }
 
     /**
@@ -40,17 +43,16 @@ class UserController {
                 return $this->jsonResponse($response, ['error' => 'Rôle non valide / Invalid role'], 400);
             }
 
-            // Register user using model
             $this->userModel->createUser([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => $hashedPassword,
-                'role' => $role
+                'role' => $role,
+                'phone_number' => $data['phone_number'] ?? null
             ]);
 
             $userId = $this->db->lastInsertId();
 
-            // If driver, insert vehicle (this logic will be moved to Vehicle.php later)
             if ($role === "driver") {
                 if (
                     empty($data['make']) || empty($data['model']) || empty($data['year']) ||
@@ -59,9 +61,7 @@ class UserController {
                     return $this->jsonResponse($response, ['error' => 'Détails du véhicule manquants / Missing vehicle details'], 400);
                 }
 
-                $stmt = $this->db->prepare("INSERT INTO vehicles (driver_id, make, model, year, plate, seats) 
-                    VALUES (:driver_id, :make, :model, :year, :plate, :seats)");
-                $stmt->execute([
+                $this->vehicleModel->create([
                     'driver_id' => $userId,
                     'make' => $data['make'],
                     'model' => $data['model'],
@@ -134,7 +134,6 @@ class UserController {
      */
     public function updateProfile($request, $response) {
         $data = $request->getParsedBody();
-        // Placeholder – connect to User model later
         return $response->withJson(['message' => 'Profile updated (stub)']);
     }
 
