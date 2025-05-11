@@ -93,7 +93,7 @@ class RideController
         }
     }
 
- public function acceptRideRequest(Request $request, Response $response, array $args): Response
+ public function acceptRide(Request $request, Response $response, array $args): Response
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
 
