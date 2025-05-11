@@ -1,0 +1,33 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-10 p-4 bg-gray-800 text-white rounded-2xl shadow">
+    <h2 class="text-2xl font-bold mb-6 text-green-400">Ride Requests (Demandes en attente)</h2>
+
+    {% if rideRequests is not empty %}
+        <div class="grid grid-cols-1 gap-4">
+            {% for ride in rideRequests %}
+                <div class="bg-gray-700 rounded-xl p-4 shadow hover:shadow-lg transition">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-semibold">Pickup: <span class="text-green-300">{{ ride.pickup_location }}</span></h3>
+                        <span class="text-sm text-gray-400">{{ ride.passenger_count }} passenger(s)</span>
+                    </div>
+                    <p class="text-sm mb-4">Dropoff: <span class="text-gray-300">{{ ride.dropoff_location }}</span></p>
+
+                    <!-- Formulaire d'acceptation du trajet avec _METHOD=PUT -->
+                    <!-- Ride acceptance form using PUT override -->
+                    <form method="POST" action="/driver/accept-request/{{ ride.id }}">
+                        <input type="hidden" name="_METHOD" value="PUT">
+                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                            Accept Ride
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-gray-400">No pending ride requests at the moment.</p>
+    {% endif %}
+</div>
+<script src="/js/driver-requests.js"></script>
+{% endblock %}

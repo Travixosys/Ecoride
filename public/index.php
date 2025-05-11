@@ -8,6 +8,7 @@ use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use DI\Container;
+use Slim\Middleware\MethodOverrideMiddleware;
 
 
 
@@ -33,8 +34,13 @@ $container->set('db', function () {
 //Create Slim App
 $app = AppFactory::create();
 
+// ✅ Enable method override so HTML forms with _METHOD can work
+$app->add(MethodOverrideMiddleware::class);
+
 //Add Twig Middleware (AFTER container setup)
 $app->add(TwigMiddleware::create($app, $container->get('view')));
+
+
 
 //Load Routes AFTER dependencies are registered
 (require __DIR__ . '/../app/routes.php')($app);
