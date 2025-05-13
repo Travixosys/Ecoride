@@ -34,13 +34,23 @@ $container->set('db', function () {
 //Create Slim App
 $app = AppFactory::create();
 
+
+
+//Add Body Parsing Middleware - IMPORTANT for JSON requests
+$app->addBodyParsingMiddleware();
+
+
+//Add Routing Middleware - IMPORTANT for route handling
+$app->addRoutingMiddleware();
+
 // ✅ Enable method override so HTML forms with _METHOD can work
 $app->add(MethodOverrideMiddleware::class);
 
 //Add Twig Middleware (AFTER container setup)
 $app->add(TwigMiddleware::create($app, $container->get('view')));
 
-
+//Add Error Middleware
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
 
 //Load Routes AFTER dependencies are registered
 (require __DIR__ . '/../app/routes.php')($app);

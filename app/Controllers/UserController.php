@@ -10,12 +10,14 @@ use Psr\Container\ContainerInterface;
 use PDO;
 use PDOException;
 
-class UserController {
+class UserController
+{
     private PDO $db;
     private User $userModel;
     private Vehicle $vehicleModel;
 
-    public function __construct(ContainerInterface $container) {
+    public function __construct(ContainerInterface $container)
+    {
         $this->db = $container->get('db');
         $this->userModel = new User($this->db);
         $this->vehicleModel = new Vehicle($this->db);
@@ -25,7 +27,8 @@ class UserController {
      * Register a new user (passenger or driver)
      * Inscription d'un utilisateur (passager ou conducteur)
      */
-    public function register(Request $request, Response $response): Response {
+    public function register(Request $request, Response $response): Response
+    {
         $body = $request->getBody()->getContents();
         $data = json_decode($body, true) ?? [];
 
@@ -72,7 +75,6 @@ class UserController {
             }
 
             return $this->jsonResponse($response, ['message' => 'Utilisateur enregistré avec succès / User registered successfully'], 201);
-
         } catch (PDOException $e) {
             error_log("Erreur DB : " . $e->getMessage());
             return $this->jsonResponse($response, ['error' => 'Erreur de base de données / Database error'], 500);
@@ -83,24 +85,64 @@ class UserController {
      * User login
      * Connexion utilisateur
      */
-    public function login(Request $request, Response $response): Response {
-        $data = json_decode($request->getBody()->getContents(), true) ?? [];
 
-        if (empty($data['email']) || empty($data['password'])) {
-            return $this->jsonResponse($response, ['error' => 'Email ou mot de passe manquant / Missing email or password'], 400);
-        }
+    public function login(Request $request, Response $response): Response
+    {
+        // Enable error logging
+        ini_set('display_errors', 1);
+        error_reporting(E_ALL);
 
         try {
-            $user = $this->userModel->findByEmail($data['email']);
+            // Get parsed body instead of raw body
+            $data = $request->getParsedBody();
 
-            if (!$user || !password_verify($data['password'], $user['password'])) {
-                return $this->jsonResponse($response, ['error' => 'Identifiants invalides / Invalid credentials'], 401);
+            // Log the received data for debugging
+            error_log("Parsed Login Request Body: " . json_encode($data));
+
+            // Detailed input validation
+            if ($data === null) {
+                error_log("Empty or invalid request body");
+                return $this->jsonResponse($response, [
+                    'error' => 'Invalid request data',
+                    'debug' => 'No data received'
+                ], 400);
             }
 
+            // Check for required fields
+            if (empty($data['email']) || empty($data['password'])) {
+                error_log("Missing Login Credentials");
+                return $this->jsonResponse($response, [
+                    'error' => 'Missing email or password',
+                    'received_data' => $data
+                ], 400);
+            }
+
+            // Attempt to find user
+            $user = $this->userModel->findByEmail($data['email']);
+
+            // Detailed authentication logging
+            if (!$user) {
+                error_log("User not found: " . $data['email']);
+                return $this->jsonResponse($response, [
+                    'error' => 'User not found',
+                    'email' => $data['email']
+                ], 404);
+            }
+
+            // Verify password
+            if (!password_verify($data['password'], $user['password'])) {
+                error_log("Invalid password for email: " . $data['email']);
+                return $this->jsonResponse($response, [
+                    'error' => 'Invalid credentials'
+                ], 401);
+            }
+
+            // Start session
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
 
+            // Set session data
             $_SESSION['user'] = [
                 "id" => $user['id'],
                 "name" => $user['name'],
@@ -108,21 +150,32 @@ class UserController {
                 "role" => $user['role']
             ];
 
+            // Successful login response
             return $this->jsonResponse($response, [
-                'message' => 'Connexion réussie / Login successful',
+                'message' => 'Login successful',
                 'user' => $_SESSION['user']
             ]);
-
         } catch (PDOException $e) {
-            return $this->jsonResponse($response, ['error' => 'Erreur de base de données / Database error'], 500);
+            // Comprehensive error logging
+            error_log("Login Database Error: " . $e->getMessage());
+            error_log("Error Code: " . $e->getCode());
+            error_log("Trace: " . $e->getTraceAsString());
+
+            return $this->jsonResponse($response, [
+                'error' => 'Database error',
+                'details' => $e->getMessage()
+            ], 500);
         }
     }
+
+    // Existing jsonResponse method...
 
     /**
      * User logout
      * Déconnexion
      */
-    public function logout(Request $request, Response $response): Response {
+    public function logout(Request $request, Response $response): Response
+    {
         session_start();
         session_destroy();
         return $this->jsonResponse($response, ['message' => 'Déconnexion réussie / Logout successful']);
@@ -132,7 +185,8 @@ class UserController {
      * Update profile (stub – to be implemented)
      * Mise à jour du profil (à compléter)
      */
-    public function updateProfile($request, $response) {
+    public function updateProfile($request, $response)
+    {
         $data = $request->getParsedBody();
         return $response->withJson(['message' => 'Profile updated (stub)']);
     }
@@ -141,7 +195,8 @@ class UserController {
      * JSON response wrapper
      * Envoi d'une réponse JSON
      */
-    private function jsonResponse(Response $response, array $data, int $statusCode = 200): Response {
+    private function jsonResponse(Response $response, array $data, int $statusCode = 200): Response
+    {
         $response->getBody()->write(json_encode($data));
         return $response
             ->withHeader('Content-Type', 'application/json')
