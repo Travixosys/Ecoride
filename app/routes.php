@@ -80,8 +80,8 @@ return function (App $app) {
 
     $app->put('/driver/accept-request/{id}', [RideController::class, 'acceptRide']);
     $app->put('/driver/accept-ride/{id}', [RideController::class, 'acceptRide']);
-    $app->put('/driver/complete-ride/{id}', [DriverController::class, 'completeRide']);
-    $app->put('/driver/cancel-ride/{id}', [DriverController::class, 'cancelRide']);
+    $app->put('/driver/complete-ride/{id}', [RideController::class, 'completeRide']);
+    $app->put('/driver/cancel-ride/{id}', [RideController::class, 'cancelRide']);
 
     // ================================
     // DRIVER VIEW – Interface conducteur
