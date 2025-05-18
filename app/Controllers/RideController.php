@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Ride;
 use App\Models\RideRequest;
+use App\Models\Carpool;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Container\ContainerInterface;
@@ -15,6 +16,7 @@ class RideController
     private $view;
     private Ride $rideModel;
     private RideRequest $requestModel;
+    private Carpool $carpoolModel;
 
     public function __construct(ContainerInterface $container)
     {
@@ -22,7 +24,11 @@ class RideController
         $this->view = $container->get('view');
         $this->rideModel = new Ride($this->db);
         $this->requestModel = new RideRequest($this->db);
+        $this->carpoolModel = new Carpool($this->db); // ✅ ADD THIS LINE
+
     }
+
+
 
     public function requestRide(Request $request, Response $response): Response
     {
@@ -195,16 +201,38 @@ class RideController
     public function completeRide(Request $request, Response $response, array $args): Response
     {
         $rideId = $args['id'];
+
+        // Step 1: Mark the ride as completed
         $this->rideModel->updateStatus($rideId, 'completed');
+
+        // Step 2: Check if this was the last ride to complete carpool
+        $this->carpoolModel->updateCarpoolStatusByRide($rideId);
+
         return $this->jsonResponse($response, ['message' => 'Ride completed successfully']);
     }
 
     public function cancelRide(Request $request, Response $response, array $args): Response
     {
         $rideId = $args['id'];
+
+        // Step 1: Fetch current ride
+        $stmt = $this->db->prepare("SELECT * FROM rides WHERE id = :id");
+        $stmt->execute(['id' => $rideId]);
+        $ride = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$ride) {
+            return $this->jsonResponse($response, ['error' => 'Ride not found'], 404);
+        }
+
+        // Step 2: Cancel the ride
         $this->rideModel->updateStatus($rideId, 'cancelled');
+
+        // Step 3: Adjust carpool
+        $this->carpoolModel->decrementSeatsByRide($rideId);
+
         return $this->jsonResponse($response, ['message' => 'Ride cancelled']);
     }
+
 
     private function jsonResponse(Response $response, array $data, int $statusCode = 200): Response
     {
