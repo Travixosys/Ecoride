@@ -74,12 +74,12 @@ return function (App $app) {
     $app->get('/ride-history', [RideController::class, 'getPassengerRideHistory']);
     $app->get('/driver/ride-history', [RideController::class, 'getDriverRideHistory']);
 
-    $app->put('/accept-ride/{id}', [RideController::class, 'acceptRide']);
+    // $app->put('/accept-ride/{id}', [RideController::class, 'acceptRide']);
     $app->put('/complete-ride/{id}', [RideController::class, 'completeRide']);
     $app->put('/cancel-ride/{id}', [RideController::class, 'cancelRide']);
 
     $app->put('/driver/accept-request/{id}', [RideController::class, 'acceptRide']);
-    $app->put('/driver/accept-ride/{id}', [RideController::class, 'acceptRide']);
+    // $app->put('/driver/accept-ride/{id}', [DriverController::class, 'acceptRide']);
     $app->put('/driver/complete-ride/{id}', [RideController::class, 'completeRide']);
     $app->put('/driver/cancel-ride/{id}', [RideController::class, 'cancelRide']);
 
