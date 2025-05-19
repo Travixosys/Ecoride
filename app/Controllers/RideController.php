@@ -170,14 +170,22 @@ class RideController
             }
 
             // Accept the ride request
-            $insertRide = $this->db->prepare("INSERT INTO rides (passenger_id, driver_id, vehicle_id, pickup_location, dropoff_location, status) VALUES (:passenger_id, :driver_id, :vehicle_id, :pickup, :dropoff, 'accepted')");
+            $insertRide = $this->db->prepare("
+                INSERT INTO rides (
+                    passenger_id, driver_id, vehicle_id, pickup_location, dropoff_location, status, ride_request_id
+                ) VALUES (
+                    :passenger_id, :driver_id, :vehicle_id, :pickup, :dropoff, 'accepted', :ride_request_id
+                )
+           ");
             $insertRide->execute([
                 'passenger_id' => $request['passenger_id'],
                 'driver_id' => $driverId,
                 'vehicle_id' => $vehicle['id'],
                 'pickup' => $request['pickup_location'],
-                'dropoff' => $request['dropoff_location']
+                'dropoff' => $request['dropoff_location'],
+                'ride_request_id' => $rideRequestId  // ✅ now linking to the right request
             ]);
+
 
             $updateRequest = $this->db->prepare("UPDATE ride_requests SET status = 'accepted', driver_id = :driver_id WHERE id = :id");
             $updateRequest->execute(['driver_id' => $driverId, 'id' => $rideRequestId]);
@@ -202,37 +210,91 @@ class RideController
     {
         $rideId = $args['id'];
 
-        // Step 1: Mark the ride as completed
-        $this->rideModel->updateStatus($rideId, 'completed');
+        try {
+            $this->db->beginTransaction();
 
-        // Step 2: Check if this was the last ride to complete carpool
-        $this->carpoolModel->updateCarpoolStatusByRide($rideId);
+            // Get the ride details before updating status
+            // This join is critical - the ride_requests table holds the passenger_count
+            $stmt = $this->db->prepare("
+                SELECT r.*, rr.passenger_count 
+                FROM rides r
+                JOIN ride_requests rr ON r.passenger_id = rr.passenger_id
+                WHERE r.id = :ride_id
+            ");
+            $stmt->execute(['ride_id' => $rideId]);
+            $ride = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $this->jsonResponse($response, ['message' => 'Ride completed successfully']);
+            if (!$ride) {
+                $this->db->rollBack();
+                return $this->jsonResponse($response, ['error' => 'Ride not found'], 404);
+            }
+
+            // Step 1: Mark the ride as completed
+            $this->rideModel->updateStatus($rideId, 'completed');
+
+            // Step 2: Get carpool ID
+            $carpoolId = $this->carpoolModel->getActiveCarpoolId($ride['driver_id']);
+
+            if ($carpoolId !== null) {
+                // Step 3: Decrement the seats by the passenger count
+                $this->carpoolModel->decrementOccupiedSeats($carpoolId, (int)$ride['passenger_count']);
+            }
+
+            $this->db->commit();
+            return $this->jsonResponse($response, ['message' => 'Ride completed successfully']);
+        } catch (\PDOException $e) {
+            $this->db->rollBack();
+            return $this->jsonResponse($response, [
+                'error' => 'Database error',
+                'details' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function cancelRide(Request $request, Response $response, array $args): Response
     {
         $rideId = $args['id'];
 
-        // Step 1: Fetch current ride
-        $stmt = $this->db->prepare("SELECT * FROM rides WHERE id = :id");
-        $stmt->execute(['id' => $rideId]);
-        $ride = $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $this->db->beginTransaction();
 
-        if (!$ride) {
-            return $this->jsonResponse($response, ['error' => 'Ride not found'], 404);
+            // Get the ride details before updating status
+            // This join is critical - the ride_requests table holds the passenger_count
+            $stmt = $this->db->prepare("
+                SELECT r.*, rr.passenger_count 
+                FROM rides r
+                JOIN ride_requests rr ON r.passenger_id = rr.passenger_id
+                WHERE r.id = :ride_id
+            ");
+            $stmt->execute(['ride_id' => $rideId]);
+            $ride = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$ride) {
+                $this->db->rollBack();
+                return $this->jsonResponse($response, ['error' => 'Ride not found'], 404);
+            }
+
+            // Step 1: Mark the ride as cancelled
+            $this->rideModel->updateStatus($rideId, 'cancelled');
+
+            // Step 2: Get carpool ID
+            $carpoolId = $this->carpoolModel->getActiveCarpoolId($ride['driver_id']);
+
+            if ($carpoolId !== null) {
+                // Step 3: Decrement the seats by the passenger count
+                $this->carpoolModel->decrementOccupiedSeats($carpoolId, (int)$ride['passenger_count']);
+            }
+
+            $this->db->commit();
+            return $this->jsonResponse($response, ['message' => 'Ride cancelled successfully']);
+        } catch (\PDOException $e) {
+            $this->db->rollBack();
+            return $this->jsonResponse($response, [
+                'error' => 'Database error',
+                'details' => $e->getMessage()
+            ], 500);
         }
-
-        // Step 2: Cancel the ride
-        $this->rideModel->updateStatus($rideId, 'cancelled');
-
-        // Step 3: Adjust carpool
-        $this->carpoolModel->decrementSeatsByRide($rideId);
-
-        return $this->jsonResponse($response, ['message' => 'Ride cancelled']);
     }
-
 
     private function jsonResponse(Response $response, array $data, int $statusCode = 200): Response
     {
