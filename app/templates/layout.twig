@@ -8,34 +8,59 @@
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
 
-    <!-- Compact Header -->
-    <header class="bg-green-800 text-white text-center py-4 shadow-md">
-        <h1 class="text-xl font-semibold">EcoRide</h1>
-    </header>
+<!-- Compact Header -->
+<header class="bg-green-800 text-white py-4 shadow-md flex items-center justify-between px-4">
+    <a href="/" class="text-xl font-semibold hover:underline">EcoRide</a>
+    <button id="infoToggle" class="text-white text-lg" title="Info">❓</button>
+</header>
 
-    <!-- Main Content Area -->
-    <main class="flex-grow flex flex-col items-center justify-center px-4 mb-20">
-        {% block content %}{% endblock %}
-    </main>
+<!-- Info Dropdown (Legal, Contact) -->
+<div id="infoPanel" class="hidden bg-white text-gray-800 shadow p-4 text-sm mx-4 mt-2 rounded-md">
+    <p><strong>Mentions légales:</strong> EcoRide respecte la vie privée et la réglementation RGPD.</p>
+    <p><strong>Contact:</strong> contact@ecoride.com</p>
+</div>
 
-    <!-- Bottom Navigation (Consistent & Clickable) -->
-    <nav class="fixed bottom-0 w-full bg-gray-900 text-white flex justify-around py-3">
-        <a href="/" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
-            🏠 <span class="text-sm">Home</span>
-        </a>
-        <a href="/carpool" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
-            🚗 <span class="text-sm">Carpool</span>
-        </a>
-        <a href="/menu" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
-            📖 <span class="text-sm">Menu</span>
-        </a>
-    </nav>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col items-center justify-center px-4 mb-24 text-center">
+    
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 w-full bg-gray-900 text-white flex justify-around py-3 text-sm sm:text-base">
+    <a href="/" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
+        🏠 <span>Home</span>
+    </a>
+    <a href="/carpool" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
+        🚗 <span>Carpool</span>
+    </a>
+    <a href="/menu" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
+        📖 <span>Menu</span>
+    </a>
+</nav>
 
 {% if user %}
-    <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded">Logout</button>
+    <div class="flex justify-center mt-4">
+        <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded">Logout</button>
+    </div>
 {% endif %}
 
 <script>
+    // Dropdown toggle and click-outside detection
+    const infoToggle = document.getElementById('infoToggle');
+    const infoPanel = document.getElementById('infoPanel');
+
+    infoToggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        infoPanel.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!infoPanel.classList.contains('hidden') && !infoPanel.contains(e.target)) {
+            infoPanel.classList.add('hidden');
+        }
+    });
+
     function logout() {
         fetch('/logout', { method: 'POST', credentials: 'same-origin' })
             .then(response => response.json())
@@ -43,10 +68,9 @@
                 alert(data.message);
                 window.location.href = "/login";
             })
-            .catch(error => alert("❌ Logout Failed"));
+            .catch(error => alert("Logout Failed"));
     }
 </script>
-
 
 </body>
 </html>
