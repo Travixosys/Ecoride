@@ -33,8 +33,8 @@ return function (App $app) {
     $app->get('/login', fn($req, $res) => Twig::fromRequest($req)->render($res, 'login.twig'));
     $app->post('/login', [UserController::class, 'login']);
 
-    
- 
+
+
 
     $app->get('/logout', fn($req, $res) => $res->withHeader('Location', '/menu')->withStatus(302));
     $app->post('/logout', function ($req, $res) {
@@ -94,6 +94,55 @@ return function (App $app) {
         return $container->get('view')->render($res, 'driver-requests.twig', ['rideRequests' => $requests]);
     });
     $app->post('/driver/create-carpool', [DriverController::class, 'createCarpool'])->setName('create_carpool');
+    $app->get('/carpool', function ($req, $res) use ($container) {
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'driver') {
+            return $res->withHeader('Location', '/login')->withStatus(302);
+        }
+
+        $db = $container->get('db');
+        $driverId = $_SESSION['user']['id'];
+
+        $rideRequestModel = new RideRequest($db);
+        $rideModel = new \App\Models\Ride($db);
+
+        $pendingRequests = $rideRequestModel->getPending();
+        $activeRides = $rideModel->findByStatus($driverId, 'accepted');
+
+        return $container->get('view')->render($res, 'carpool.twig', [
+            'rideRequests' => $pendingRequests,
+            'activeRides' => $activeRides
+        ]);
+    });
+
+    // ==============================
+// CARPOOL PUBLIC VIEW – Liste des covoiturages
+// ==============================
+$app->get('/carpools', function ($req, $res) use ($container) {
+    // Placeholder data to test the view; replace this later with actual controller logic
+    $sampleData = [
+        [
+            'driver_name' => 'Alice',
+            'energy_type' => 'electric',
+            'departure_location' => 'Paris',
+            'destination' => 'Lyon',
+            'departure_time' => '2025-06-01 10:00:00',
+            'total_seats' => 4,
+            'occupied_seats' => 1
+        ],
+        [
+            'driver_name' => 'Bob',
+            'energy_type' => 'diesel',
+            'departure_location' => 'Marseille',
+            'destination' => 'Nice',
+            'departure_time' => '2025-06-02 14:30:00',
+            'total_seats' => 3,
+            'occupied_seats' => 2
+        ]
+    ];
+
+    return $container->get('view')->render($res, 'carpool-list.twig', ['carpools' => $sampleData]);
+});
+
 
     // ================================
     // ADMIN PANEL – Gestion Admin
@@ -109,7 +158,6 @@ return function (App $app) {
     $app->get('/request-ride', fn($req, $res) => $container->get('view')->render($res, 'request-ride.twig'));
     $app->get('/active-rides', fn($req, $res) => $twig->render($res, 'active-rides.twig'));
     $app->get('/menu', fn($req, $res) => $container->get('view')->render($res, 'menu.twig', ['user' => $_SESSION['user'] ?? null]));
-    $app->get('/carpool', fn($req, $res) => $twig->render($res, 'carpool.twig'));
     $app->get('/maps/route', [RideController::class, 'getRouteData']);
 };
 
