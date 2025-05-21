@@ -147,6 +147,8 @@ return function (App $app) {
 // Passenger browsing available carpools
 $app->get('/carpools', CarpoolController::class . ':listAvailable');
 $app->get('/carpools/{id}', CarpoolController::class . ':viewDetail');
+$app->post('/carpools/{id}/join', CarpoolController::class . ':joinCarpool');
+
 
 
 // Driver offering a carpool

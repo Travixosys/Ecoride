@@ -125,6 +125,68 @@ class CarpoolController
         ]);
     }
 
+    public function joinCarpool(Request $request, Response $response, array $args): Response
+{
+    $carpoolId = (int) $args['id'];
+    $userId = $_SESSION['user']['id'] ?? null;
+    $data = $request->getParsedBody();
+    $requestedSeats = max(1, (int) $data['passenger_count']);
+
+    // Fetch carpool to verify availability
+    $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ?");
+    $stmt->execute([$carpoolId]);
+    $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$carpool) {
+        $response->getBody()->write("Carpool not found.");
+        return $response->withStatus(404);
+    }
+
+    $availableSeats = $carpool['total_seats'] - $carpool['occupied_seats'];
+    if ($requestedSeats > $availableSeats) {
+        return $this->view->render($response, 'carpool-detail.twig', [
+            'carpool' => $carpool,
+            'join_message' => "Not enough available seats."
+        ]);
+    }
+
+    // Check if already joined
+    $stmt = $this->db->prepare("SELECT id FROM ride_requests WHERE passenger_id = ? AND carpool_id = ?");
+    $stmt->execute([$userId, $carpoolId]);
+    if ($stmt->fetch()) {
+        return $this->view->render($response, 'carpool-detail.twig', [
+            'carpool' => $carpool,
+            'join_message' => "You already joined this carpool."
+        ]);
+    }
+
+    // Insert ride request
+   $stmt = $this->db->prepare("
+    INSERT INTO ride_requests (passenger_id, driver_id, carpool_id, pickup_location, dropoff_location, passenger_count, status, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, 'accepted', NOW())
+");
+$stmt->execute([
+    $userId,
+    $carpool['driver_id'],
+    $carpool['id'],
+    $carpool['pickup_location'],
+    $carpool['dropoff_location'],
+    $requestedSeats
+]);
+
+
+    // Update occupied seats
+    $stmt = $this->db->prepare("UPDATE carpools SET occupied_seats = occupied_seats + ? WHERE id = ?");
+    $stmt->execute([$requestedSeats, $carpoolId]);
+
+    // Reload detail with success message
+    $carpool['occupied_seats'] += $requestedSeats;
+    return $this->view->render($response, 'carpool-detail.twig', [
+        'carpool' => $carpool,
+        'join_message' => "You have successfully joined the carpool!"
+    ]);
+}
+
 
     /**
      * Show form to offer a new carpool (driver)
