@@ -1,19 +1,31 @@
 {% extends "layout.twig" %}
 
+{% block title %}My Ride History | EcoRide{% endblock %}
+
 {% block content %}
 <div class="max-w-2xl mx-auto mt-8 bg-white p-6 rounded-lg shadow-md">
-    <h2 class="text-2xl font-semibold text-center mb-4">Passenger Ride History</h2>
-    
+    <h2 class="text-2xl font-semibold text-center mb-4 text-green-700">My Ride History</h2>
+
     {% if rides is empty %}
         <p class="text-gray-600 text-center">No rides found.</p>
     {% else %}
         <ul class="space-y-4">
             {% for ride in rides %}
-                <li class="border-b pb-2">
-                    <p><strong>Pickup:</strong> {{ ride.pickup_location }}</p>
-                    <p><strong>Dropoff:</strong> {{ ride.dropoff_location }}</p>
-                    <p><strong>Status:</strong> {{ ride.status|capitalize }}</p>
-                    <p><small>{{ ride.created_at }}</small></p>
+                <li class="border-b pb-4">
+                    <p class="text-sm"><strong>Pickup:</strong> {{ ride.pickup_location }}</p>
+                    <p class="text-sm"><strong>Dropoff:</strong> {{ ride.dropoff_location }}</p>
+                    <p class="text-sm"><strong>Seats Reserved:</strong> {{ ride.passenger_count }}</p>
+                    <p class="text-sm"><strong>Status:</strong> {{ ride.status|capitalize }}</p>
+                    <p class="text-xs text-gray-500">{{ ride.created_at }}</p>
+
+                    {% if ride.status == 'pending' %}
+                        <form method="POST" action="/cancel-ride/{{ ride.id }}" class="mt-2">
+                            <button type="submit"
+                                class="bg-red-600 hover:bg-red-700 text-white text-xs font-medium px-4 py-1 rounded">
+                                Cancel Ride
+                            </button>
+                        </form>
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>
