@@ -62,7 +62,7 @@ class CarpoolController
             $conditions[] = '(c.total_seats - c.occupied_seats) >= ?';
             $values[] = (int)$minSeats;
         }
-        
+
 
         if ($energy) {
             $conditions[] = 'v.energy_type = ?';
@@ -90,6 +90,29 @@ class CarpoolController
         ]);
     }
 
+    public function viewDetail(Request $request, Response $response, array $args): Response
+    {
+        $carpoolId = $args['id'];
+
+        $stmt = $this->db->prepare("
+        SELECT c.*, u.name AS driver_name, u.driver_rating, v.make, v.model, v.energy_type
+        FROM carpools c
+        JOIN users u ON c.driver_id = u.id
+        JOIN vehicles v ON c.vehicle_id = v.id
+        WHERE c.id = ?
+    ");
+        $stmt->execute([$carpoolId]);
+        $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$carpool) {
+            $response->getBody()->write("Carpool not found.");
+            return $response->withStatus(404);
+        }
+
+        return $this->view->render($response, 'carpool-detail.twig', [
+            'carpool' => $carpool
+        ]);
+    }
 
     /**
      * Show form to offer a new carpool (driver)
