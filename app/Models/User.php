@@ -29,17 +29,18 @@ class User
      * Créer un nouvel utilisateur avec 20 crédits par défaut
      */
     public function createUser(array $data): bool
-    {
-        $stmt = $this->db->prepare("INSERT INTO users (name, email, password, role, phone_number) 
-                                     VALUES (:name, :email, :password, :role, :phone_number)");
-        return $stmt->execute([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
-            'role' => $data['role'],
-            'phone_number' => $data['phone_number'] ?? null
-        ]);
-    }
+{
+    $stmt = $this->db->prepare("INSERT INTO users (name, email, password, role, phone_number, credits) 
+                                 VALUES (:name, :email, :password, :role, :phone_number, :credits)");
+    return $stmt->execute([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'password' => $data['password'],
+        'role' => $data['role'],
+        'phone_number' => $data['phone_number'] ?? null,
+        'credits' => 20 
+    ]);
+}
 
     /**
      * Update user profile (email, name, password...)
