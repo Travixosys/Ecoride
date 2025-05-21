@@ -5,7 +5,7 @@ document.getElementById("login-form").addEventListener("submit", async function 
     const password = document.getElementById("password").value;
 
     try {
-        console.log("📨 Sending:", { email, password });
+        console.log(" Sending:", { email, password });
 
         const response = await fetch("/login", {
             method: "POST",
@@ -15,25 +15,25 @@ document.getElementById("login-form").addEventListener("submit", async function 
 
         const data = await response.json();
 
-        console.log("📩 Response Status:", response.status);
-        console.log("📩 Response Data:", data);
+        console.log(" Response Status:", response.status);
+        console.log(" Response Data:", data);
 
         if (!response.ok) {
             throw new Error(data.error || "Login failed");
         }
 
-        // ✅ Store user session in local storage
+        //  Store user session in local storage
         localStorage.setItem("user", JSON.stringify(data.user));
 
-        alert("✅ Login Successful! Redirecting...");
+        alert(" Login Successful! Redirecting...");
 
-        // ✅ Redirect Based on Role
+        // Redirect Based on Role
         if (data.user.role === "driver") {
-            window.location.href = "/menu";
-        } else if (data.user.role === "/") {
+            window.location.href = "/driver/carpools/create";
+        } else if (data.user.role === "admin") {
             window.location.href = "/admin";
         } else {
-            window.location.href = "/";
+            window.location.href = "/carpools";
         }
 
     } catch (error) {
