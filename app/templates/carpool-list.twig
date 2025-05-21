@@ -21,6 +21,11 @@
             <option value="diesel" {% if filters.energy == 'diesel' %}selected{% endif %}>Diesel</option>
             <option value="petrol" {% if filters.energy == 'petrol' %}selected{% endif %}>Petrol</option>
         </select>
+        <label class="flex items-center space-x-2">
+        <input type="checkbox" name="eco" value="1"
+              class="form-checkbox" {% if filters.eco == '1' %}checked{% endif %}>
+        <span class="text-sm">Eco-friendly only</span>
+        </label>
         <button type="submit" class="md:col-span-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">
             Apply Filters
         </button>

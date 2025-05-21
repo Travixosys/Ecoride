@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use Psr\Http\Message\ResponseInterface as Response;
@@ -19,7 +20,7 @@ class CarpoolController
         $this->db = $container->get('db');
 
         // ✅ Set up the MongoDB client
-        $client = new MongoDBClient('mongodb://localhost:27017'); 
+        $client = new MongoDBClient('mongodb://localhost:27017');
         $this->mongo = $client->ecoridepool->user_preferences;
     }
 
@@ -63,10 +64,14 @@ class CarpoolController
             $values[] = (int)$minSeats;
         }
 
-
         if ($energy) {
             $conditions[] = 'v.energy_type = ?';
             $values[] = $energy;
+        }
+
+        $eco = $params['eco'] ?? null;
+        if ($eco === '1') {
+            $conditions[] = "(v.energy_type IN ('electric', 'hybrid'))";
         }
 
 
@@ -85,12 +90,14 @@ class CarpoolController
             'filters' => [
                 'pickup' => $pickup,
                 'dropoff' => $dropoff,
-                'min_seats' => $minSeats
+                'min_seats' => $minSeats,
+                'energy' => $energy,
+                'eco' => $eco
             ]
         ]);
     }
 
- public function viewDetail(Request $request, Response $response, array $args): Response
+    public function viewDetail(Request $request, Response $response, array $args): Response
     {
         $carpoolId = $args['id'];
 
@@ -125,86 +132,86 @@ class CarpoolController
         ]);
     }
 
-public function joinCarpool(Request $request, Response $response, array $args): Response
-{
-    $carpoolId = (int) $args['id'];
-    $userId = $_SESSION['user']['id'] ?? null;
-    $data = $request->getParsedBody();
-    $requestedSeats = max(1, (int) $data['passenger_count']);
-    $costPerSeat = 5;
-    $totalCost = $requestedSeats * $costPerSeat;
+    public function joinCarpool(Request $request, Response $response, array $args): Response
+    {
+        $carpoolId = (int) $args['id'];
+        $userId = $_SESSION['user']['id'] ?? null;
+        $data = $request->getParsedBody();
+        $requestedSeats = max(1, (int) $data['passenger_count']);
+        $costPerSeat = 5;
+        $totalCost = $requestedSeats * $costPerSeat;
 
-    // 1. Get carpool
-    $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ?");
-    $stmt->execute([$carpoolId]);
-    $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
+        // 1. Get carpool
+        $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ?");
+        $stmt->execute([$carpoolId]);
+        $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$carpool) {
-        $response->getBody()->write("Carpool not found.");
-        return $response->withStatus(404);
-    }
+        if (!$carpool) {
+            $response->getBody()->write("Carpool not found.");
+            return $response->withStatus(404);
+        }
 
-    // 2. Check available seats
-    $availableSeats = $carpool['total_seats'] - $carpool['occupied_seats'];
-    if ($requestedSeats > $availableSeats) {
-        return $this->view->render($response, 'carpool-detail.twig', [
-            'carpool' => $carpool,
-            'join_message' => "Not enough available seats. Only $availableSeats left."
-        ]);
-    }
+        // 2. Check available seats
+        $availableSeats = $carpool['total_seats'] - $carpool['occupied_seats'];
+        if ($requestedSeats > $availableSeats) {
+            return $this->view->render($response, 'carpool-detail.twig', [
+                'carpool' => $carpool,
+                'join_message' => "Not enough available seats. Only $availableSeats left."
+            ]);
+        }
 
-    // 3. Check user credits
-    $stmt = $this->db->prepare("SELECT credits FROM users WHERE id = ?");
-    $stmt->execute([$userId]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        // 3. Check user credits
+        $stmt = $this->db->prepare("SELECT credits FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$user || $user['credits'] < $totalCost) {
-        return $this->view->render($response, 'carpool-detail.twig', [
-            'carpool' => $carpool,
-            'join_message' => "You need $totalCost credits to join this ride. You currently have " . ($user['credits'] ?? 0) . "."
-        ]);
-    }
+        if (!$user || $user['credits'] < $totalCost) {
+            return $this->view->render($response, 'carpool-detail.twig', [
+                'carpool' => $carpool,
+                'join_message' => "You need $totalCost credits to join this ride. You currently have " . ($user['credits'] ?? 0) . "."
+            ]);
+        }
 
-    // 4. Prevent duplicate join
-    $stmt = $this->db->prepare("SELECT id FROM ride_requests WHERE passenger_id = ? AND carpool_id = ?");
-    $stmt->execute([$userId, $carpoolId]);
-    if ($stmt->fetch()) {
-        return $this->view->render($response, 'carpool-detail.twig', [
-            'carpool' => $carpool,
-            'join_message' => "You have already joined this ride."
-        ]);
-    }
+        // 4. Prevent duplicate join
+        $stmt = $this->db->prepare("SELECT id FROM ride_requests WHERE passenger_id = ? AND carpool_id = ?");
+        $stmt->execute([$userId, $carpoolId]);
+        if ($stmt->fetch()) {
+            return $this->view->render($response, 'carpool-detail.twig', [
+                'carpool' => $carpool,
+                'join_message' => "You have already joined this ride."
+            ]);
+        }
 
-    // 5. Insert ride request
-    $stmt = $this->db->prepare("
+        // 5. Insert ride request
+        $stmt = $this->db->prepare("
         INSERT INTO ride_requests (passenger_id, driver_id, carpool_id, pickup_location, dropoff_location, passenger_count, status, created_at)
         VALUES (?, ?, ?, ?, ?, ?, 'accepted', NOW())
     ");
-    $stmt->execute([
-        $userId,
-        $carpool['driver_id'],
-        $carpool['id'],
-        $carpool['pickup_location'],
-        $carpool['dropoff_location'],
-        $requestedSeats
-    ]);
+        $stmt->execute([
+            $userId,
+            $carpool['driver_id'],
+            $carpool['id'],
+            $carpool['pickup_location'],
+            $carpool['dropoff_location'],
+            $requestedSeats
+        ]);
 
-    // 6. Update carpool occupied seats
-    $stmt = $this->db->prepare("UPDATE carpools SET occupied_seats = occupied_seats + ? WHERE id = ?");
-    $stmt->execute([$requestedSeats, $carpoolId]);
+        // 6. Update carpool occupied seats
+        $stmt = $this->db->prepare("UPDATE carpools SET occupied_seats = occupied_seats + ? WHERE id = ?");
+        $stmt->execute([$requestedSeats, $carpoolId]);
 
-    // 7. Deduct credits
-    $stmt = $this->db->prepare("UPDATE users SET credits = credits - ? WHERE id = ?");
-    $stmt->execute([$totalCost, $userId]);
+        // 7. Deduct credits
+        $stmt = $this->db->prepare("UPDATE users SET credits = credits - ? WHERE id = ?");
+        $stmt->execute([$totalCost, $userId]);
 
-    // 8. Reload updated carpool with success message
-    $carpool['occupied_seats'] += $requestedSeats;
+        // 8. Reload updated carpool with success message
+        $carpool['occupied_seats'] += $requestedSeats;
 
-    return $this->view->render($response, 'carpool-detail.twig', [
-        'carpool' => $carpool,
-        'join_message' => "Successfully joined this carpool. $totalCost credits have been deducted."
-    ]);
-}
+        return $this->view->render($response, 'carpool-detail.twig', [
+            'carpool' => $carpool,
+            'join_message' => "Successfully joined this carpool. $totalCost credits have been deducted."
+        ]);
+    }
 
 
 
