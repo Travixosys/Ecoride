@@ -4,6 +4,7 @@
 use Slim\App;
 use Slim\Views\Twig;
 use App\Controllers\UserController;
+use App\Controllers\CarpoolController;
 use App\Controllers\DriverController;
 use App\Controllers\RideController;
 use App\Controllers\AdminController;
@@ -117,31 +118,38 @@ return function (App $app) {
     // ==============================
 // CARPOOL PUBLIC VIEW – Liste des covoiturages
 // ==============================
-$app->get('/carpools', function ($req, $res) use ($container) {
-    // Placeholder data to test the view; replace this later with actual controller logic
-    $sampleData = [
-        [
-            'driver_name' => 'Alice',
-            'energy_type' => 'electric',
-            'departure_location' => 'Paris',
-            'destination' => 'Lyon',
-            'departure_time' => '2025-06-01 10:00:00',
-            'total_seats' => 4,
-            'occupied_seats' => 1
-        ],
-        [
-            'driver_name' => 'Bob',
-            'energy_type' => 'diesel',
-            'departure_location' => 'Marseille',
-            'destination' => 'Nice',
-            'departure_time' => '2025-06-02 14:30:00',
-            'total_seats' => 3,
-            'occupied_seats' => 2
-        ]
-    ];
+// $app->get('/carpools', function ($req, $res) use ($container) {
+//     // Placeholder data to test the view; replace this later with actual controller logic
+//     $sampleData = [
+//         [
+//             'driver_name' => 'Alice',
+//             'energy_type' => 'electric',
+//             'departure_location' => 'Paris',
+//             'destination' => 'Lyon',
+//             'departure_time' => '2025-06-01 10:00:00',
+//             'total_seats' => 4,
+//             'occupied_seats' => 1
+//         ],
+//         [
+//             'driver_name' => 'Bob',
+//             'energy_type' => 'diesel',
+//             'departure_location' => 'Marseille',
+//             'destination' => 'Nice',
+//             'departure_time' => '2025-06-02 14:30:00',
+//             'total_seats' => 3,
+//             'occupied_seats' => 2
+//         ]
+//     ];
 
-    return $container->get('view')->render($res, 'carpool-list.twig', ['carpools' => $sampleData]);
-});
+//     return $container->get('view')->render($res, 'carpool-list.twig', ['carpools' => $sampleData]);
+// });
+
+// Passenger browsing available carpools
+$app->get('/carpools', CarpoolController::class . ':listAvailable');
+
+// Driver offering a carpool
+$app->get('/driver/carpools/create', CarpoolController::class . ':createForm');
+$app->post('/driver/carpools',CarpoolController::class . ':storeCarpool');
 
 
     // ================================

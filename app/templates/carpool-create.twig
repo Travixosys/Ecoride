@@ -1,0 +1,23 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+<div class="p-4 max-w-md mx-auto">
+  <h2 class="text-xl font-bold mb-4">Offer a Carpool / Proposer un covoiturage</h2>
+
+  <form method="post" action="/driver/carpools" class="space-y-4">
+    <input name="pickup_location" placeholder="Departure / Départ" class="w-full p-2 border rounded" required>
+    <input name="dropoff_location" placeholder="Arrival / Destination" class="w-full p-2 border rounded" required>
+    <input name="departure_time" type="datetime-local" class="w-full p-2 border rounded" required>
+    <input name="total_seats" type="number" min="1" placeholder="Number of seats / Nombre de places" class="w-full p-2 border rounded" required>
+
+    <select name="vehicle_id" required class="w-full p-2 border rounded">
+      <option disabled selected>Select your vehicle / Choisissez votre véhicule</option>
+      {% for v in vehicles %}
+        <option value="{{ v.id }}">{{ v.make }} {{ v.model }} - {{ v.energy_type }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="bg-green-700 text-white px-4 py-2 rounded">Publish Carpool / Publier le trajet</button>
+  </form>
+</div>
+{% endblock %}
