@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use Psr\Http\Message\ResponseInterface as Response;
@@ -28,21 +29,67 @@ class CarpoolController
      */
     public function listAvailable(Request $request, Response $response): Response
     {
-        $stmt = $this->db->prepare("
-            SELECT c.*, u.name AS driver_name, v.energy_type
-            FROM carpools c
-            JOIN users u ON c.driver_id = u.id
-            JOIN vehicles v ON c.vehicle_id = v.id
-            WHERE c.status = 'upcoming' AND (c.total_seats - c.occupied_seats) > 0
-            ORDER BY c.departure_time ASC
-        ");
-        $stmt->execute();
+        $params = $request->getQueryParams();
+
+        $pickup = $params['pickup'] ?? null;
+        $dropoff = $params['dropoff'] ?? null;
+        $minSeats = $params['min_seats'] ?? null;
+
+        $sql = "
+        SELECT c.*, u.name AS driver_name, v.energy_type
+        FROM carpools c
+        JOIN users u ON c.driver_id = u.id
+        JOIN vehicles v ON c.vehicle_id = v.id
+        WHERE c.status = 'upcoming'
+          AND (c.total_seats - c.occupied_seats) > 0
+    ";
+
+        $conditions = [];
+        $values = [];
+        $energy = $params['energy'] ?? null;
+
+        if ($pickup) {
+            $conditions[] = 'c.pickup_location LIKE ?';
+            $values[] = "%$pickup%";
+        }
+
+        if ($dropoff) {
+            $conditions[] = 'c.dropoff_location LIKE ?';
+            $values[] = "%$dropoff%";
+        }
+
+        if ($minSeats) {
+            $conditions[] = '(c.total_seats - c.occupied_seats) >= ?';
+            $values[] = (int)$minSeats;
+        }
+        
+
+        if ($energy) {
+            $conditions[] = 'v.energy_type = ?';
+            $values[] = $energy;
+        }
+
+
+        if (!empty($conditions)) {
+            $sql .= ' AND ' . implode(' AND ', $conditions);
+        }
+
+        $sql .= ' ORDER BY c.departure_time ASC';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($values);
         $carpools = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return $this->view->render($response, 'carpool-list.twig', [
-            'carpools' => $carpools
+            'carpools' => $carpools,
+            'filters' => [
+                'pickup' => $pickup,
+                'dropoff' => $dropoff,
+                'min_seats' => $minSeats
+            ]
         ]);
     }
+
 
     /**
      * Show form to offer a new carpool (driver)

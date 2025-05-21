@@ -6,35 +6,49 @@
 <div class="max-w-3xl mx-auto p-4">
     <h2 class="text-2xl font-bold text-green-700 mb-6 text-center">Available Carpools</h2>
 
-    <form method="GET" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <input type="text" name="departure" placeholder="Departure" class="px-4 py-2 border rounded w-full" value="{{ query.departure|default('') }}">
-        <input type="text" name="destination" placeholder="Destination" class="px-4 py-2 border rounded w-full" value="{{ query.destination|default('') }}">
+    <!-- Filter Form -->
+    <form method="GET" class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <input type="text" name="pickup" placeholder="Departure" class="px-4 py-2 border rounded w-full"
+               value="{{ filters.pickup|default('') }}">
+        <input type="text" name="dropoff" placeholder="Destination" class="px-4 py-2 border rounded w-full"
+               value="{{ filters.dropoff|default('') }}">
+        <input type="number" name="min_seats" placeholder="Min Seats" min="1" class="px-4 py-2 border rounded w-full"
+               value="{{ filters.min_seats|default('') }}">
         <select name="energy" class="px-4 py-2 border rounded w-full">
             <option value="">All Energy Types</option>
-            <option value="electric" {% if query.energy == 'electric' %}selected{% endif %}>Electric</option>
-            <option value="hybrid" {% if query.energy == 'hybrid' %}selected{% endif %}>Hybrid</option>
-            <option value="diesel" {% if query.energy == 'diesel' %}selected{% endif %}>Diesel</option>
-            <option value="petrol" {% if query.energy == 'petrol' %}selected{% endif %}>Petrol</option>
+            <option value="electric" {% if filters.energy == 'electric' %}selected{% endif %}>Electric</option>
+            <option value="hybrid" {% if filters.energy == 'hybrid' %}selected{% endif %}>Hybrid</option>
+            <option value="diesel" {% if filters.energy == 'diesel' %}selected{% endif %}>Diesel</option>
+            <option value="petrol" {% if filters.energy == 'petrol' %}selected{% endif %}>Petrol</option>
         </select>
-        <button type="submit" class="col-span-1 md:col-span-3 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">Apply Filters</button>
+        <button type="submit" class="md:col-span-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">
+            Apply Filters
+        </button>
     </form>
 
+    <!-- Results List -->
     {% if carpools is not empty %}
         <div class="space-y-4">
             {% for carpool in carpools %}
                 <div class="bg-white rounded-xl shadow p-4">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-800">Driver: {{ carpool.driver_name }}</h3>
-                        <span class="text-sm text-green-600 font-medium">{{ carpool.energy_type|capitalize }}</span>
+                        <span class="text-sm text-gray-500"><strong>Departing: </strong>{{ carpool.departure_time }}</span>
                     </div>
-                    <p class="text-sm text-gray-600 mt-2">From <span class="font-medium">{{ carpool.departure_location }}</span> to <span class="font-medium">{{ carpool.destination }}</span></p>
-                    <p class="text-sm text-gray-500">Date: {{ carpool.departure_time }}</p>
-                    <p class="text-sm text-gray-500">Available Seats: {{ carpool.total_seats - carpool.occupied_seats }}</p>
-
+                    <p class="text-sm text-gray-700 mt-2">
+                        <strong>From:</strong> {{ carpool.pickup_location }}
+                        <strong>To:</strong> {{ carpool.dropoff_location }}
+                    </p>
+                    <p class="text-sm text-gray-600 mt-1">
+                    <strong>Driver:</strong> {{ carpool.driver_name }}
+                    </p>
+                    <p class="text-sm text-gray-600 mt-1">
+                        <strong>Available Seats:</strong> {{ carpool.total_seats - carpool.occupied_seats }}
+                    </p>
                     <div class="mt-4 text-right">
-                        <button class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">
+                    <span class="text-md text-green-600 font-medium">{{ carpool.energy_type|capitalize }}</span>
+                        <a href="/carpools/{{ carpool.id }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">
                             View Details
-                        </button>
+                        </a>
                     </div>
                 </div>
             {% endfor %}
