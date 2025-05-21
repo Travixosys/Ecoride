@@ -30,97 +30,115 @@ class RideController
 
 
 
-    public function requestRide(Request $request, Response $response): Response
+    // public function requestRide(Request $request, Response $response): Response
+    // {
+    //     if (session_status() === PHP_SESSION_NONE) session_start();
+
+    //     if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'user') {
+    //         return $this->jsonResponse($response, ['error' => 'Unauthorized'], 403);
+    //     }
+
+    //     $passengerId = $_SESSION['user']['id'];
+    //     $data = json_decode($request->getBody()->getContents(), true);
+
+    //     if (!isset($data['pickup_location'], $data['dropoff_location'], $data['passenger_count'])) {
+    //         return $this->jsonResponse($response, ['error' => 'Missing fields'], 400);
+    //     }
+
+    //     $passengerCount = (int) $data['passenger_count'];
+    //     if ($passengerCount < 1 || $passengerCount > 4) {
+    //         return $this->jsonResponse($response, ['error' => 'Passenger count must be between 1 and 4'], 400);
+    //     }
+
+    //     try {
+    //         $this->requestModel->create([
+    //             'passenger_id' => $passengerId,
+    //             'pickup_location' => $data['pickup_location'],
+    //             'dropoff_location' => $data['dropoff_location'],
+    //             'passenger_count' => $passengerCount
+    //         ]);
+
+    //         return $this->jsonResponse($response, ['message' => 'Ride request submitted successfully'], 201);
+    //     } catch (\PDOException $e) {
+    //         return $this->jsonResponse($response, ['error' => 'Database error: ' . $e->getMessage()], 500);
+    //     }
+    // }
+
+    public function getPassengerRideHistory(Request $request, Response $response): Response
     {
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        $userId = $_SESSION['user']['id'];
 
-        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'user') {
-            return $this->jsonResponse($response, ['error' => 'Unauthorized'], 403);
-        }
-
-        $passengerId = $_SESSION['user']['id'];
-        $data = json_decode($request->getBody()->getContents(), true);
-
-        if (!isset($data['pickup_location'], $data['dropoff_location'], $data['passenger_count'])) {
-            return $this->jsonResponse($response, ['error' => 'Missing fields'], 400);
-        }
-
-        $passengerCount = (int) $data['passenger_count'];
-        if ($passengerCount < 1 || $passengerCount > 4) {
-            return $this->jsonResponse($response, ['error' => 'Passenger count must be between 1 and 4'], 400);
-        }
-
-        try {
-            $this->requestModel->create([
-                'passenger_id' => $passengerId,
-                'pickup_location' => $data['pickup_location'],
-                'dropoff_location' => $data['dropoff_location'],
-                'passenger_count' => $passengerCount
-            ]);
-
-            return $this->jsonResponse($response, ['message' => 'Ride request submitted successfully'], 201);
-        } catch (\PDOException $e) {
-            return $this->jsonResponse($response, ['error' => 'Database error: ' . $e->getMessage()], 500);
-        }
-    }
-
-public function getPassengerRideHistory(Request $request, Response $response): Response
-{
-    $userId = $_SESSION['user']['id'];
-
-    $stmt = $this->db->prepare("
+        $stmt = $this->db->prepare("
         SELECT rr.*, c.pickup_location, c.dropoff_location, c.departure_time, c.status AS carpool_status
         FROM ride_requests rr
         JOIN carpools c ON rr.carpool_id = c.id
         WHERE rr.passenger_id = ?
         ORDER BY c.departure_time DESC
     ");
-    $stmt->execute([$userId]);
-    $rides = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->execute([$userId]);
+        $rides = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Group by carpool status
-    $grouped = [
-        'upcoming' => [],
-        'in progress' => [],
-        'completed' => [],
-        'canceled' => [],
-    ];
+        // Group by carpool status
+        $grouped = [
+            'upcoming' => [],
+            'in progress' => [],
+            'completed' => [],
+            'canceled' => [],
+        ];
 
-    foreach ($rides as $ride) {
-        $status = $ride['carpool_status'];
-        if (isset($grouped[$status])) {
-            $grouped[$status][] = $ride;
+        foreach ($rides as $ride) {
+            $status = $ride['carpool_status'];
+            if (isset($grouped[$status])) {
+                $grouped[$status][] = $ride;
+            }
         }
+
+        return $this->view->render($response, 'ride-history.twig', [
+            'grouped_rides' => $grouped
+        ]);
     }
 
-    return $this->view->render($response, 'ride-history.twig', [
-        'grouped_rides' => $grouped
-    ]);
+public function getDriverRideHistory(Request $request, Response $response): Response
+{
+    if (session_status() === PHP_SESSION_NONE) session_start();
+
+    if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'driver') {
+        return $this->jsonResponse($response, ['error' => 'Unauthorized'], 401);
+    }
+
+    $driverId = $_SESSION['user']['id'];
+
+    try {
+        $stmt = $this->db->prepare("
+            SELECT id, pickup_location, dropoff_location, departure_time,
+                   total_seats, occupied_seats, status
+            FROM carpools
+            WHERE driver_id = :driver_id
+              AND status IN ('upcoming', 'in progress', 'completed')
+            ORDER BY
+              CASE
+                WHEN status = 'in progress' THEN 1
+                WHEN status = 'upcoming' AND occupied_seats > 0 THEN 2
+                WHEN status = 'upcoming' AND occupied_seats = 0 THEN 3
+                WHEN status = 'completed' THEN 4
+                ELSE 5
+              END ASC,
+              departure_time ASC
+        ");
+        $stmt->execute(['driver_id' => $driverId]);
+        $carpools = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $this->view->render($response, 'driver-carpools.twig', [
+            'carpools' => $carpools
+        ]);
+    } catch (\PDOException $e) {
+        return $this->jsonResponse($response, [
+            'error' => 'Database error: ' . $e->getMessage()
+        ], 500);
+    }
 }
 
 
-    public function getDriverRideHistory(Request $request, Response $response): Response
-    {
-        if (session_status() === PHP_SESSION_NONE) session_start();
-
-        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'driver') {
-            return $this->jsonResponse($response, ['error' => 'Unauthorized'], 401);
-        }
-
-        $driverId = $_SESSION['user']['id'];
-
-        try {
-            $stmt = $this->db->prepare("SELECT * FROM rides WHERE driver_id = :driver_id AND status IN ('accepted', 'completed') ORDER BY created_at DESC");
-            $stmt->execute(['driver_id' => $driverId]);
-            $rides = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            return $this->view->render($response, 'driver-ride-history.twig', [
-                'rides' => $rides
-            ]);
-        } catch (\PDOException $e) {
-            return $this->jsonResponse($response, ['error' => 'Database error: ' . $e->getMessage()], 500);
-        }
-    }
 
     public function acceptRide(Request $request, Response $response, array $args): Response
     {
