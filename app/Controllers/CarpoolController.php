@@ -212,66 +212,71 @@ class CarpoolController
             'join_message' => "Successfully joined this carpool. $totalCost credits have been deducted."
         ]);
     }
-public function startCarpool(Request $request, Response $response, array $args): Response
-{
-    $carpoolId = $args['id'];
+    public function startCarpool(Request $request, Response $response, array $args): Response
+    {
+        $carpoolId = $args['id'];
 
-    $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ?");
-    $stmt->execute([$carpoolId]);
-    $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$carpool) {
-        $response->getBody()->write("Carpool not found.");
-        return $response->withStatus(404);
-    }
-
-    if ((int)$carpool['occupied_seats'] === 0) {
-        $response->getBody()->write("Cannot start ride with 0 passengers.");
-        return $response->withStatus(400);
-    }
-
-    $update = $this->db->prepare("UPDATE carpools SET status = 'in progress' WHERE id = ?");
-    $update->execute([$carpoolId]);
-
-    return $response
-        ->withHeader('Location', '/driver/ride-history')
-        ->withStatus(302);
-}
-
-
-
-public function completeCarpool(Request $request, Response $response, array $args): Response
-{
-    $carpoolId = $args['id'];
-
-    try {
-        $this->db->beginTransaction();
-
-        // Step 1: Mark the carpool as completed
-        $stmt = $this->db->prepare("UPDATE carpools SET status = 'completed' WHERE id = ?");
+        $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ?");
         $stmt->execute([$carpoolId]);
+        $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Step 2: Update all ride_requests linked to this carpool
-        $updateRides = $this->db->prepare("UPDATE ride_requests SET status = 'completed' WHERE carpool_id = ?");
-        $updateRides->execute([$carpoolId]);
-
-        // Step 3: Credit all passengers (example: +10 credits per ride)
-        $fetchPassengers = $this->db->prepare("SELECT passenger_id FROM ride_requests WHERE carpool_id = ?");
-        $fetchPassengers->execute([$carpoolId]);
-        $passengers = $fetchPassengers->fetchAll(PDO::FETCH_COLUMN);
-
-        foreach ($passengers as $passengerId) {
-            $this->db->prepare("UPDATE users SET credits = credits + 10 WHERE id = ?")->execute([$passengerId]);
+        if (!$carpool) {
+            $response->getBody()->write("Carpool not found.");
+            return $response->withStatus(404);
         }
 
-        $this->db->commit();
-        return $response->withHeader('Location', '/driver/ride-history')->withStatus(302);
-    } catch (\PDOException $e) {
-        $this->db->rollBack();
-        $response->getBody()->write("Error completing ride: " . $e->getMessage());
-        return $response->withStatus(500);
+        if ((int)$carpool['occupied_seats'] === 0) {
+            $response->getBody()->write("Cannot start ride with 0 passengers.");
+            return $response->withStatus(400);
+        }
+
+        $update = $this->db->prepare("UPDATE carpools SET status = 'in progress' WHERE id = ?");
+        $update->execute([$carpoolId]);
+
+        return $response
+            ->withHeader('Location', '/driver/ride-history')
+            ->withStatus(302);
     }
-}
+
+
+
+    public function completeCarpool(Request $request, Response $response, array $args): Response
+    {
+        $carpoolId = $args['id'];
+
+        try {
+            $this->db->beginTransaction();
+
+            // Step 1: Mark carpool as completed
+            $updateCarpool = $this->db->prepare("UPDATE carpools SET status = 'completed' WHERE id = ?");
+            $updateCarpool->execute([$carpoolId]);
+
+            // Step 2: Get all accepted ride_requests for this carpool
+            $stmt = $this->db->prepare("
+            SELECT passenger_id 
+            FROM ride_requests 
+            WHERE carpool_id = ? AND status = 'accepted'
+        ");
+            $stmt->execute([$carpoolId]);
+            $passengers = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            // Step 3: Credit each passenger with +10
+            $credit = $this->db->prepare("UPDATE users SET credits = credits + 10 WHERE id = ?");
+            foreach ($passengers as $pid) {
+                $credit->execute([$pid]);
+            }
+
+            $this->db->commit();
+
+            return $response
+                ->withHeader('Location', '/driver/ride-history')
+                ->withStatus(302);
+        } catch (\PDOException $e) {
+            $this->db->rollBack();
+            $response->getBody()->write("Error: " . $e->getMessage());
+            return $response->withStatus(500);
+        }
+    }
 
 
     /**
