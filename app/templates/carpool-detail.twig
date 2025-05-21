@@ -47,10 +47,12 @@
     </div>
 
     <div class="mt-6 text-center">
-        <form method="POST" action="/carpools/{{ carpool.id }}/join" class="mt-4 text-center">
-    <input type="number" name="passenger_count" value="1" min="1"
-           class="border rounded px-3 py-2 w-20 text-center">
-    <button type="submit" class="ml-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">
+     <form id="joinForm" method="POST" action="/carpools/{{ carpool.id }}/join" class="mt-4 text-center">
+    <input type="number" id="passengerCount" name="passenger_count" value="1" min="1"
+           class="border rounded px-3 py-2 w-20 text-center" required>
+    <button type="submit"
+            onclick="return confirmJoin()"
+            class="ml-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">
         Join Carpool
     </button>
 </form>
@@ -58,6 +60,15 @@
 {% if join_message %}
     <p class="mt-4 text-sm text-green-700 text-center">{{ join_message }}</p>
 {% endif %}
+
     </div>
 </div>
+
+<script>
+function confirmJoin() {
+    const count = parseInt(document.getElementById('passengerCount').value);
+    const total = count * 5;
+    return confirm(`This ride will cost you ${total} credits. Do you want to continue?`);
+}
+</script>
 {% endblock %}
