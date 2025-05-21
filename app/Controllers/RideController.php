@@ -64,24 +64,40 @@ class RideController
         }
     }
 
-    public function getPassengerRideHistory(Request $request, Response $response): Response
-    {
-        $userId = $_SESSION['user']['id'];
+public function getPassengerRideHistory(Request $request, Response $response): Response
+{
+    $userId = $_SESSION['user']['id'];
 
-        $stmt = $this->db->prepare("
-        SELECT rr.*, c.pickup_location, c.dropoff_location
+    $stmt = $this->db->prepare("
+        SELECT rr.*, c.pickup_location, c.dropoff_location, c.departure_time, c.status AS carpool_status
         FROM ride_requests rr
         JOIN carpools c ON rr.carpool_id = c.id
         WHERE rr.passenger_id = ?
-        ORDER BY rr.created_at DESC
+        ORDER BY c.departure_time DESC
     ");
-        $stmt->execute([$userId]);
-        $rides = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt->execute([$userId]);
+    $rides = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $this->view->render($response, 'ride-history.twig', [
-            'rides' => $rides
-        ]);
+    // Group by carpool status
+    $grouped = [
+        'upcoming' => [],
+        'in progress' => [],
+        'completed' => [],
+        'canceled' => [],
+    ];
+
+    foreach ($rides as $ride) {
+        $status = $ride['carpool_status'];
+        if (isset($grouped[$status])) {
+            $grouped[$status][] = $ride;
+        }
     }
+
+    return $this->view->render($response, 'ride-history.twig', [
+        'grouped_rides' => $grouped
+    ]);
+}
+
 
     public function getDriverRideHistory(Request $request, Response $response): Response
     {
