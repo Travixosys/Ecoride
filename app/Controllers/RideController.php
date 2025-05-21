@@ -66,14 +66,21 @@ class RideController
 
     public function getPassengerRideHistory(Request $request, Response $response): Response
     {
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        $userId = $_SESSION['user']['id'];
 
-        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'user') {
-            return $this->jsonResponse($response, ['error' => 'Non autorisé / Unauthorized'], 401);
-        }
+        $stmt = $this->db->prepare("
+        SELECT rr.*, c.pickup_location, c.dropoff_location
+        FROM ride_requests rr
+        JOIN carpools c ON rr.carpool_id = c.id
+        WHERE rr.passenger_id = ?
+        ORDER BY rr.created_at DESC
+    ");
+        $stmt->execute([$userId]);
+        $rides = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $rides = $this->rideModel->findByPassengerId($_SESSION['user']['id']);
-        return $this->view->render($response, 'ride-history.twig', ['rides' => $rides]);
+        return $this->view->render($response, 'ride-history.twig', [
+            'rides' => $rides
+        ]);
     }
 
     public function getDriverRideHistory(Request $request, Response $response): Response
@@ -253,47 +260,54 @@ class RideController
 
     public function cancelRide(Request $request, Response $response, array $args): Response
     {
-        $rideId = $args['id'];
+        $rideId = (int)$args['id'];
+        $userId = $_SESSION['user']['id'];
 
-        try {
-            $this->db->beginTransaction();
+        // 1. Fetch ride
+        $stmt = $this->db->prepare("SELECT * FROM ride_requests WHERE id = ? AND passenger_id = ?");
+        $stmt->execute([$rideId, $userId]);
+        $ride = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Get the ride details before updating status
-            // This join is critical - the ride_requests table holds the passenger_count
-            $stmt = $this->db->prepare("
-                SELECT r.*, rr.passenger_count 
-                FROM rides r
-                JOIN ride_requests rr ON r.passenger_id = rr.passenger_id
-                WHERE r.id = :ride_id
-            ");
-            $stmt->execute(['ride_id' => $rideId]);
-            $ride = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$ride) {
-                $this->db->rollBack();
-                return $this->jsonResponse($response, ['error' => 'Ride not found'], 404);
-            }
-
-            // Step 1: Mark the ride as cancelled
-            $this->rideModel->updateStatus($rideId, 'cancelled');
-
-            // Step 2: Get carpool ID
-            $carpoolId = $this->carpoolModel->getActiveCarpoolId($ride['driver_id']);
-
-            if ($carpoolId !== null) {
-                // Step 3: Decrement the seats by the passenger count
-                $this->carpoolModel->decrementOccupiedSeats($carpoolId, (int)$ride['passenger_count']);
-            }
-
-            $this->db->commit();
-            return $this->jsonResponse($response, ['message' => 'Ride cancelled successfully']);
-        } catch (\PDOException $e) {
-            $this->db->rollBack();
-            return $this->jsonResponse($response, [
-                'error' => 'Database error',
-                'details' => $e->getMessage()
-            ], 500);
+        if (!$ride || $ride['status'] !== 'pending') {
+            return $response
+                ->withHeader('Location', '/ride-history')
+                ->withStatus(302);
         }
+
+        // 2. Cancel ride
+        $stmt = $this->db->prepare("UPDATE ride_requests SET status = 'cancelled' WHERE id = ?");
+        $stmt->execute([$rideId]);
+
+        // 3. Refund credits (passenger_count * 5)
+        $refund = $ride['passenger_count'] * 5;
+        $stmt = $this->db->prepare("UPDATE users SET credits = credits + ? WHERE id = ?");
+        $stmt->execute([$refund, $userId]);
+
+        // 4. Decrement occupied seats in carpools
+        if (!empty($ride['carpool_id'])) {
+            $stmt = $this->db->prepare("UPDATE carpools SET occupied_seats = occupied_seats - ? WHERE id = ?");
+            $stmt->execute([$ride['passenger_count'], $ride['carpool_id']]);
+        }
+
+        return $response
+            ->withHeader('Location', '/ride-history')
+            ->withStatus(302);
+    }
+
+    public function listAvailableCarpools(Request $request, Response $response): Response
+    {
+        $stmt = $this->db->prepare("SELECT c.*, u.name AS driver_name, v.energy_type
+        FROM carpools c
+        JOIN users u ON c.driver_id = u.id
+        JOIN vehicles v ON c.vehicle_id = v.id
+        WHERE c.status = 'upcoming' AND (c.total_seats - c.occupied_seats) > 0
+        ORDER BY c.created_at DESC");
+        $stmt->execute();
+        $carpools = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $this->view->render($response, 'carpool-list.twig', [
+            'carpools' => $carpools
+        ]);
     }
 
     private function jsonResponse(Response $response, array $data, int $statusCode = 200): Response
