@@ -1,27 +1,27 @@
 <?php
-
 namespace App\Controllers;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Container\ContainerInterface;
+use MongoDB\Client as MongoDBClient;
 use PDO;
 
 class CarpoolController
 {
     protected $view;
     protected $db;
-    protected ContainerInterface $container;
+    protected $mongo;
 
     public function __construct(ContainerInterface $container)
     {
-        $this->container = $container;
         $this->view = $container->get('view');
         $this->db = $container->get('db');
+
+        // ✅ Set up the MongoDB client
+        $client = new MongoDBClient('mongodb://localhost:27017'); 
+        $this->mongo = $client->ecoridepool->user_preferences;
     }
-
-    // (rest of the methods stay the same)
-
 
     /**
      * Display all available carpools
@@ -90,17 +90,18 @@ class CarpoolController
         ]);
     }
 
-    public function viewDetail(Request $request, Response $response, array $args): Response
+ public function viewDetail(Request $request, Response $response, array $args): Response
     {
         $carpoolId = $args['id'];
 
+        // Fetch SQL carpool + driver + vehicle info
         $stmt = $this->db->prepare("
-        SELECT c.*, u.name AS driver_name, u.driver_rating, v.make, v.model, v.energy_type
-        FROM carpools c
-        JOIN users u ON c.driver_id = u.id
-        JOIN vehicles v ON c.vehicle_id = v.id
-        WHERE c.id = ?
-    ");
+            SELECT c.*, u.name AS driver_name, u.driver_rating, v.make, v.model, v.energy_type
+            FROM carpools c
+            JOIN users u ON c.driver_id = u.id
+            JOIN vehicles v ON c.vehicle_id = v.id
+            WHERE c.id = ?
+        ");
         $stmt->execute([$carpoolId]);
         $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -109,10 +110,21 @@ class CarpoolController
             return $response->withStatus(404);
         }
 
+        // ✅ Mongo fetch
+        $driverId = (int) $carpool['driver_id'];
+        $mongoResult = $this->mongo->findOne(['user_id' => $driverId]);
+
+        $preferences = null;
+        if ($mongoResult && isset($mongoResult['preferences'])) {
+            $preferences = json_decode(json_encode($mongoResult['preferences']), true);
+        }
+
         return $this->view->render($response, 'carpool-detail.twig', [
-            'carpool' => $carpool
+            'carpool' => $carpool,
+            'preferences' => $preferences
         ]);
     }
+
 
     /**
      * Show form to offer a new carpool (driver)
