@@ -71,13 +71,17 @@ return function (App $app) {
     // ========================================
     // RIDES – Gestion des trajets (CRUD/API)
     // ========================================
-    $app->post('/request-ride', [RideController::class, 'requestRide']);
+    $app->post('/driver/carpools/{id}/start', [CarpoolController::class, 'startCarpool']);
+    $app->post('/driver/carpools/{id}/complete', [CarpoolController::class, 'completeCarpool']);
+
     $app->get('/ride-history', [RideController::class, 'getPassengerRideHistory']);
     $app->get('/driver/ride-history', [RideController::class, 'getDriverRideHistory']);
 
     // $app->put('/accept-ride/{id}', [RideController::class, 'acceptRide']);
     $app->put('/complete-ride/{id}', [RideController::class, 'completeRide']);
     $app->put('/cancel-ride/{id}', [RideController::class, 'cancelRide']);
+    $app->post('/cancel-ride/{id}', [RideController::class, 'cancelRide']);
+
 
     $app->put('/driver/accept-request/{id}', [RideController::class, 'acceptRide']);
     // $app->put('/driver/accept-ride/{id}', [DriverController::class, 'acceptRide']);
@@ -116,33 +120,11 @@ return function (App $app) {
     });
 
     // ==============================
-// CARPOOL PUBLIC VIEW – Liste des covoiturages
+// EMPLOYEE pANEL – Gestion Employé
 // ==============================
-// $app->get('/carpools', function ($req, $res) use ($container) {
-//     // Placeholder data to test the view; replace this later with actual controller logic
-//     $sampleData = [
-//         [
-//             'driver_name' => 'Alice',
-//             'energy_type' => 'electric',
-//             'departure_location' => 'Paris',
-//             'destination' => 'Lyon',
-//             'departure_time' => '2025-06-01 10:00:00',
-//             'total_seats' => 4,
-//             'occupied_seats' => 1
-//         ],
-//         [
-//             'driver_name' => 'Bob',
-//             'energy_type' => 'diesel',
-//             'departure_location' => 'Marseille',
-//             'destination' => 'Nice',
-//             'departure_time' => '2025-06-02 14:30:00',
-//             'total_seats' => 3,
-//             'occupied_seats' => 2
-//         ]
-//     ];
+$app->get('/employee', \App\Controllers\EmployeeController::class . ':index');
+$app->post('/employee/resolve/{id}', \App\Controllers\EmployeeController::class . ':resolve');
 
-//     return $container->get('view')->render($res, 'carpool-list.twig', ['carpools' => $sampleData]);
-// });
 
 // Passenger browsing available carpools
 $app->get('/carpools', CarpoolController::class . ':listAvailable');
