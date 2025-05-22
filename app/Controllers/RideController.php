@@ -24,7 +24,7 @@ class RideController
         $this->view = $container->get('view');
         $this->rideModel = new Ride($this->db);
         $this->requestModel = new RideRequest($this->db);
-        $this->carpoolModel = new Carpool($this->db); // ✅ ADD THIS LINE
+        $this->carpoolModel = new Carpool($this->db); 
 
     }
 

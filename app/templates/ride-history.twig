@@ -23,6 +23,7 @@
                         <p><strong>Dropoff:</strong> {{ ride.dropoff_location }}</p>
                         <p><strong>Seats:</strong> {{ ride.passenger_count }}</p>
                         <p><strong>Departure:</strong> {{ ride.departure_time|date("d M Y – H:i") }}</p>
+
                         <p><strong>Status:</strong> {{ ride.carpool_status|capitalize }}</p>
 
                         {% if ride.carpool_status == 'upcoming' %}

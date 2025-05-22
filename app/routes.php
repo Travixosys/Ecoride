@@ -124,6 +124,7 @@ return function (App $app) {
 // ==============================
 $app->get('/employee', \App\Controllers\EmployeeController::class . ':index');
 $app->post('/employee/resolve/{id}', \App\Controllers\EmployeeController::class . ':resolve');
+$app->get('/employee/dispute/{id}', \App\Controllers\EmployeeController::class . ':viewDispute');
 
 
 // Passenger browsing available carpools
@@ -131,7 +132,8 @@ $app->get('/carpools', CarpoolController::class . ':listAvailable');
 $app->get('/carpools/{id}', CarpoolController::class . ':viewDetail');
 $app->post('/carpools/{id}/join', CarpoolController::class . ':joinCarpool');
 
-
+    // Review submission
+    $app->post('/review/submit', [ReviewController::class, 'submit']);
 
 // Driver offering a carpool
 $app->get('/driver/carpools/create', CarpoolController::class . ':createForm');

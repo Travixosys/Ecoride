@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const forms = document.querySelectorAll("form[action^='/driver/accept-ride/']");
+    const forms = document.querySelectorAll("form[action^='/driver/']");
 
     forms.forEach((form) => {
         form.addEventListener("submit", async (event) => {
@@ -14,24 +14,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 const response = await fetch(form.action, {
-                    method: "PUT", // ✅ Must match your Slim route
+                    method: "PUT",
                     headers: {
-                        "Content-Type": "application/json",
+                        "Content-Type": "application/json"
                     },
-                    body: JSON.stringify(requestData),
+                    body: JSON.stringify(requestData)
                 });
 
+                const result = await response.json();
+
                 if (response.ok) {
-                    const result = await response.json();
-                    alert("Ride accepted successfully!");
-                    location.reload(); // Refresh to update the list
+                    let actionType = "";
+                    if (form.action.includes("accept")) actionType = "accepted";
+                    else if (form.action.includes("complete")) actionType = "completed";
+                    else if (form.action.includes("cancel")) actionType = "cancelled";
+
+                    alert(`Ride successfully ${actionType}.`);
+                    location.reload();
                 } else {
-                    const error = await response.json();
-                    alert("Failed to accept ride: " + error.message);
+                    alert("Failed: " + (result.message || result.error || "Unknown error"));
                 }
-            } catch (err) {
-                console.error("Error accepting ride:", err);
-                alert("An error occurred while accepting the ride.");
+
+            } catch (error) {
+                console.error("AJAX error:", error);
+                alert("A network error occurred.");
             }
         });
     });

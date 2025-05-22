@@ -76,4 +76,11 @@ class Ride
         $stmt = $this->db->query("SELECT * FROM rides WHERE status = 'pending' ORDER BY created_at DESC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function findByStatus(int $driverId, string $status): array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM rides WHERE driver_id = :driver_id AND status = :status ORDER BY created_at DESC");
+        $stmt->execute(['driver_id' => $driverId, 'status' => $status]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
