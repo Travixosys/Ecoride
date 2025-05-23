@@ -34,6 +34,13 @@
                                 </button>
                             </form>
                         {% endif %}
+                        {% if group == 'completed' and not ride.review_exists %}
+                            <form method="GET" action="/review/{{ ride.id }}">
+                                <button class="mt-2 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-1 rounded">
+                                    Leave a Review
+                                </button>
+                            </form>
+                        {% endif %}
                     </li>
                 {% endfor %}
             </ul>

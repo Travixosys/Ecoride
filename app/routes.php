@@ -8,6 +8,8 @@ use App\Controllers\CarpoolController;
 use App\Controllers\DriverController;
 use App\Controllers\RideController;
 use App\Controllers\AdminController;
+use App\Controllers\ReviewController;
+use App\Controllers\EmployeeController;
 use App\Models\RideRequest;
 use MongoDB\Client as MongoDBClient;
 use Psr\Container\ContainerInterface;
@@ -120,24 +122,27 @@ return function (App $app) {
     });
 
     // ==============================
-// EMPLOYEE pANEL – Gestion Employé
-// ==============================
-$app->get('/employee', \App\Controllers\EmployeeController::class . ':index');
-$app->post('/employee/resolve/{id}', \App\Controllers\EmployeeController::class . ':resolve');
-$app->get('/employee/dispute/{id}', \App\Controllers\EmployeeController::class . ':viewDispute');
+    // EMPLOYEE pANEL – Gestion Employé
+    // ==============================
+    $app->get('/employee', EmployeeController::class . ':index');
+    $app->post('/employee/resolve/{id}', EmployeeController::class . ':resolve');
+    $app->get('/employee/dispute/{id}', EmployeeController::class . ':viewDispute');
+    $app->map(['POST', 'DELETE'], '/employee/reviews/delete/{id}', [ReviewController::class, 'delete']);
 
 
-// Passenger browsing available carpools
-$app->get('/carpools', CarpoolController::class . ':listAvailable');
-$app->get('/carpools/{id}', CarpoolController::class . ':viewDetail');
-$app->post('/carpools/{id}/join', CarpoolController::class . ':joinCarpool');
+
+    // Passenger browsing available carpools
+    $app->get('/carpools', CarpoolController::class . ':listAvailable');
+    $app->get('/carpools/{id}', CarpoolController::class . ':viewDetail');
+    $app->post('/carpools/{id}/join', CarpoolController::class . ':joinCarpool');
 
     // Review submission
+    $app->get('/review/{id}', [ReviewController::class, 'showReviewForm']);
     $app->post('/review/submit', [ReviewController::class, 'submit']);
 
-// Driver offering a carpool
-$app->get('/driver/carpools/create', CarpoolController::class . ':createForm');
-$app->post('/driver/carpools',CarpoolController::class . ':storeCarpool');
+    // Driver offering a carpool
+    $app->get('/driver/carpools/create', CarpoolController::class . ':createForm');
+    $app->post('/driver/carpools', CarpoolController::class . ':storeCarpool');
 
 
     // ================================
