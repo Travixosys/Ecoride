@@ -24,8 +24,7 @@ class RideController
         $this->view = $container->get('view');
         $this->rideModel = new Ride($this->db);
         $this->requestModel = new RideRequest($this->db);
-        $this->carpoolModel = new Carpool($this->db); 
-
+        $this->carpoolModel = new Carpool($this->db);
     }
 
 
@@ -69,13 +68,17 @@ class RideController
         $userId = $_SESSION['user']['id'];
 
         $stmt = $this->db->prepare("
-        SELECT rr.*, c.pickup_location, c.dropoff_location, c.departure_time, c.status AS carpool_status
-        FROM ride_requests rr
-        JOIN carpools c ON rr.carpool_id = c.id
-        WHERE rr.passenger_id = ?
-        ORDER BY c.departure_time DESC
-    ");
-        $stmt->execute([$userId]);
+    SELECT rr.*, c.departure_time, c.pickup_location, c.dropoff_location, c.status AS carpool_status,
+        EXISTS (
+            SELECT 1 FROM ride_reviews r
+            WHERE r.ride_request_id = rr.id AND r.reviewer_id = :user_id
+        ) AS review_exists
+    FROM ride_requests rr
+    JOIN carpools c ON rr.carpool_id = c.id
+    WHERE rr.passenger_id = :user_id
+    ORDER BY c.departure_time DESC
+");
+        $stmt->execute(['user_id' => $userId]);
         $rides = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Group by carpool status
@@ -98,18 +101,19 @@ class RideController
         ]);
     }
 
-public function getDriverRideHistory(Request $request, Response $response): Response
-{
-    if (session_status() === PHP_SESSION_NONE) session_start();
+    public function getDriverRideHistory(Request $request, Response $response): Response
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
 
-    if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'driver') {
-        return $this->jsonResponse($response, ['error' => 'Unauthorized'], 401);
-    }
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'driver') {
+            return $this->jsonResponse($response, ['error' => 'Unauthorized'], 401);
+        }
 
-    $driverId = $_SESSION['user']['id'];
+        $driverId = $_SESSION['user']['id'];
 
-    try {
-        $stmt = $this->db->prepare("
+        try {
+            // 1. Fetch Carpools Created by the Driver
+            $carpoolsStmt = $this->db->prepare("
             SELECT id, pickup_location, dropoff_location, departure_time,
                    total_seats, occupied_seats, status
             FROM carpools
@@ -125,18 +129,30 @@ public function getDriverRideHistory(Request $request, Response $response): Resp
               END ASC,
               departure_time ASC
         ");
-        $stmt->execute(['driver_id' => $driverId]);
-        $carpools = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $carpoolsStmt->execute(['driver_id' => $driverId]);
+            $carpools = $carpoolsStmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $this->view->render($response, 'driver-carpools.twig', [
-            'carpools' => $carpools
-        ]);
-    } catch (\PDOException $e) {
-        return $this->jsonResponse($response, [
-            'error' => 'Database error: ' . $e->getMessage()
-        ], 500);
+            // 2. Fetch Reviews Left for the Driver
+            $reviewsStmt = $this->db->prepare("
+            SELECT rr.rating, rr.comment, rr.created_at, u.name AS reviewer_name
+            FROM ride_reviews rr
+            JOIN users u ON rr.reviewer_id = u.id
+            WHERE rr.target_id = :driver_id AND rr.status = 'approved'
+            ORDER BY rr.created_at DESC
+        ");
+            $reviewsStmt->execute(['driver_id' => $driverId]);
+            $reviews = $reviewsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return $this->view->render($response, 'driver-carpools.twig', [
+                'carpools' => $carpools,
+                'reviews' => $reviews
+            ]);
+        } catch (\PDOException $e) {
+            return $this->jsonResponse($response, [
+                'error' => 'Database error: ' . $e->getMessage()
+            ], 500);
+        }
     }
-}
 
 
 

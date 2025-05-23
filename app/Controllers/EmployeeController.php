@@ -78,6 +78,8 @@ class EmployeeController
                 JOIN ride_requests r ON rr.ride_request_id = r.id
                 JOIN carpools c ON r.carpool_id = c.id
                 JOIN users d ON c.driver_id = d.id
+                WHERE rr.status = 'pending'
+                ORDER BY rr.created_at DESC
             ");
             $reviews = $stmtReviews->fetchAll(PDO::FETCH_ASSOC);
 
@@ -137,6 +139,34 @@ class EmployeeController
         } catch (\PDOException $e) {
             return $response->withStatus(500);
         }
+    }
+
+    /**
+     * Approve a pending review (statut = approved)
+     * Approuve un avis en attente
+     */
+    public function approveReview(Request $request, Response $response, array $args): Response
+    {
+        $reviewId = $args['id'];
+
+        $stmt = $this->db->prepare("UPDATE ride_reviews SET status = 'approved' WHERE id = ?");
+        $stmt->execute([$reviewId]);
+
+        return $response->withHeader('Location', '/employee')->withStatus(302);
+    }
+
+    /**
+     * Reject a pending review (statut = rejected)
+     * Rejette un avis en attente
+     */
+    public function rejectReview(Request $request, Response $response, array $args): Response
+    {
+        $reviewId = $args['id'];
+
+        $stmt = $this->db->prepare("UPDATE ride_reviews SET status = 'rejected' WHERE id = ?");
+        $stmt->execute([$reviewId]);
+
+        return $response->withHeader('Location', '/employee')->withStatus(302);
     }
 
     /**

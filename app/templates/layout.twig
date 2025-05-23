@@ -1,76 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}EcoRide{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 flex flex-col min-h-screen">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>
+			{% block title %}EcoRide
+			{% endblock %}
+		</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body
+		class="bg-gray-100 flex flex-col min-h-screen">
 
-<!-- Compact Header -->
-<header class="bg-green-800 text-white py-4 shadow-md flex items-center justify-between px-4">
-    <a href="/" class="text-xl font-semibold">EcoRide</a>
-    <button id="infoToggle" class="text-white text-lg" title="Info">❓</button>
-</header>
+		<!-- Compact Header -->
+		<header class="bg-green-800 text-white py-4 shadow-md flex items-center justify-between px-4">
+			<a href="/" class="text-xl font-semibold">EcoRide</a>
+			<button id="infoToggle" class="text-white text-lg" title="Info">❓</button>
+		</header>
 
-<!-- Info Dropdown (Legal, Contact) -->
-<div id="infoPanel" class="hidden bg-white text-gray-800 shadow p-4 text-sm mx-4 mt-2 rounded-md">
-    <p><strong>Mentions légales:</strong> EcoRide respecte la vie privée et la réglementation RGPD.</p>
-    <p><strong>Contact:</strong> contact@ecoride.com</p>
-</div>
+		<!-- Info Dropdown (Legal, Contact) -->
+		<div id="infoPanel" class="hidden bg-white text-gray-800 shadow p-4 text-sm mx-4 mt-2 rounded-md">
+			<p>
+				<strong>Mentions légales:</strong>
+				EcoRide respecte la vie privée et la réglementation RGPD.</p>
+			<p>
+				<strong>Contact:</strong>
+				contact@ecoride.com</p>
+		</div>
 
-<!-- Main Content Area -->
-<main class="flex-grow flex flex-col items-center justify-center px-4 mb-24 text-center">
-    
-    {% block content %}{% endblock %}
-</main>
+		<!-- Main Content Area -->
+		<main class="flex-growflexflex-colitems-centerjustify-centermb-24text-center"> {% block content %}{% endblock %}
+			</main>
 
-<!-- Bottom Navigation -->
-<nav class="fixed bottom-0 w-full bg-gray-900 text-white flex justify-around py-3 text-sm sm:text-base">
-    <a href="/" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
-        🏠 <span>Home</span>
-    </a>
-    <a href="/carpools" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
-        🚗 <span>Carpool</span>
-    </a>
-    <a href="/menu" class="inline-flex flex-col items-center text-gray-300 hover:text-white">
-        📖 <span>Menu</span>
-    </a>
-</nav>
+			<!-- Bottom Navigation -->
+			<nav class="fixed bottom-0 w-full bg-white border-t flex justify-around py-2 text-gray-700 text-xs shadow-md z-20">
+				<a href="/" class="flex flex-col items-center">
+					<svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+						<path d="M3 12l2-2m0 0l7-7 7 7m-9 13h4v-7H7v7z" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+					<span>Search</span>
+				</a>
 
-{% if user %}
-    <div class="flex justify-center mt-4">
-        <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded">Logout</button>
-    </div>
-{% endif %}
+				<a href="{% if user and user.role == 'driver' %}/driver/ride-history{% else %}/ride-history{% endif %}" class="flex flex-col items-center">
+					<svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+						<path d="M8 7V3h8v4m-4 8v4m-4-4h8m2-7H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2z" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+					<span>My Trips</span>
+				</a>
 
-<script>
-    // Dropdown toggle and click-outside detection
-    const infoToggle = document.getElementById('infoToggle');
-    const infoPanel = document.getElementById('infoPanel');
+				<a href="/profile" class="flex flex-col items-center">
+					<svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+						<path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+					<span>Profile</span>
+				</a>
+			</nav>
 
-    infoToggle.addEventListener('click', function (e) {
-        e.stopPropagation();
-        infoPanel.classList.toggle('hidden');
-    });
 
-    document.addEventListener('click', function (e) {
-        if (!infoPanel.classList.contains('hidden') && !infoPanel.contains(e.target)) {
-            infoPanel.classList.add('hidden');
-        }
-    });
+			<script>
+				// Dropdown toggle and click-outside detection
+const infoToggle = document.getElementById('infoToggle');
+const infoPanel = document.getElementById('infoPanel');
 
-    function logout() {
-        fetch('/logout', { method: 'POST', credentials: 'same-origin' })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                window.location.href = "/login";
-            })
-            .catch(error => alert("Logout Failed"));
-    }
-</script>
+infoToggle.addEventListener('click', function (e) {
+e.stopPropagation();
+infoPanel.classList.toggle('hidden');
+});
 
-</body>
-</html>
+document.addEventListener('click', function (e) {
+if (! infoPanel.classList.contains('hidden') && ! infoPanel.contains(e.target)) {
+infoPanel.classList.add('hidden');
+}
+});
+
+function logout() {
+fetch('/logout', {
+method: 'POST',
+credentials: 'same-origin'
+}).then(response => response.json()).then(data => {
+alert(data.message);
+window.location.href = "/login";
+}).catch(error => alert("Logout Failed"));
+}
+			</script>
+		</body>
+	</html>
+</body></html>
