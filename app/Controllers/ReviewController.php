@@ -25,7 +25,7 @@ class ReviewController
     public function submit(Request $request, Response $response): Response
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
-        $userId = $_SESSION['user']['id'] ?? null; 
+        $userId = $_SESSION['user']['id'] ?? null;
 
         $data = (array) $request->getParsedBody();
 
@@ -57,7 +57,6 @@ class ReviewController
         ]);
 
         return $response->withHeader('Location', '/ride-history')->withStatus(302);
-       
     }
 
 
@@ -126,6 +125,36 @@ class ReviewController
         $stmt->execute([$reviewId]);
 
         return $response->withHeader('Location', '/employee/reviews')->withStatus(302);
+    }
+
+    public function dispute(Request $request, Response $response, array $args): Response
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+
+        $userId = $_SESSION['user']['id'] ?? null;
+        $rideRequestId = (int) $args['id'];
+
+        // Get the carpool linked to this ride request
+        $stmt = $this->db->prepare("
+        SELECT carpool_id FROM ride_requests 
+        WHERE id = :id AND passenger_id = :user_id AND status = 'completed'
+    ");
+        $stmt->execute([
+            'id' => $rideRequestId,
+            'user_id' => $userId
+        ]);
+
+        $ride = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$ride) {
+            return $response->withHeader('Location', '/ride-history')->withStatus(403);
+        }
+
+        // Flag the carpool
+        $update = $this->db->prepare("UPDATE carpools SET status = 'disputed' WHERE id = ?");
+        $update->execute([$ride['carpool_id']]);
+
+        return $response->withHeader('Location', '/ride-history')->withStatus(302);
     }
 
     /**

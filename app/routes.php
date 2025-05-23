@@ -136,9 +136,11 @@ return function (App $app) {
     $app->get('/carpools/{id}', CarpoolController::class . ':viewDetail');
     $app->post('/carpools/{id}/join', CarpoolController::class . ':joinCarpool');
 
-    // Review submission
+    // Review submission, approval, and dispute
     $app->get('/review/{id}', [ReviewController::class, 'showReviewForm']);
     $app->post('/review/submit', [ReviewController::class, 'submit']);
+    $app->post('/dispute/{id}', [ReviewController::class, 'dispute']);
+
 
     // Driver offering a carpool
     $app->get('/driver/carpools/create', CarpoolController::class . ':createForm');
