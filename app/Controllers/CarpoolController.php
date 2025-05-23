@@ -141,7 +141,7 @@ class CarpoolController
         $costPerSeat = 5;
         $totalCost = $requestedSeats * $costPerSeat;
 
-        // 1. Get carpool
+        // 1. Get carpool base
         $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ?");
         $stmt->execute([$carpoolId]);
         $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -151,13 +151,10 @@ class CarpoolController
             return $response->withStatus(404);
         }
 
-        // 2. Check available seats
+        // 2. Check seat availability
         $availableSeats = $carpool['total_seats'] - $carpool['occupied_seats'];
         if ($requestedSeats > $availableSeats) {
-            return $this->view->render($response, 'carpool-detail.twig', [
-                'carpool' => $carpool,
-                'join_message' => "Not enough available seats. Only $availableSeats left."
-            ]);
+            return $this->reloadCarpoolWithMessage($response, $carpoolId, "Not enough available seats. Only $availableSeats left.");
         }
 
         // 3. Check user credits
@@ -166,27 +163,21 @@ class CarpoolController
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$user || $user['credits'] < $totalCost) {
-            return $this->view->render($response, 'carpool-detail.twig', [
-                'carpool' => $carpool,
-                'join_message' => "You need $totalCost credits to join this ride. You currently have " . ($user['credits'] ?? 0) . "."
-            ]);
+            return $this->reloadCarpoolWithMessage($response, $carpoolId, "You need $totalCost credits to join this ride. You currently have " . ($user['credits'] ?? 0) . ".");
         }
 
         // 4. Prevent duplicate join
         $stmt = $this->db->prepare("SELECT id FROM ride_requests WHERE passenger_id = ? AND carpool_id = ?");
         $stmt->execute([$userId, $carpoolId]);
         if ($stmt->fetch()) {
-            return $this->view->render($response, 'carpool-detail.twig', [
-                'carpool' => $carpool,
-                'join_message' => "You have already joined this ride."
-            ]);
+            return $this->reloadCarpoolWithMessage($response, $carpoolId, "You have already joined this ride.");
         }
 
         // 5. Insert ride request
         $stmt = $this->db->prepare("
-        INSERT INTO ride_requests (passenger_id, driver_id, carpool_id, pickup_location, dropoff_location, passenger_count, status, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, 'accepted', NOW())
-    ");
+            INSERT INTO ride_requests (passenger_id, driver_id, carpool_id, pickup_location, dropoff_location, passenger_count, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, 'accepted', NOW())
+        ");
         $stmt->execute([
             $userId,
             $carpool['driver_id'],
@@ -196,7 +187,7 @@ class CarpoolController
             $requestedSeats
         ]);
 
-        // 6. Update carpool occupied seats
+        // 6. Update carpool seat count
         $stmt = $this->db->prepare("UPDATE carpools SET occupied_seats = occupied_seats + ? WHERE id = ?");
         $stmt->execute([$requestedSeats, $carpoolId]);
 
@@ -204,14 +195,10 @@ class CarpoolController
         $stmt = $this->db->prepare("UPDATE users SET credits = credits - ? WHERE id = ?");
         $stmt->execute([$totalCost, $userId]);
 
-        // 8. Reload updated carpool with success message
-        $carpool['occupied_seats'] += $requestedSeats;
-
-        return $this->view->render($response, 'carpool-detail.twig', [
-            'carpool' => $carpool,
-            'join_message' => "Successfully joined this carpool. $totalCost credits have been deducted."
-        ]);
+        // 8. Final reload of full carpool info with success message
+        return $this->reloadCarpoolWithMessage($response, $carpoolId, "Successfully joined this carpool. $totalCost credits have been deducted.");
     }
+
     public function startCarpool(Request $request, Response $response, array $args): Response
     {
         $carpoolId = $args['id'];
@@ -239,44 +226,55 @@ class CarpoolController
     }
 
 
-
     public function completeCarpool(Request $request, Response $response, array $args): Response
     {
-        $carpoolId = $args['id'];
+        if (session_status() === PHP_SESSION_NONE) session_start();
+
+        $driverId = $_SESSION['user']['id'] ?? null;
+        $carpoolId = (int) $args['id'];
 
         try {
+            $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = :id AND driver_id = :driver_id");
+            $stmt->execute(['id' => $carpoolId, 'driver_id' => $driverId]);
+            $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$carpool || $carpool['status'] !== 'in progress') {
+                return $response->withStatus(403);
+            }
+
             $this->db->beginTransaction();
 
-            // Step 1: Mark carpool as completed
-            $updateCarpool = $this->db->prepare("UPDATE carpools SET status = 'completed' WHERE id = ?");
-            $updateCarpool->execute([$carpoolId]);
+            // 1. Mark carpool as completed
+            $this->db->prepare("UPDATE carpools SET status = 'completed' WHERE id = :id")
+                ->execute(['id' => $carpoolId]);
 
-            // Step 2: Get all accepted ride_requests for this carpool
-            $stmt = $this->db->prepare("
-            SELECT passenger_id 
-            FROM ride_requests 
-            WHERE carpool_id = ? AND status = 'accepted'
-        ");
-            $stmt->execute([$carpoolId]);
-            $passengers = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            // 2. Update all linked ride_requests to 'completed'
+            $this->db->prepare("UPDATE ride_requests SET status = 'completed' WHERE carpool_id = :id AND status = 'accepted'")
+                ->execute(['id' => $carpoolId]);
 
-            // Step 3: Credit each passenger with +10
-            $credit = $this->db->prepare("UPDATE users SET credits = credits + 10 WHERE id = ?");
-            foreach ($passengers as $pid) {
-                $credit->execute([$pid]);
+            // 3. Credit passengers +10
+            $getPassengers = $this->db->prepare("SELECT passenger_id FROM ride_requests WHERE carpool_id = :id AND status = 'completed'");
+            $getPassengers->execute(['id' => $carpoolId]);
+            $passengers = $getPassengers->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($passengers as $passenger) {
+                $this->db->prepare("UPDATE users SET credits = credits + 10 WHERE id = :id")
+                    ->execute(['id' => $passenger['passenger_id']]);
             }
 
             $this->db->commit();
-
-            return $response
-                ->withHeader('Location', '/driver/ride-history')
-                ->withStatus(302);
+            return $response->withHeader('Location', '/driver/ride-history')->withStatus(302);
         } catch (\PDOException $e) {
             $this->db->rollBack();
-            $response->getBody()->write("Error: " . $e->getMessage());
-            return $response->withStatus(500);
+            $response->getBody()->write(json_encode([
+                'error' => 'Database error',
+                'details' => $e->getMessage()
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     }
+
+
 
 
     /**
@@ -321,5 +319,33 @@ class CarpoolController
         return $response
             ->withHeader('Location', '/carpools')
             ->withStatus(302);
+    }
+    private function reloadCarpoolWithMessage(Response $response, int $carpoolId, string $joinMessage): Response
+    {
+        // Re-fetch full carpool info
+        $stmt = $this->db->prepare("
+        SELECT c.*, u.name AS driver_name, u.driver_rating, v.make, v.model, v.energy_type
+        FROM carpools c
+        JOIN users u ON c.driver_id = u.id
+        JOIN vehicles v ON c.vehicle_id = v.id
+        WHERE c.id = ?
+    ");
+        $stmt->execute([$carpoolId]);
+        $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Mongo preferences
+        $preferences = null;
+        if ($carpool && isset($carpool['driver_id'])) {
+            $mongoResult = $this->mongo->findOne(['user_id' => (int)$carpool['driver_id']]);
+            if ($mongoResult && isset($mongoResult['preferences'])) {
+                $preferences = json_decode(json_encode($mongoResult['preferences']), true);
+            }
+        }
+
+        return $this->view->render($response, 'carpool-detail.twig', [
+            'carpool' => $carpool,
+            'preferences' => $preferences,
+            'join_message' => $joinMessage
+        ]);
     }
 }
