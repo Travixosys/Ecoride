@@ -1,46 +1,117 @@
 {% extends "layout.twig" %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-    <h2 class="text-2xl font-semibold text-center">Admin Panel - User Management</h2>
+	<div class="max-w-5xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md space-y-10">
+		<h2 class="text-2xl font-bold text-green-800 text-center">Admin Dashboard – User Management</h2>
 
-    <!-- ✅ Search Bar -->
-    <input type="text" id="searchUser" class="w-full px-3 py-2 border rounded-md mt-4" placeholder="Search users...">
+		<!-- 🔍 Search Bar -->
+		<input
+		type="text" id="searchUser" class="w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Search users...">
 
-    <!-- ✅ Users Table -->
-    <table class="table-auto w-full mt-4 border-collapse">
-        <thead>
-            <tr class="bg-gray-200">
-                <th class="px-4 py-2">Name</th>
-                <th class="px-4 py-2">Email</th>
-                <th class="px-4 py-2">Role</th>
-                <th class="px-4 py-2">License #</th>
-                <th class="px-4 py-2">Actions</th>
-            </tr>
-        </thead>
-        <tbody id="userTable">
-            {% for user in users %}
-            <tr class="border-t">
-                <td class="px-4 py-2">{{ user.name }}</td>
-                <td class="px-4 py-2">{{ user.email }}</td>
-                <td class="px-4 py-2">
-                    <select class="role-select" data-user-id="{{ user.id }}">
-                        <option value="user" {% if user.role == 'user' %}selected{% endif %}>User</option>
-                        <option value="driver" {% if user.role == 'driver' %}selected{% endif %}>Driver</option>
-                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
-                    </select>
-                </td>
-                <td class="px-4 py-2">
-                    <input type="text" class="license-input" data-user-id="{{ user.id }}" value="{{ user.license_number or '' }}" {% if user.role != 'driver' %}disabled{% endif %}>
-                </td>
-                <td class="px-4 py-2">
-                    <button class="update-user bg-green-500 text-white px-2 py-1 rounded" data-user-id="{{ user.id }}">Save</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+		<!-- 📱 Mobile Card View -->
+		<div class="sm:hidden space-y-4">
+			{% for user in users %}
+				<div class="bg-gray-50 border border-gray-200 rounded-xl shadow p-4 space-y-2">
+					<p class="text-sm">
+						<strong>Name:</strong>
+						{{ user.name }}</p>
+					<p class="text-sm">
+						<strong>Email:</strong>
+						{{ user.email }}</p>
 
-<script src="/js/admin.js"></script>
+					<div>
+						<label class="text-sm font-medium">Role:</label>
+						<select class="role-select w-full border rounded text-sm px-2 py-1 mt-1" data-user-id="{{ user.id }}">
+							<option value="user" {% if user.role == 'user' %} selected {% endif %}>User</option>
+							<option value="driver" {% if user.role == 'driver' %} selected {% endif %}>Driver</option>
+							<option value="admin" {% if user.role == 'admin' %} selected {% endif %}>Admin</option>
+						</select>
+					</div>
+
+					{% if user.role == 'driver' %}
+						<div>
+							<label class="text-sm font-medium">License #:</label>
+							<input type="text" class="license-input w-full border rounded px-2 py-1 text-sm mt-1" data-user-id="{{ user.id }}" value="{{ user.license_number }}">
+						</div>
+					{% endif %}
+
+					<div class="flex gap-2">
+						<button class="update-user w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm" data-user-id="{{ user.id }}">Save</button>
+						{% if user.role != 'admin' %}
+							<form method="POST" action="/admin/user/{{ user.id }}/suspend" class="w-full">
+								<button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded text-sm">
+									{% if user.suspended %}Unsuspend{% else %}Suspend
+									{% endif %}
+								</button>
+							</form>
+						{% endif %}
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+
+		<!-- 💻 Table View -->
+		<div class="hidden sm:block overflow-x-auto">
+			<table class="min-w-full text-sm border border-gray-300 mt-4">
+				<thead>
+					<tr class="bg-gray-100 text-left">
+						<th class="p-2 border">Name</th>
+						<th class="p-2 border">Email</th>
+						<th class="p-2 border">Role</th>
+						<th class="p-2 border">License #</th>
+						<th class="p-2 border">Action</th>
+					</tr>
+				</thead>
+				<tbody id="userTable">
+					{% for user in users %}
+						<tr class="hover:bg-gray-50 border-t">
+							<td class="p-2 border">{{ user.name }}</td>
+							<td class="p-2 border break-all">{{ user.email }}</td>
+							<td class="p-2 border">
+								<select class="role-select w-full border rounded text-sm px-2 py-1" data-user-id="{{ user.id }}">
+									<option value="user" {% if user.role == 'user' %} selected {% endif %}>User</option>
+									<option value="driver" {% if user.role == 'driver' %} selected {% endif %}>Driver</option>
+									<option value="admin" {% if user.role == 'admin' %} selected {% endif %}>Admin</option>
+								</select>
+							</td>
+							<td class="p-2 border">
+								{% if user.role == 'driver' %}
+									<input type="text" class="license-input w-full border rounded px-2 py-1 text-sm" data-user-id="{{ user.id }}" value="{{ user.license_number }}">
+								{% endif %}
+							</td>
+							<td class="p-2 border">
+								<div class="flex gap-1">
+									<button class="update-user bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs" data-user-id="{{ user.id }}">Save</button>
+									{% if user.role != 'admin' %}
+										<form method="POST" action="/admin/user/{{ user.id }}/suspend">
+											<button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs">
+												{% if user.suspended %}Unsuspend{% else %}Suspend
+												{% endif %}
+											</button>
+										</form>
+									{% endif %}
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		<!-- 📊 Graphs Section -->
+		<div class="mt-10 space-y-6">
+			<h3 class="text-xl font-semibold text-center">Platform Statistics</h3>
+			<canvas id="carpoolsChart" class="w-full h-64"></canvas>
+			<div class="text-center text-sm text-gray-700">
+				Total Credits Earned:
+				<span class="font-bold">{{ total_credits }}</span>
+			</div>
+			<canvas id="creditsChart" class="w-full h-64"></canvas>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="/js/admin.js"></script>
+	<script src="/js/admin-charts.js"></script>
 {% endblock %}
+

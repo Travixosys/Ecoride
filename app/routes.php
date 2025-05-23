@@ -128,6 +128,9 @@ return function (App $app) {
     $app->post('/employee/resolve/{id}', EmployeeController::class . ':resolve');
     $app->get('/employee/dispute/{id}', EmployeeController::class . ':viewDispute');
     $app->map(['POST', 'DELETE'], '/employee/reviews/delete/{id}', [ReviewController::class, 'delete']);
+    $app->post('/employee/reviews/{id}/approve', EmployeeController::class . ':approveReview');
+    $app->post('/employee/reviews/{id}/reject', EmployeeController::class . ':rejectReview');
+
 
 
 
@@ -154,6 +157,9 @@ return function (App $app) {
     $app->put('/admin/update-user/{id}', [AdminController::class, 'updateUser']);
     $app->delete('/admin/delete-user/{id}', [AdminController::class, 'deleteUser']);
     $app->delete('/admin/delete-ride/{id}', [AdminController::class, 'deleteRide']);
+    $app->post('/admin/user/{id}/suspend', AdminController::class . ':suspendUser');
+    $app->get('/admin/graph-data', AdminController::class . ':getGraphData');
+    
 
     // =========================
     // STATIC PAGES
