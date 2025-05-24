@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<title>
 			{% block title %}EcoRide
 			{% endblock %}
@@ -10,15 +10,25 @@
 		<script src="https://cdn.tailwindcss.com"></script>
 	</head>
 	<body
-		class="bg-gray-100 flex flex-col min-h-screen">
+		class="bg-gray-100 flex flex-col min-h-screen {% if block('title') matches '/Welcome/' %}overflow-hidden{% endif %}">
 
-		<!-- Compact Header -->
+		<!-- Header -->
 		<header class="bg-green-800 text-white py-4 shadow-md flex items-center justify-between px-4">
-			<a href="/" class="text-xl font-semibold">EcoRide</a>
-			<button id="infoToggle" class="text-white text-lg" title="Info">❓</button>
+			<a href="/" class="flex items-center space-x-0 text-xl font-semibold">
+				<img src="/images/ecorlogo.svg" alt="EcoRide logo" class="w-12 h-12 md:w-14 md:h-14"/>
+				<span class="ml-1">EcoRide</span>
+			</a>
+
+
+			<button id="infoToggle" aria-label="Info">
+				<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M8.227 9.469a3.75 3.75 0 017.546 0c0 2.06-1.334 3.03-2.657 3.71C12.11 13.84 11 14.5 11 16M12 18h.01"/>
+				</svg>
+			</button>
 		</header>
 
-		<!-- Info Dropdown (Legal, Contact) -->
+
+		<!-- Info Dropdown -->
 		<div id="infoPanel" class="hidden bg-white text-gray-800 shadow p-4 text-sm mx-4 mt-2 rounded-md">
 			<p>
 				<strong>Mentions légales:</strong>
@@ -29,37 +39,45 @@
 		</div>
 
 		<!-- Main Content Area -->
-		<main class="flex-growflexflex-colitems-centerjustify-centermb-24text-center"> {% block content %}{% endblock %}
+		<main class=" flex-grow w-full px-2 sm:px-4 md:px-6 mb-24"> {% block content %}{% endblock %}
+
 			</main>
 
 			<!-- Bottom Navigation -->
-			<nav class="fixed bottom-0 w-full bg-white border-t flex justify-around py-2 text-gray-700 text-xs shadow-md z-20">
+			<!-- Bottom Navigation -->
+			<nav
+				class="fixed bottom-0 w-full bg-white border-t flex justify-around py-2 text-gray-700 text-xs shadow-md z-20">
+
+				<!-- Search -->
 				<a href="/" class="flex flex-col items-center">
 					<svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
-						<path d="M3 12l2-2m0 0l7-7 7 7m-9 13h4v-7H7v7z" stroke-linecap="round" stroke-linejoin="round"/>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/>
 					</svg>
 					<span>Search</span>
 				</a>
 
+				<!-- My Trips -->
 				<a href="{% if user and user.role == 'driver' %}/driver/ride-history{% else %}/ride-history{% endif %}" class="flex flex-col items-center">
-					<svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
-						<path d="M8 7V3h8v4m-4 8v4m-4-4h8m2-7H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2z" stroke-linecap="round" stroke-linejoin="round"/>
+					<svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewbox="0 0 24 24" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M3 13l2-5h14l2 5M5 13h14v5a1 1 0 01-1 1h-2a1 1 0 01-1-1H9a1 1 0 01-1 1H6a1 1 0 01-1-1v-5zM7 16h.01M17 16h.01"/>
 					</svg>
 					<span>My Trips</span>
 				</a>
 
+				<!-- Profile -->
 				<a href="/profile" class="flex flex-col items-center">
 					<svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
-						<path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" stroke-linecap="round" stroke-linejoin="round"/>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
 					</svg>
 					<span>Profile</span>
 				</a>
+
 			</nav>
 
 
+			<!-- Info Toggle Script -->
 			<script>
-				// Dropdown toggle and click-outside detection
-const infoToggle = document.getElementById('infoToggle');
+				const infoToggle = document.getElementById('infoToggle');
 const infoPanel = document.getElementById('infoPanel');
 
 infoToggle.addEventListener('click', function (e) {
@@ -85,4 +103,3 @@ window.location.href = "/login";
 			</script>
 		</body>
 	</html>
-</body></html>
