@@ -19,7 +19,7 @@
 			</div>
 		</div>
 
-		<!--Driver Stats -->
+		<!-- Driver Stats -->
 		<div class="flex justify-around text-center text-sm">
 			<div>
 				<div class="flex justify-center items-center gap-1">
@@ -41,9 +41,36 @@
 			</div>
 		</div>
 
+		<!-- Vehicle Section -->
+		{% if vehicle %}
+			<div class="mt-6">
+				<h3 class="text-lg font-semibold mb-2">Your Vehicle</h3>
+				<div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-700 border border-green-600 p-4 rounded bg-green-50">
+					<p>
+						<strong>Make:</strong>
+						{{ vehicle.make }}</p>
+					<p>
+						<strong>Model:</strong>
+						{{ vehicle.model }}</p>
+					<p>
+						<strong>Year:</strong>
+						{{ vehicle.year }}</p>
+					<p>
+						<strong>Plate:</strong>
+						{{ vehicle.plate }}</p>
+					<p>
+						<strong>Energy:</strong>
+						{{ vehicle.energy_type }}</p>
+					<p>
+						<strong>Seats:</strong>
+						{{ vehicle.seats }}</p>
+				</div>
+			</div>
+		{% endif %}
+
 		<!-- Preferences Section -->
 		<div>
-			<h3 class="text-lg font-semibold mb-2">Preferences</h3>
+			<h3 class="text-lg font-semibold mb-2 mt-6">Preferences</h3>
 
 			<!-- Toggle Button -->
 			<button type="button" onclick="togglePreferencesForm()" class="text-sm text-blue-600 hover:underline mb-2">
@@ -64,89 +91,100 @@
 				<p>
 					<strong>Allow Pets:</strong>
 					{{ preferences.allow_pets is defined and preferences.allow_pets ? 'Yes' : 'No' }}</p>
-
 			</div>
 
-		<!-- Editable Form (hidden by default) -->
-		<form action="/profile" method="POST" id="preferences-form" class="space-y-3 hidden mt-4">
-			<div>
-				<label class="block text-sm font-medium mb-1">Music Preference</label>
-				<input type="text" name="music_preference" placeholder="e.g. Jazz" value="{{ preferences.music_preference ?? '' }}" class="w-full border border-gray-300 p-2 rounded text-sm">
-			</div>
-			<div>
-				<label class="block text-sm font-medium mb-1">Chat Preference</label>
-				<input type="text" name="chat_preference" placeholder="e.g. Talkative" value="{{ preferences.chat_preference ?? '' }}" class="w-full border border-gray-300 p-2 rounded text-sm">
-			</div>
-			<div>
-				<label class="block text-sm font-medium mb-1">Allow Smoking</label>
-				<input type="text" name="smoking_preference" placeholder="Yes or No" value="{{ preferences.smoking_allowed is defined and preferences.smoking_allowed ? 'Yes' : 'No' }}" class="w-full border border-gray-300 p-2 rounded text-sm">
-			</div>
-			<div>
-				<label class="block text-sm font-medium mb-1">Allow Pets</label>
-				<input type="text" name="pets_allowed" placeholder="Yes or No" value="{{ preferences.allow_pets is defined and preferences.allow_pets ? 'Yes' : 'No' }}" class="w-full border border-gray-300 p-2 rounded text-sm">
-			</div>
+			<!-- Editable Form (hidden by default) -->
+			<form action="/profile" method="POST" id="preferences-form" class="space-y-3 hidden mt-4">
+				<div>
+					<label class="block text-sm font-medium mb-1">Music Preference</label>
+					<input type="text" name="music_preference" placeholder="e.g. Jazz" value="{{ preferences.music_preference ?? '' }}" class="w-full border border-gray-300 p-2 rounded text-sm">
+				</div>
+				<div>
+					<label class="block text-sm font-medium mb-1">Chat Preference</label>
+					<input type="text" name="chat_preference" placeholder="e.g. Talkative" value="{{ preferences.chat_preference ?? '' }}" class="w-full border border-gray-300 p-2 rounded text-sm">
+				</div>
+				<div>
+					<label class="block text-sm font-medium mb-1">Allow Smoking</label>
+					<div class="flex gap-4">
+						<label><input type="radio" name="smoking_allowed" value="1" {% if preferences.smoking_allowed %} checked {% endif %}>
+							Yes</label>
+						<label><input type="radio" name="smoking_allowed" value="0" {% if preferences.smoking_allowed is defined and not preferences.smoking_allowed %} checked {% endif %}>
+							No</label>
+					</div>
+				</div>
 
-			<button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 text-sm">
-				Save Preferences
+				<div>
+					<label class="block text-sm font-medium mb-1">Allow Pets</label>
+					<div class="flex gap-4">
+						<label><input type="radio" name="allow_pets" value="1" {% if preferences.allow_pets %} checked {% endif %}>
+							Yes</label>
+						<label><input type="radio" name="allow_pets" value="0" {% if preferences.allow_pets is defined and not preferences.allow_pets %} checked {% endif %}>
+							No</label>
+					</div>
+				</div>
+
+				<button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 text-sm">
+					Save Preferences
+				</button>
+			</form>
+		</div>
+
+		<!-- Reviews Received -->
+		{% if reviews_received is not empty %}
+			<div>
+				<h3 class="text-lg font-semibold mb-2">Passenger Reviews</h3>
+				<ul class="space-y-3">
+					{% for review in reviews_received %}
+						<li class="border border-gray-200 p-3 rounded bg-gray-50 text-sm space-y-1">
+							<p>
+								<strong>{{ review.rating }}/5</strong>
+								–
+								<em>{{ review.comment }}</em>
+							</p>
+							<p class="text-xs text-gray-500">By
+								{{ review.reviewer_name }}</p>
+						</li>
+					{% endfor %}
+				</ul>
+			</div>
+		{% endif %}
+
+		<!-- Reviews Written -->
+		{% if reviews_written is not empty %}
+			<div>
+				<h3 class="text-lg font-semibold mt-6 mb-2">Reviews You've Written</h3>
+				<ul class="space-y-3">
+					{% for review in reviews_written %}
+						<li class="border border-gray-200 p-3 rounded bg-gray-50 text-sm space-y-1">
+							<p>
+								<strong>{{ review.rating }}/5</strong>
+								–
+								<em>{{ review.comment }}</em>
+							</p>
+							<p class="text-xs text-gray-500">For
+								{{ review.driver_name }}</p>
+						</li>
+					{% endfor %}
+				</ul>
+			</div>
+		{% endif %}
+
+		<!-- Actions -->
+		<div class="mt-8 space-y-3 text-sm">
+			<a href="/legal" class="block text-green-700 font-medium hover:underline">Support</a>
+			<a href="{% if user.role == 'driver' %}/driver/dashboard{% else %}/rides{% endif %}" class="block text-green-700 font-medium hover:underline">Ride History</a>
+			<button onclick="logout()" class="w-full mt-2 bg-red-600 text-white py-2 rounded hover:bg-red-500">
+				Logout
 			</button>
-		</form>
+		</div>
 	</div>
 
-	<!-- Reviews Received -->
-	{% if reviews_received is not empty %}
-		<div>
-			<h3 class="text-lg font-semibold mb-2">Passenger Reviews</h3>
-			<ul class="space-y-3">
-				{% for review in reviews_received %}
-					<li class="border border-gray-200 p-3 rounded bg-gray-50 text-sm space-y-1">
-						<p>
-							<strong>{{ review.rating }}/5</strong>
-							–
-							<em>{{ review.comment }}</em>
-						</p>
-						<p class="text-xs text-gray-500">By
-							{{ review.reviewer_name }}</p>
-					</li>
-				{% endfor %}
-			</ul>
-		</div>
-	{% endif %}
-
-	<!-- Reviews Written -->
-	{% if reviews_written is not empty %}
-		<div>
-			<h3 class="text-lg font-semibold mt-6 mb-2">Reviews You've Written</h3>
-			<ul class="space-y-3">
-				{% for review in reviews_written %}
-					<li class="border border-gray-200 p-3 rounded bg-gray-50 text-sm space-y-1">
-						<p>
-							<strong>{{ review.rating }}/5</strong>
-							–
-							<em>{{ review.comment }}</em>
-						</p>
-						<p class="text-xs text-gray-500">For
-							{{ review.driver_name }}</p>
-					</li>
-				{% endfor %}
-			</ul>
-		</div>
-	{% endif %}
-
-	<!-- Actions -->
-	<div class="mt-8 space-y-3 text-sm">
-		<a href="/legal" class="block text-green-700 font-medium hover:underline">Support</a>
-		<a href="{% if user.role == 'driver' %}/driver/dashboard{% else %}/rides{% endif %}" class="block text-green-700 font-medium hover:underline">Ride History</a>
-		<button onclick="logout()" class="w-full mt-2 bg-red-600 text-white py-2 rounded hover:bg-red-500">
-			Logout
-		</button>
-	</div>
-</div>
-
-<script>
-	function togglePreferencesForm() {
+	<script>
+		function togglePreferencesForm() {
 const form = document.getElementById('preferences-form');
 const summary = document.getElementById('preferences-summary');
 form.classList.toggle('hidden');
 summary.classList.toggle('hidden');
 }
-</script>{% endblock %}
+	</script>
+{% endblock %}

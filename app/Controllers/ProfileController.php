@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Container\ContainerInterface;
 use MongoDB\Client as MongoDBClient;
-use MongoDB\BSON\UTCDateTime; 
+use MongoDB\BSON\UTCDateTime;
 use PDO;
 
 
@@ -79,14 +79,26 @@ class ProfileController
             $stmt->execute(['id' => $userId]);
             $reviewsReceived = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
-
+        // If driver, fetch their vehicle info from MySQL
+        $vehicle = null;
+        if ($user['role'] === 'driver') {
+            $stmt = $this->db->prepare("
+        SELECT make, model, year, plate, energy_type, seats 
+        FROM vehicles 
+        WHERE driver_id = ?
+        LIMIT 1
+        ");
+            $stmt->execute([$userId]);
+            $vehicle = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
         // 6. Render profile page
         return $this->view->render($response, 'profile.twig', [
             'user' => $user,
             'preferences' => $preferences['preferences'] ?? [],
             'rides_completed' => $ridesCompleted,
             'reviews_written' => $reviewsWritten,
-            'reviews_received' => $reviewsReceived
+            'reviews_received' => $reviewsReceived,
+            'vehicle' => $vehicle
         ]);
     }
 
