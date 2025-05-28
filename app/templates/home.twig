@@ -22,10 +22,11 @@
 
 			<!-- Search form card -->
 			<div class="bg-white bg-opacity-90 backdrop-blur-md rounded-2xl shadow-lg p-5 w-full max-w-sm text-left">
-				<form method="GET" action="/carpools" class="space-y-3">
-					<input name="pickup" type="text" placeholder="Departure" class="w-full px-3 py-2 border rounded text-sm text-gray-800" required>
+				<form id="carpoolSearch" method="GET" action="/carpools" class="space-y-3">
 
-					<input name="dropoff" type="text" placeholder="Destination" class="w-full px-3 py-2 border rounded text-sm text-gray-800" required>
+					<input name="pickup" type="text" placeholder="Departure" class="w-full px-3 py-2 border rounded text-sm text-gray-800">
+
+					<input name="dropoff" type="text" placeholder="Destination" class="w-full px-3 py-2 border rounded text-sm text-gray-800">
 
 					<input name="date" type="date" class="w-full px-3 py-2 border rounded text-sm text-gray-800 bg-white">
 					<input type="number" name="min_seats" placeholder="Min Seats" min="1" class="w-full px-3 py-2 border rounded text-sm text-gray-800" value="{{ filters.min_seats|default('') }}">
@@ -48,4 +49,17 @@
 			</section>
 		</div>
 	</section>
+	<script>
+	document.getElementById("carpoolSearch").addEventListener("submit", function (e) {
+	const pickup = this.querySelector("[name='pickup']").value.trim();
+	const dropoff = this.querySelector("[name='dropoff']").value.trim();
+	const date = this.querySelector("[name='date']").value.trim();
+	const minSeats = this.querySelector("[name='min_seats']").value.trim();
+
+	if (! pickup && ! dropoff && ! date && ! minSeats) {e.preventDefault();
+	window.location.href = "/carpools"; // Redirect manually
+	}
+	});
+	</script>
+
 {% endblock %}
