@@ -59,18 +59,19 @@ class UserController
             if ($role === "driver") {
                 if (
                     empty($data['make']) || empty($data['model']) || empty($data['year']) ||
-                    empty($data['plate']) || empty($data['seats'])
+                    empty($data['plate']) || empty($data['seats']) || empty($data['energy_type'])
                 ) {
                     return $this->jsonResponse($response, ['error' => 'Détails du véhicule manquants / Missing vehicle details'], 400);
                 }
 
                 $this->vehicleModel->create([
-                    'driver_id' => $userId,
-                    'make' => $data['make'],
-                    'model' => $data['model'],
-                    'year' => $data['year'],
-                    'plate' => $data['plate'],
-                    'seats' => $data['seats']
+                    'driver_id'    => $userId,
+                    'make'         => $data['make'],
+                    'model'        => $data['model'],
+                    'year'         => $data['year'],
+                    'plate'        => $data['plate'],
+                    'seats'        => $data['seats'],
+                    'energy_type'  => $data['energy_type']
                 ]);
             }
 

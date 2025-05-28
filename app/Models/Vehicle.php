@@ -19,15 +19,18 @@ class Vehicle
      */
     public function create(array $data): bool
     {
-        $stmt = $this->db->prepare("INSERT INTO vehicles (driver_id, make, model, year, plate, seats) 
-                                     VALUES (:driver_id, :make, :model, :year, :plate, :seats)");
+        $stmt = $this->db->prepare("
+            INSERT INTO vehicles (driver_id, make, model, year, plate, seats, energy_type) 
+            VALUES (:driver_id, :make, :model, :year, :plate, :seats, :energy_type)
+        ");
         return $stmt->execute([
-            'driver_id' => $data['driver_id'],
-            'make' => $data['make'],
-            'model' => $data['model'],
-            'year' => $data['year'],
-            'plate' => $data['plate'],
-            'seats' => $data['seats']
+            'driver_id'   => $data['driver_id'],
+            'make'        => $data['make'],
+            'model'       => $data['model'],
+            'year'        => $data['year'],
+            'plate'       => $data['plate'],
+            'seats'       => $data['seats'],
+            'energy_type' => $data['energy_type']
         ]);
     }
 
@@ -58,15 +61,19 @@ class Vehicle
      */
     public function update(int $id, array $data): bool
     {
-        $stmt = $this->db->prepare("UPDATE vehicles SET make = :make, model = :model, year = :year, plate = :plate, seats = :seats 
-                                     WHERE id = :id");
+        $stmt = $this->db->prepare("
+            UPDATE vehicles 
+            SET make = :make, model = :model, year = :year, plate = :plate, seats = :seats, energy_type = :energy_type 
+            WHERE id = :id
+        ");
         return $stmt->execute([
-            'make' => $data['make'],
-            'model' => $data['model'],
-            'year' => $data['year'],
-            'plate' => $data['plate'],
-            'seats' => $data['seats'],
-            'id' => $id
+            'make'        => $data['make'],
+            'model'       => $data['model'],
+            'year'        => $data['year'],
+            'plate'       => $data['plate'],
+            'seats'       => $data['seats'],
+            'energy_type' => $data['energy_type'],
+            'id'          => $id
         ]);
     }
 }
