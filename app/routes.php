@@ -1,6 +1,5 @@
 <?php
 
-
 use Slim\App;
 use Slim\Views\Twig;
 use App\Controllers\UserController;
@@ -10,7 +9,7 @@ use App\Controllers\RideController;
 use App\Controllers\AdminController;
 use App\Controllers\ReviewController;
 use App\Controllers\EmployeeController;
-use App\Models\RideRequest;
+use App\Controllers\ProfileController;
 use MongoDB\Client as MongoDBClient;
 use Psr\Container\ContainerInterface;
 
@@ -20,9 +19,9 @@ return function (App $app) {
 
     if (session_status() === PHP_SESSION_NONE) session_start();
 
-    // ========================================
+    // =========================
     // HOME & LANDING – Page d'accueil générale
-    // ========================================
+    // =========================
     $app->get('/', function ($request, $response) use ($twig) {
         if (isset($_SESSION['user']) && $_SESSION['user']['role'] === 'admin') {
             return $response->withHeader('Location', '/admin')->withStatus(302);
@@ -31,143 +30,89 @@ return function (App $app) {
     });
 
     // =========================
-    // AUTH – Connexion / Login
+    // AUTHENTICATION
     // =========================
     $app->get('/login', fn($req, $res) => Twig::fromRequest($req)->render($res, 'login.twig'));
     $app->post('/login', [UserController::class, 'login']);
+    $app->get('/logout', [UserController::class, 'logout']);
+    $app->post('/logout', [UserController::class, 'logout']);
 
-
-
-
-    $app->get('/logout', fn($req, $res) => $res->withHeader('Location', '/menu')->withStatus(302));
-    $app->post('/logout', function ($req, $res) {
-        if (session_status() === PHP_SESSION_NONE) session_start();
-        $_SESSION = [];
-        session_destroy();
-        setcookie(session_name(), '', time() - 42000, '/home');
-        $res->getBody()->write(json_encode(["message" => "Logout successful"]));
-        return $res->withHeader('Content-Type', 'application/json');
-    });
-
-    // ===========================
-    // REGISTER – Inscription
-    // ===========================
+    // =========================
+    // REGISTRATION
+    // =========================
     $app->get('/register', fn($req, $res) => $twig->render($res, 'register.twig'));
     $app->post('/register', [UserController::class, 'register']);
     $app->post('/register-driver', [DriverController::class, 'registerDriver']);
 
-    // ===========================
-    // PROFILE – Profil utilisateur
-    // ===========================
-    $app->get('/profile', function ($req, $res) use ($twig) {
-        if (!isset($_SESSION['user'])) return $res->withHeader('Location', '/login')->withStatus(302);
-        $mongo = new MongoDBClient("mongodb://localhost:27017");
-        $preferences = $mongo->ecoridepool->user_preferences->findOne(['user_id' => $_SESSION['user']['id']]);
-        return $twig->render($res, 'profile.twig', [
-            'user' => $_SESSION['user'],
-            'preferences' => $preferences['preferences'] ?? []
-        ]);
+    // =========================
+    // PROFILE MANAGEMENT
+    // =========================
+    $app->get('/profile', [ProfileController::class, 'show']);
+    $app->post('/profile', [ProfileController::class, 'update']);
+
+    // =========================
+    // DRIVER ROUTES
+    // =========================
+    $app->group('/driver', function ($group) {
+        $group->get('/dashboard', [RideController::class, 'getDriverRideHistory']);
+        $group->get('/carpools/create', CarpoolController::class . ':createForm');
+        $group->post('/carpools', CarpoolController::class . ':storeCarpool');
+        $group->post('/carpools/{id}/start', [CarpoolController::class, 'startCarpool']);
+        $group->post('/carpools/{id}/complete', [CarpoolController::class, 'completeCarpool']);
+        $group->put('/complete-ride/{id}', [RideController::class, 'completeRide']);
+        $group->put('/cancel-ride/{id}', [RideController::class, 'cancelRide']);
     });
-    $app->post('/profile/update', [UserController::class, 'updateProfile']);
 
-    // ========================================
-    // RIDES – Gestion des trajets (CRUD/API)
-    // ========================================
-    $app->post('/driver/carpools/{id}/start', [CarpoolController::class, 'startCarpool']);
-    $app->post('/driver/carpools/{id}/complete', [CarpoolController::class, 'completeCarpool']);
-
-    $app->get('/ride-history', [RideController::class, 'getPassengerRideHistory']);
-    $app->get('/driver/ride-history', [RideController::class, 'getDriverRideHistory']);
-
-    // $app->put('/accept-ride/{id}', [RideController::class, 'acceptRide']);
+    // =========================
+    // PASSENGER ROUTES
+    // =========================
+    $app->get('/rides', [RideController::class, 'getPassengerRideHistory']);
     $app->put('/complete-ride/{id}', [RideController::class, 'completeRide']);
     $app->put('/cancel-ride/{id}', [RideController::class, 'cancelRide']);
     $app->post('/cancel-ride/{id}', [RideController::class, 'cancelRide']);
 
-
-    $app->put('/driver/accept-request/{id}', [RideController::class, 'acceptRide']);
-    // $app->put('/driver/accept-ride/{id}', [DriverController::class, 'acceptRide']);
-    $app->put('/driver/complete-ride/{id}', [RideController::class, 'completeRide']);
-    $app->put('/driver/cancel-ride/{id}', [RideController::class, 'cancelRide']);
-
-    // ================================
-    // DRIVER VIEW – Interface conducteur
-    // ================================
-    $app->get('/driver/requests', function ($req, $res) use ($container) {
-        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'driver') {
-            return $res->withHeader('Location', '/login')->withStatus(302);
-        }
-        $requests = (new RideRequest($container->get('db')))->getPending();
-        return $container->get('view')->render($res, 'driver-requests.twig', ['rideRequests' => $requests]);
-    });
-    $app->post('/driver/create-carpool', [DriverController::class, 'createCarpool'])->setName('create_carpool');
-    $app->get('/carpool', function ($req, $res) use ($container) {
-        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'driver') {
-            return $res->withHeader('Location', '/login')->withStatus(302);
-        }
-
-        $db = $container->get('db');
-        $driverId = $_SESSION['user']['id'];
-
-        $rideRequestModel = new RideRequest($db);
-        $rideModel = new \App\Models\Ride($db);
-
-        $pendingRequests = $rideRequestModel->getPending();
-        $activeRides = $rideModel->findByStatus($driverId, 'accepted');
-
-        return $container->get('view')->render($res, 'carpool.twig', [
-            'rideRequests' => $pendingRequests,
-            'activeRides' => $activeRides
-        ]);
-    });
-
-    // ==============================
-    // EMPLOYEE pANEL – Gestion Employé
-    // ==============================
-    $app->get('/employee', EmployeeController::class . ':index');
-    $app->post('/employee/resolve/{id}', EmployeeController::class . ':resolve');
-    $app->get('/employee/dispute/{id}', EmployeeController::class . ':viewDispute');
-    $app->map(['POST', 'DELETE'], '/employee/reviews/delete/{id}', [ReviewController::class, 'delete']);
-    $app->post('/employee/reviews/{id}/approve', EmployeeController::class . ':approveReview');
-    $app->post('/employee/reviews/{id}/reject', EmployeeController::class . ':rejectReview');
-
-
-
-
-    // Passenger browsing available carpools
+    // =========================
+    // CARPOOL BROWSING (PASSENGER)
+    // =========================
     $app->get('/carpools', CarpoolController::class . ':listAvailable');
     $app->get('/carpools/{id}', CarpoolController::class . ':viewDetail');
     $app->post('/carpools/{id}/join', CarpoolController::class . ':joinCarpool');
 
-    // Review submission, approval, and dispute
+    // =========================
+    // REVIEW & DISPUTES
+    // =========================
     $app->get('/review/{id}', [ReviewController::class, 'showReviewForm']);
     $app->post('/review/submit', [ReviewController::class, 'submit']);
     $app->post('/dispute/{id}', [ReviewController::class, 'dispute']);
 
+    // =========================
+    // EMPLOYEE (MODERATION PANEL)
+    // =========================
+    $app->group('/employee', function ($group) {
+        $group->get('', EmployeeController::class . ':index');
+        $group->post('/resolve/{id}', EmployeeController::class . ':resolve');
+        $group->get('/dispute/{id}', EmployeeController::class . ':viewDispute');
+        $group->map(['POST', 'DELETE'], '/reviews/delete/{id}', [ReviewController::class, 'delete']);
+        $group->post('/reviews/{id}/approve', EmployeeController::class . ':approveReview');
+        $group->post('/reviews/{id}/reject', EmployeeController::class . ':rejectReview');
+    });
 
-    // Driver offering a carpool
-    $app->get('/driver/carpools/create', CarpoolController::class . ':createForm');
-    $app->post('/driver/carpools', CarpoolController::class . ':storeCarpool');
-
-
-    // ================================
-    // ADMIN PANEL – Gestion Admin
-    // ================================
-    $app->get('/admin', [AdminController::class, 'dashboard']);
-    $app->put('/admin/update-user/{id}', [AdminController::class, 'updateUser']);
-    $app->delete('/admin/delete-user/{id}', [AdminController::class, 'deleteUser']);
-    $app->delete('/admin/delete-ride/{id}', [AdminController::class, 'deleteRide']);
-    $app->post('/admin/user/{id}/suspend', AdminController::class . ':suspendUser');
-    $app->get('/admin/graph-data', AdminController::class . ':getGraphData');
-    
+    // =========================
+    // ADMIN PANEL
+    // =========================
+    $app->group('/admin', function ($group) {
+        $group->get('', [AdminController::class, 'dashboard']);
+        $group->put('/update-user/{id}', [AdminController::class, 'updateUser']);
+        $group->delete('/delete-user/{id}', [AdminController::class, 'deleteUser']);
+        $group->delete('/delete-ride/{id}', [AdminController::class, 'deleteRide']);
+        $group->post('/user/{id}/suspend', AdminController::class . ':suspendUser');
+        $group->get('/graph-data', AdminController::class . ':getGraphData');
+    });
 
     // =========================
     // STATIC PAGES
     // =========================
-    $app->get('/request-ride', fn($req, $res) => $container->get('view')->render($res, 'request-ride.twig'));
-    $app->get('/active-rides', fn($req, $res) => $twig->render($res, 'active-rides.twig'));
     $app->get('/menu', fn($req, $res) => $container->get('view')->render($res, 'menu.twig', ['user' => $_SESSION['user'] ?? null]));
     $app->get('/maps/route', [RideController::class, 'getRouteData']);
+    $app->get('/legal', fn($req, $res) => $container->get('view')->render($res, 'legal.twig'));
 };
-
-// END OF ROUTES FILE

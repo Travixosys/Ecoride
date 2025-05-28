@@ -96,7 +96,7 @@ class RideController
             }
         }
 
-        return $this->view->render($response, 'ride-history.twig', [
+        return $this->view->render($response, 'rides.twig', [
             'grouped_rides' => $grouped
         ]);
     }
@@ -143,7 +143,7 @@ class RideController
             $reviewsStmt->execute(['driver_id' => $driverId]);
             $reviews = $reviewsStmt->fetchAll(PDO::FETCH_ASSOC);
 
-            return $this->view->render($response, 'driver-carpools.twig', [
+            return $this->view->render($response, 'driver-dashboard.twig', [
                 'carpools' => $carpools,
                 'reviews' => $reviews
             ]);
@@ -240,7 +240,7 @@ class RideController
                 'vehicle_id' => $vehicle['id'],
                 'pickup' => $request['pickup_location'],
                 'dropoff' => $request['dropoff_location'],
-                'ride_request_id' => $rideRequestId  // ✅ now linking to the right request
+                'ride_request_id' => $rideRequestId  
             ]);
 
 
@@ -320,7 +320,7 @@ class RideController
 
         if (!$ride || $ride['status'] !== 'pending') {
             return $response
-                ->withHeader('Location', '/ride-history')
+                ->withHeader('Location', '/rides')
                 ->withStatus(302);
         }
 
@@ -340,7 +340,7 @@ class RideController
         }
 
         return $response
-            ->withHeader('Location', '/ride-history')
+            ->withHeader('Location', '/rides')
             ->withStatus(302);
     }
 

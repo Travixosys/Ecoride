@@ -92,22 +92,22 @@ class UserController
      */
     public function login(Request $request, Response $response): Response
     {
-        // 🔍 Enable error reporting for debugging
-        // 🔍 Active l'affichage des erreurs pour le débogage
+        //  Enable error reporting for debugging
+        //  Active l'affichage des erreurs pour le débogage
         ini_set('display_errors', 1);
         error_reporting(E_ALL);
 
         try {
-            // 📨 Parse the request body
-            // 📨 Analyse le corps de la requête
+            // Parse the request body
+            // Analyse le corps de la requête
             $data = $request->getParsedBody();
 
             // 🪵 Log the input data
             // 🪵 Journalise les données reçues
             error_log("Parsed Login Request Body: " . json_encode($data));
 
-            // ❗ Check if body is empty or invalid
-            // ❗ Vérifie si le corps est vide ou invalide
+            // Check if body is empty or invalid
+            // Vérifie si le corps est vide ou invalide
             if ($data === null) {
                 error_log("Empty or invalid request body");
                 return $this->jsonResponse($response, [
@@ -116,8 +116,8 @@ class UserController
                 ], 400);
             }
 
-            // ✅ Ensure both email and password are present
-            // ✅ Vérifie que l'email et le mot de passe sont présents
+            //  Ensure both email and password are present
+            //  Vérifie que l'email et le mot de passe sont présents
             if (empty($data['email']) || empty($data['password'])) {
                 error_log("Missing Login Credentials");
                 return $this->jsonResponse($response, [
@@ -126,13 +126,13 @@ class UserController
                 ], 400);
             }
 
-            // 🔍 Retrieve user by email
-            // 🔍 Récupère l'utilisateur à partir de son email
+            //  Retrieve user by email
+            //  Récupère l'utilisateur à partir de son email
             $user = $this->userModel->findByEmail($data['email']);
 
             if (!$user) {
-                // ❌ No user found
-                // ❌ Aucun utilisateur trouvé
+                // No user found
+                // Aucun utilisateur trouvé
                 error_log("User not found: " . $data['email']);
                 return $this->jsonResponse($response, [
                     'error' => 'User not found',
@@ -140,8 +140,8 @@ class UserController
                 ], 404);
             }
 
-            // ⛔ Check if account is suspended
-            // ⛔ Vérifie si le compte est suspendu
+            // Check if account is suspended
+            // Vérifie si le compte est suspendu
             if (!empty($user['suspended']) && $user['suspended']) {
                 error_log("Login attempt by suspended user: " . $data['email']);
                 return $this->jsonResponse($response, [
@@ -160,14 +160,14 @@ class UserController
                 ], 401);
             }
 
-            // 🔐 Start session if not already started
-            // 🔐 Démarre une session si elle n'est pas déjà active
+            // Start session if not already started
+            // Démarre une session si elle n'est pas déjà active
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
 
-            // 💾 Save user data to session
-            // 💾 Enregistre les données utilisateur dans la session
+            // Save user data to session
+            // Enregistre les données utilisateur dans la session
             $_SESSION['user'] = [
                 "id" => $user['id'],
                 "name" => $user['name'],
@@ -175,16 +175,16 @@ class UserController
                 "role" => $user['role']
             ];
 
-            // ✅ Successful login response
-            // ✅ Réponse de connexion réussie
+            // Successful login response
+            // Réponse de connexion réussie
             return $this->jsonResponse($response, [
                 'message' => 'Login successful',
                 'fr' => 'Connexion réussie',
                 'user' => $_SESSION['user']
             ]);
         } catch (PDOException $e) {
-            // ⚠️ Database error handling
-            // ⚠️ Gestion des erreurs de base de données
+            // Database error handling
+            // Gestion des erreurs de base de données
             error_log("Login Database Error: " . $e->getMessage());
             error_log("Error Code: " . $e->getCode());
             error_log("Trace: " . $e->getTraceAsString());
@@ -205,10 +205,23 @@ class UserController
      */
     public function logout(Request $request, Response $response): Response
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $_SESSION = [];
         session_destroy();
+        setcookie(session_name(), '', time() - 42000, '/');
+
+        // Detect method (GET = redirect, POST = API)
+        if ($request->getMethod() === 'GET') {
+            return $response->withHeader('Location', '/menu')->withStatus(302);
+        }
+
+        // POST – JSON response
         return $this->jsonResponse($response, ['message' => 'Déconnexion réussie / Logout successful']);
     }
+
 
     /**
      * Update profile (stub – to be implemented)

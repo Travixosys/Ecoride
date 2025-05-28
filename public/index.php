@@ -19,9 +19,19 @@ $container = new Container();
 AppFactory::setContainer($container);
 
 //Register Twig in the container
+// Register Twig in the container and add 'user' as a global
 $container->set('view', function () {
-    return Twig::create(__DIR__ . '/../app/templates', ['cache' => false]);
+    $twig = Twig::create(__DIR__ . '/../app/templates', ['cache' => false]);
+
+    // Fetch the current user from session (or however you store it)
+    $currentUser = $_SESSION['user'] ?? null;
+
+    // Add it as a global so every template sees {{ user }}
+    $twig->getEnvironment()->addGlobal('user', $currentUser);
+
+    return $twig;
 });
+
 
 //Register PDO Database Connection
 $container->set('db', function () {

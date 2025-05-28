@@ -42,7 +42,7 @@ class ReviewController
         $check = $this->db->prepare("SELECT id FROM ride_reviews WHERE ride_request_id = ?");
         $check->execute([$rideRequestId]);
         if ($check->fetch()) {
-            return $response->withHeader('Location', '/ride-history')->withStatus(302);
+            return $response->withHeader('Location', '/rides')->withStatus(302);
         }
 
         $stmt = $this->db->prepare("INSERT INTO ride_reviews 
@@ -56,7 +56,7 @@ class ReviewController
             ':comment' => $comment
         ]);
 
-        return $response->withHeader('Location', '/ride-history')->withStatus(302);
+        return $response->withHeader('Location', '/rides')->withStatus(302);
     }
 
 
@@ -147,16 +147,17 @@ class ReviewController
         $ride = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$ride) {
-            return $response->withHeader('Location', '/ride-history')->withStatus(403);
+            return $response->withHeader('Location', '/rides')->withStatus(403);
         }
 
         // Flag the carpool
         $update = $this->db->prepare("UPDATE carpools SET status = 'disputed' WHERE id = ?");
         $update->execute([$ride['carpool_id']]);
 
-        return $response->withHeader('Location', '/ride-history')->withStatus(302);
+        return $response->withHeader('Location', '/rides')->withStatus(302);
     }
 
+    
     /**
      * Delete a review (Admin/Employee)
      * Supprimer un avis (Admin/Employé)

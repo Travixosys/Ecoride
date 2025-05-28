@@ -1,0 +1,180 @@
+[{
+  "_id": {
+    "$oid": "6831de50821506be5675acb0"
+  },
+  "user_id": 3,
+  "preferences": {
+    "smoking_allowed": true,
+    "allow_pets": false,
+    "music_preference": "Classical",
+    "chat_preference": "Silent"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6831de50821506be5675acb1"
+  },
+  "user_id": 4,
+  "preferences": {
+    "smoking_allowed": false,
+    "allow_pets": true,
+    "music_preference": "Hip-Hop",
+    "chat_preference": "Casual"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6831de50821506be5675acb2"
+  },
+  "user_id": 5,
+  "preferences": {
+    "smoking_allowed": false,
+    "allow_pets": false,
+    "music_preference": "Afrobeats",
+    "chat_preference": "Casual"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6831de50821506be5675acb3"
+  },
+  "user_id": 6,
+  "preferences": {
+    "smoking_allowed": true,
+    "allow_pets": true,
+    "music_preference": "Pop",
+    "chat_preference": "Talkative"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6831de50821506be5675acb4"
+  },
+  "user_id": 7,
+  "preferences": {
+    "smoking_allowed": false,
+    "allow_pets": true,
+    "music_preference": "Lo-Fi",
+    "chat_preference": "Friendly"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6831de50821506be5675acb5"
+  },
+  "user_id": 8,
+  "preferences": {
+    "smoking_allowed": false,
+    "allow_pets": false,
+    "music_preference": "Rock",
+    "chat_preference": "Silent"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6831de50821506be5675acb6"
+  },
+  "user_id": 9,
+  "preferences": {
+    "smoking_allowed": true,
+    "allow_pets": true,
+    "music_preference": "Jazz",
+    "chat_preference": "Talkative"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6831de50821506be5675acb7"
+  },
+  "user_id": 10,
+  "preferences": {
+    "smoking_allowed": false,
+    "allow_pets": true,
+    "music_preference": "RnB",
+    "chat_preference": "Friendly"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6831de50821506be5675acb8"
+  },
+  "user_id": 11,
+  "preferences": {
+    "smoking_allowed": true,
+    "allow_pets": false,
+    "music_preference": "Afrobeats",
+    "chat_preference": "Casual"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6831de50821506be5675acb9"
+  },
+  "user_id": 12,
+  "preferences": {
+    "smoking_allowed": false,
+    "allow_pets": false,
+    "music_preference": "Reggae",
+    "chat_preference": "Silent"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6831de50821506be5675acba"
+  },
+  "user_id": 13,
+  "preferences": {
+    "smoking_allowed": false,
+    "allow_pets": true,
+    "music_preference": "Classical",
+    "chat_preference": "Friendly"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6831de50821506be5675acbb"
+  },
+  "user_id": 14,
+  "preferences": {
+    "smoking_allowed": true,
+    "allow_pets": false,
+    "music_preference": "EDM",
+    "chat_preference": "Talkative"
+  },
+  "created_at": {
+    "$date": "2025-05-24T14:57:20.659Z"
+  }
+}]

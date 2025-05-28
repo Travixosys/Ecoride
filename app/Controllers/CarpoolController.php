@@ -117,7 +117,7 @@ class CarpoolController
             return $response->withStatus(404);
         }
 
-        // ✅ Mongo fetch
+        //Mongo fetch
         $driverId = (int) $carpool['driver_id'];
         $mongoResult = $this->mongo->findOne(['user_id' => $driverId]);
 
@@ -221,7 +221,7 @@ class CarpoolController
         $update->execute([$carpoolId]);
 
         return $response
-            ->withHeader('Location', '/driver/ride-history')
+            ->withHeader('Location', '/driver/dashboard')
             ->withStatus(302);
     }
 
@@ -263,7 +263,7 @@ class CarpoolController
             }
 
             $this->db->commit();
-            return $response->withHeader('Location', '/driver/ride-history')->withStatus(302);
+            return $response->withHeader('Location', '/driver/dashboard')->withStatus(302);
         } catch (\PDOException $e) {
             $this->db->rollBack();
             $response->getBody()->write(json_encode([

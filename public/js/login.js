@@ -31,13 +31,13 @@ document
 
       // Redirect Based on Role
       if (data.user.role === "driver") {
-        window.location.href = "/driver/carpools/create";
+        window.location.href = "/driver/dashboard";
       } else if (data.user.role === "admin") {
         window.location.href = "/admin";
       } else if (data.user.role === "employee") {
         window.location.href = "/employee";
       } else {
-        window.location.href = "/carpools";
+        window.location.href = "/";
       }
     } catch (error) {
       console.error("❌ Login Error:", error.message);
