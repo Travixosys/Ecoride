@@ -32,25 +32,25 @@ $pdo = new PDO($dsn, $mysqlUser, $mysqlPass, [
 // ────────────────────────────────────────────────────────────
 // 2) MongoDB Atlas — only from MONGO_URI ENV
 // ────────────────────────────────────────────────────────────
-$mongoUri = getenv('MONGO_URI');
-if (! $mongoUri) {
+$mongoUri = trim(getenv('MONGO_URI') ?: '');
+if ($mongoUri === '') {
     throw new RuntimeException('MONGO_URI environment variable is required');
 }
 
-// Remove any trailing newlines or spaces:
-$mongoUri = trim($mongoUri);
+// 2) Pass the TLS‐allow‐invalid flag in the driver options, not in the URI
+$mongoOptions = [
+    // this lets the driver skip strict cert validation on Atlas
+    'tlsAllowInvalidCertificates' => true,
+];
 
-// Now instantiate the client:
-$mongoClient = new MongoDB\Client($mongoUri);
-// Pick your collection
-$preferencesCollection = $mongoClient
+$mongoClient = new MongoClient($mongoUri, $mongoOptions);
+
+// 3) Grab your collection
+$prefsCollection = $mongoClient
     ->selectDatabase('ecoridepool')
     ->selectCollection('user_preferences');
 
-// ────────────────────────────────────────────────────────────
-// 3) Return for DI
-// ────────────────────────────────────────────────────────────
 return [
     'pdo'              => $pdo,
-    'prefs_collection' => $preferencesCollection,
+    'prefs_collection' => $prefsCollection,
 ];
