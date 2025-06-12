@@ -20,15 +20,28 @@ return (function () {
     );
 
     // MongoDB Atlas
-    $mongoUri = getenv('MONGO_URI')
-        ?: 'mongodb+srv://uwaugboaja:6bEKOKuDTtsk2CLf@cluster0.nwx7mtr.mongodb.net/ecoridepool';
-    $mongoClient = new MongoClient($mongoUri);
+    $mongoUri = getenv('MONGO_URI');
+    if (! $mongoUri) {
+        throw new RuntimeException('MONGO_URI environment variable not set');
+    }
+
+    // ** Add TLS options here **
+    $mongoOptions = [
+        // enforce TLS
+        'tls' => true,
+        // temporarily allow invalid/self-signed certs
+        'tlsAllowInvalidCertificates' => true,
+    ];
+
+    $mongoClient = new MongoClient($mongoUri, $mongoOptions);
     $preferencesCollection = $mongoClient
         ->selectDatabase('ecoridepool')
         ->selectCollection('user_preferences');
 
     return [
-        'pdo'                  => $pdo,
-        'prefs_collection'     => $preferencesCollection,
+        'pdo'              => $pdo,
+        'prefs_collection' => $preferencesCollection,
     ];
 })();
+
+
