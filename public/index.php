@@ -17,7 +17,7 @@ require __DIR__ . '/../vendor/autoload.php';
 // ────────────────────────────────────────────────────────────
 // Load unified database configuration
 // ────────────────────────────────────────────────────────────
-$dbConfig = require __DIR__ . '/../app/config/databases.php';
+$dbConfig = require __DIR__ . '/../app/db.php';
 
 // ────────────────────────────────────────────────────────────
 // Create DI container & attach to Slim
