@@ -1,0 +1,20 @@
+<IfModule mod_rewrite.c>
+    # Turn on the rewrite engine
+    RewriteEngine On
+
+    # (Optional) Set the base URL if your app is in a subdirectory
+    # RewriteBase /
+
+    # If the request is for an existing file or directory, serve it normally
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Otherwise, redirect all traffic to index.php
+    RewriteRule ^ index.php [L,QSA]
+</IfModule>
+
+# Prevent access to .env or other hidden files
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
