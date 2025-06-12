@@ -37,15 +37,15 @@ if ($mongoUri === '') {
     throw new RuntimeException('MONGO_URI environment variable is required');
 }
 
-// 2) Pass the TLS‐allow‐invalid flag in the driver options, not in the URI
+// Point the driver at the CA bundle for proper TLS validation:
 $mongoOptions = [
-    // this lets the driver skip strict cert validation on Atlas
-    'tlsAllowInvalidCertificates' => true,
+    'tls'        => true,
+    'tlsCAFile'  => __DIR__ . '/certs/cacert.pem',
+    // optional: if hostname validation still fails, you can add:
+    // 'tlsAllowInvalidHostnames' => true,
 ];
 
 $mongoClient = new MongoClient($mongoUri, $mongoOptions);
-
-// 3) Grab your collection
 $prefsCollection = $mongoClient
     ->selectDatabase('ecoridepool')
     ->selectCollection('user_preferences');
