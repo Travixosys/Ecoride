@@ -20,27 +20,20 @@ return (function () {
     );
 
     // MongoDB Atlas
-
-    // Decide which Mongo URI to use
-    $atlasUri = getenv('MONGO_URI');
-
-    if ($atlasUri) {
-        // Production on Heroku: Atlas + CA bundle
-        $caFile = __DIR__ . '/certs/cacert.pem';
-        if (! is_file($caFile)) {
-            throw new \RuntimeException("CA bundle not found at {$caFile}");
-        }
-        $mongoOptions = [
-            // driver will use TLS automatically on mongodb+srv
-            'tlsCAFile' => $caFile,
-            // (no tlsAllowInvalidCertificates here — we want real validation)
-        ];
-        $mongoClient = new MongoClient($atlasUri, $mongoOptions);
-    } else {
-        // Local dev fallback
-        $mongoClient = new MongoClient('mongodb://localhost:27017');
+    $mongoUri = getenv('MONGO_URI');
+    if (! $mongoUri) {
+        throw new RuntimeException('MONGO_URI environment variable not set');
     }
 
+    // ** Add TLS options here **
+    $mongoOptions = [
+        // enforce TLS
+        'tls' => true,
+        // temporarily allow invalid/self-signed certs
+        'tlsAllowInvalidCertificates' => true,
+    ];
+
+    $mongoClient = new MongoClient($mongoUri, $mongoOptions);
     $preferencesCollection = $mongoClient
         ->selectDatabase('ecoridepool')
         ->selectCollection('user_preferences');
