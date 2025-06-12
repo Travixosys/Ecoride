@@ -37,9 +37,11 @@ if (! $mongoUri) {
     throw new RuntimeException('MONGO_URI environment variable is required');
 }
 
-// Let the URI carry any TLS/options flags (e.g. "?tls=true&tlsCAFile=/app/certs/ca.pem")
-$mongoClient = new MongoClient($mongoUri);
+// Remove any trailing newlines or spaces:
+$mongoUri = trim($mongoUri);
 
+// Now instantiate the client:
+$mongoClient = new MongoDB\Client($mongoUri);
 // Pick your collection
 $preferencesCollection = $mongoClient
     ->selectDatabase('ecoridepool')
