@@ -39,17 +39,13 @@ if ($mongoUri === '') {
     throw new RuntimeException('MONGO_URI environment variable is required');
 }
 
-// Instantiate the client with SSL enabled and skip cert validation
-$mongoClient = new MongoDB\Client(
-    $mongoUri,
-    [], // no special URI options
-    [
-        'ssl'                         => true,
-        'sslAllowInvalidCertificates' => true,
-    ]
-);
+// Bypass all TLS checks in one option:
+$driverOptions = [
+    'tlsInsecure' => true,
+];
 
-// Grab the collection
+$mongoClient = new MongoClient($mongoUri, [], $driverOptions);
+
 $prefsCollection = $mongoClient
     ->selectDatabase('ecoridepool')
     ->selectCollection('user_preferences');
