@@ -32,20 +32,24 @@ $pdo = new PDO($dsn, $mysqlUser, $mysqlPass, [
 // ────────────────────────────────────────────────────────────
 // 2) MongoDB Atlas — only from MONGO_URI ENV
 // ────────────────────────────────────────────────────────────
-$mongoUri = trim(getenv('MONGO_URI') ?: '');
+
+
+$mongoUri = trim((string) getenv('MONGO_URI'));
 if ($mongoUri === '') {
     throw new RuntimeException('MONGO_URI environment variable is required');
 }
 
-// Point the driver at the CA bundle for proper TLS validation:
-$mongoOptions = [
-    'tls'        => true,
-    'tlsCAFile'  => __DIR__ . '/certs/cacert.pem',
-    // optional: if hostname validation still fails, you can add:
-    // 'tlsAllowInvalidHostnames' => true,
-];
+// Instantiate the client with SSL enabled and skip cert validation
+$mongoClient = new MongoDB\Client(
+    $mongoUri,
+    [], // no special URI options
+    [
+        'ssl'                         => true,
+        'sslAllowInvalidCertificates' => true,
+    ]
+);
 
-$mongoClient = new MongoClient($mongoUri, $mongoOptions);
+// Grab the collection
 $prefsCollection = $mongoClient
     ->selectDatabase('ecoridepool')
     ->selectCollection('user_preferences');
