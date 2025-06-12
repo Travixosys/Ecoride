@@ -1,0 +1,28 @@
+{% extends "layout.twig" %}
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-4 bg-white rounded shadow w-full px-2" w-full px-2>
+    <h2 class="text-2xl font-bold text-green-800 text-center mb-6">Dispute Details</h2>
+
+    <div class="mb-4">
+        <p><strong>Driver:</strong> {{ carpool.driver_name }}</p>
+        <p><strong>From:</strong> {{ carpool.pickup_location }}</p>
+        <p><strong>To:</strong> {{ carpool.dropoff_location }}</p>
+        <p><strong>Status:</strong> {{ carpool.status }}</p>
+    </div>
+
+    <hr class="my-4">
+
+    <h3 class="text-xl font-semibold mb-2">Flagged by:</h3>
+    <ul class="list-disc ml-6">
+        {% for p in flaggers %}
+            <li>{{ p.name }} (ID: {{ p.passenger_id }})</li>
+        {% else %}
+            <li class="text-gray-500">No flagged passengers found.</li>
+        {% endfor %}
+    </ul>
+
+    <div class="mt-6 text-center">
+        <a href="/employee" class="text-green-600 underline text-sm">← Back to list</a>
+    </div>
+</div>
+{% endblock %}

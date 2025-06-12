@@ -1,16 +1,65 @@
 {% extends "layout.twig" %}
 
-{% block content %}
-<div class="text-center">
-    <h2 class="text-2xl font-semibold text-gray-800">Welcome to EcoRide</h2>
-    <p class="text-gray-600 mt-2">Your eco-friendly carpooling service.</p>
+{% block title %}Welcome to EcoRide
+{% endblock %}
 
-    <a href="/request-ride" class="mt-6 inline-block bg-green-700 text-white py-2 px-4 rounded-md shadow hover:bg-green-600">
-        Find a Carpool
-    </a>
-    <div class="mt-6 space-y-4">
-        <a href="/register" class="block bg-green-600 text-white py-2 rounded-md hover:bg-green-700">Register</a>
-        <a href="/login" class="block bg-gray-600 text-white py-2 rounded-md hover:bg-gray-700">Login</a>
-    </div>
-</div>
+{% block content %}
+	<!-- Fullscreen hero with floating UI (non-scrollable) -->
+	<section
+		class="relative w-full h-[calc(100vh-7rem)] overflow-hidden bg-cover bg-center text-white" style="background-image: url('/images/caecoride_img_0.webp');">
+
+		<!-- Dark overlay -->
+		<div class="absolute inset-0 bg-black bg-opacity-40"></div>
+
+		<!-- Centered content -->
+		<div class="relative z-10 flex flex-col justify-center items-center h-full w-full px-4">
+			<h2 class="text-xl md:text-3xl font-bold mb-2 text-center" style="font-family: 'Montserrat', sans-serif;">
+				Find your next eco-friendly carpool
+			</h2>
+			<p class="mb-4 text-sm md:text-base text-center" style="font-family: 'Roboto', sans-serif;">
+				Travel affordably. Reduce emissions. Ride smart.
+			</p>
+
+			<!-- Search form card -->
+			<div class="bg-white bg-opacity-90 backdrop-blur-md rounded-2xl shadow-lg p-5 w-full max-w-sm text-left">
+				<form id="carpoolSearch" method="GET" action="/carpools" class="space-y-3">
+
+					<input name="pickup" type="text" placeholder="Departure" class="w-full px-3 py-2 border rounded text-sm text-gray-800">
+
+					<input name="dropoff" type="text" placeholder="Destination" class="w-full px-3 py-2 border rounded text-sm text-gray-800">
+
+					<input name="date" type="date" class="w-full px-3 py-2 border rounded text-sm text-gray-800 bg-white">
+					<input type="number" name="min_seats" placeholder="Min Seats" min="1" class="w-full px-3 py-2 border rounded text-sm text-gray-800" value="{{ filters.min_seats|default('') }}">
+
+
+					<button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 rounded" style="font-family: 'Roboto', sans-serif;">
+						Search Carpools
+					</button>
+				</form>
+			</div>
+
+			<!-- Why EcoRide block -->
+			<section class="bg-white bg-opacity-90 backdrop-blur-md rounded-2xl shadow-lg p-4 mt-4 w-full max-w-sm text-sm text-gray-700" style="font-family: 'Roboto', sans-serif;">
+				<h3 class="text-green-700 font-semibold mb-2">Why EcoRide?</h3>
+				<ul class="list-disc list-inside space-y-1">
+					<li>Save on travel costs with trusted drivers</li>
+					<li>Eco-friendly electric and hybrid options</li>
+					<li>Mobile-first, easy ride booking</li>
+				</ul>
+			</section>
+		</div>
+	</section>
+	<script>
+	document.getElementById("carpoolSearch").addEventListener("submit", function (e) {
+	const pickup = this.querySelector("[name='pickup']").value.trim();
+	const dropoff = this.querySelector("[name='dropoff']").value.trim();
+	const date = this.querySelector("[name='date']").value.trim();
+	const minSeats = this.querySelector("[name='min_seats']").value.trim();
+
+	if (! pickup && ! dropoff && ! date && ! minSeats) {e.preventDefault();
+	window.location.href = "/carpools"; // Redirect manually
+	}
+	});
+	</script>
+
 {% endblock %}

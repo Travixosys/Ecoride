@@ -1,0 +1,83 @@
+{% extends "layout.twig" %}
+
+{% block title %}Available Carpools | EcoRide{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-6 space-y-6 w-full px-2" w-full px-2>
+
+    <!-- Page Title -->
+    <h2 class="text-2xl font-bold text-green-700 text-center">Available Carpools</h2>
+
+    <!-- Filter Form -->
+    <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <input type="text" name="pickup" placeholder="Departure"
+               class="px-4 py-2 border rounded w-full"
+               value="{{ filters.pickup|default('') }}">
+
+        <input type="text" name="dropoff" placeholder="Destination"
+               class="px-4 py-2 border rounded w-full"
+               value="{{ filters.dropoff|default('') }}">
+
+        <input type="number" name="min_seats" placeholder="Min Seats" min="1"
+               class="px-4 py-2 border rounded w-full"
+               value="{{ filters.min_seats|default('') }}">
+
+        <select name="energy" class="px-4 py-2 border rounded w-full">
+            <option value="">All Energy Types</option>
+            <option value="electric" {% if filters.energy == 'electric' %}selected{% endif %}>Electric</option>
+            <option value="hybrid" {% if filters.energy == 'hybrid' %}selected{% endif %}>Hybrid</option>
+            <option value="diesel" {% if filters.energy == 'diesel' %}selected{% endif %}>Diesel</option>
+            <option value="petrol" {% if filters.energy == 'petrol' %}selected{% endif %}>Petrol</option>
+        </select>
+
+        <label class="flex items-center space-x-2 md:col-span-2">
+            <input type="checkbox" name="eco" value="1"
+                   class="form-checkbox"
+                   {% if filters.eco == '1' %}checked{% endif %}>
+            <span class="text-sm">Eco-friendly only</span>
+        </label>
+
+        <button type="submit"
+                class="md:col-span-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">
+            Apply Filters
+        </button>
+    </form>
+
+    <!-- Results -->
+    {% if carpools is not empty %}
+        <div class="space-y-4">
+            {% for carpool in carpools %}
+            <div class="bg-white border border-gray-200 rounded-xl shadow p-4 w-full space-y-3">
+                <!-- Departure Info -->
+                <div class="flex justify-between items-center text-sm text-gray-600">
+                    <div class="mr-2"><strong>Departure:</strong> {{ carpool.departure_time|date("D, M j,H:i") }}</div>
+                    <div class="text-green-600 font-semibold">{{ carpool.energy_type|capitalize }}</div>
+                </div>
+
+                <!-- Route Info -->
+                <div class="flex justify-between items-center text-sm text-gray-800">
+                    <div><strong>From:</strong> {{ carpool.pickup_location }}</div>
+                    <div><strong>To:</strong> {{ carpool.dropoff_location }}</div>
+                </div>
+
+                <!-- Driver and Seats -->
+                <div class="flex justify-between items-center text-sm text-gray-700">
+                    <div><strong>Driver:</strong> {{ carpool.driver_name }}</div>
+                    <div><strong>Seats:</strong> {{ carpool.total_seats - carpool.occupied_seats }}</div>
+                </div>
+
+                <!-- CTA -->
+                <div class="pt-3 text-right">
+                    <a href="/carpools/{{ carpool.id }}"
+                       class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded text-sm">
+                        View Details
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-gray-500">No carpools available at the moment.</p>
+    {% endif %}
+</div>
+{% endblock %}

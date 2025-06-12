@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", async function () {
-    const container = document.getElementById("ride-history-container");
+    const container = document.getElementById("rides-container");
 
     try {
-        const response = await fetch("/ride-history");
+        const response = await fetch("/rides");
         const data = await response.json();
 
         if (data.error) {

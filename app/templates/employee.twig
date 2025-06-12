@@ -1,0 +1,155 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+	<div
+		class="max-w-3xl mx-auto px-4 py-6 space-y-6">
+
+		<!-- Section: Disputed Carpools -->
+		<h2 class="text-xl font-bold text-green-800 text-center">Disputed Carpools</h2>
+
+		{% if disputes is empty %}
+			<p class="text-center text-gray-600">No disputes found.</p>
+		{% else %}
+			{% for carpool in disputes %}
+				<div
+					class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 w-full space-y-3">
+
+					<!-- Locations -->
+					<div class="flex justify-between items-center text-sm text-gray-700">
+						<div class="font-semibold">{{ carpool.pickup_location }}</div>
+						<div class="text-gray-400">→</div>
+						<div class="font-semibold">{{ carpool.dropoff_location }}</div>
+					</div>
+
+					<!-- Metadata -->
+					<div class="flex flex-wrap justify-between items-center text-xs gap-2">
+						<div class="text-red-600">
+							<strong>Flagged by:</strong>
+							{{ carpool.flagged_by ?? 'N/A' }}</div>
+						<div>
+							<strong>Driver:</strong>
+							{{ carpool.driver_name }}</div>
+						<div class="text-red-600 font-semibold">{{ carpool.status|capitalize }}</div>
+					</div>
+
+					<!-- Actions -->
+					<div class="flex justify-between items-center pt-2">
+						<form method="POST" action="/employee/resolve/{{ carpool.id }}">
+							<button class="bg-green-600 hover:bg-green-700 text-white text-xs px-4 py-1 rounded">
+								Mark Resolved
+							</button>
+						</form>
+						<a href="/employee/dispute/{{ carpool.id }}" class="text-blue-600 hover:underline text-xs">
+							View Details
+						</a>
+					</div>
+
+				</div>
+			{% endfor %}
+		{% endif %}
+
+		<!-- Section: Resolved Carpools -->
+		<h2 class="text-xl font-bold text-green-800 text-center mt-10">Resolved Carpools</h2>
+
+		{% if resolved is empty %}
+			<p class="text-center text-gray-600">No resolved disputes.</p>
+		{% else %}
+			{% for carpool in resolved %}
+				<div
+					class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 w-full space-y-3">
+
+					<!-- Locations -->
+					<div class="flex justify-between items-center text-sm text-gray-700">
+						<div class="font-semibold">{{ carpool.pickup_location }}</div>
+						<div class="text-gray-400">→</div>
+						<div class="font-semibold">{{ carpool.dropoff_location }}</div>
+					</div>
+
+					<!-- Metadata -->
+					<div class="flex flex-wrap justify-between items-center text-xs gap-2">
+						<div class="text-red-600">
+							<strong>Flagged by:</strong>
+							{{ carpool.flagged_by ?? 'N/A' }}</div>
+						<div>
+							<strong>Driver:</strong>
+							{{ carpool.driver_name }}</div>
+						<div class="text-gray-600 font-semibold">{{ carpool.status|capitalize }}</div>
+					</div>
+
+					<!-- Action -->
+					<div class="flex justify-end pt-2">
+						<a href="/employee/dispute/{{ carpool.id }}" class="text-blue-600 hover:underline text-xs">
+							View Details
+						</a>
+					</div>
+
+				</div>
+			{% endfor %}
+		{% endif %}
+
+		<!-- Section: Ride Reviews -->
+		<h2 class="text-xl font-bold text-green-800 text-center mt-10">Pending Reviews</h2>
+
+		{% if reviews is empty %}
+			<p class="text-center text-gray-600">No reviews available.</p>
+		{% else %}
+			{% set grouped = {} %}
+			{% for review in reviews %}
+				{% set driver = review.driver_name %}
+				{% if grouped[driver] is not defined %}
+					{% set grouped = grouped|merge({ (driver): [review] }) %}
+				{% else %}
+					{% set grouped = grouped|merge({ (driver): grouped[driver]|merge([review]) }) %}
+				{% endif %}
+			{% endfor %}
+
+			{% for driver, driver_reviews in grouped %}
+				<details class="bg-white border border-gray-200 rounded-xl shadow-sm mb-6">
+					<summary class="cursor-pointer px-4 py-2 text-md font-semibold text-green-800 select-none">
+						{{ driver }}
+						({{ driver_reviews|length }}
+						review{{ driver_reviews|length > 1 ? 's' : '' }})
+					</summary>
+
+					<div class="p-4 space-y-4">
+						{% for review in driver_reviews %}
+							<div class="bg-gray-50 border border-gray-200 rounded-xl shadow-sm p-4 w-full space-y-3">
+								<div class="flex flex-wrap justify-between items-start text-xs gap-2 text-gray-700">
+									<div>
+										<strong>Author:</strong>
+										{{ review.author_name }}</div>
+									<div>
+										<strong>Rating:</strong>
+										{{ review.rating }}/5</div>
+								</div>
+								<div class="flex justify-between items-center text-sm text-gray-700">
+									<div class="font-semibold">{{ review.pickup_location }}</div>
+									<div class="text-gray-400">→</div>
+									<div class="font-semibold">{{ review.dropoff_location }}</div>
+								</div>
+								<div class="text-xs text-gray-600 italic">"{{ review.comment }}"</div>
+								<div class="flex justify-end pt-2">
+									<div class="text-xs text-gray-400 w-full text-left whitespace-nowrap">
+										On
+										{{ review.created_at|date("M j, \\a\\t H:i") }}
+									</div>
+
+									<form method="POST" action="/employee/reviews/{{ review.id }}/approve">
+										<button class="bg-green-600 text-white px-2 py-1 rounded">Approve</button>
+									</form>
+									<form method="POST" action="/employee/reviews/{{ review.id }}/reject">
+										<button class="bg-red-600 text-white px-2 py-1 rounded">Reject</button>
+									</form>
+
+
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				</details>
+			{% endfor %}
+		{% endif %}
+
+
+	</div>
+{% endblock %}

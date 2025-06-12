@@ -1,0 +1,1106 @@
+Structure du dossier
+Le num‚ro de s‚rie du volume est 9813-B40F
+C:.
+³   .gitignore
+³   composer.json
+³   composer.json.tmp
+³   composer.lock
+³   et --hard 6a52f8d
+³   file.txt
+³   README.md
+³   seed_users.php
+³   tree.txt
+³   
+ÃÄÄÄapp
+³   ³   db.php
+³   ³   dependencies.php
+³   ³   mongodb.php
+³   ³   routes copy 13.05.php
+³   ³   routes copy.php
+³   ³   routes.php
+³   ³   
+³   ÃÄÄÄControllers
+³   ³       AdminController copy.php
+³   ³       AdminController.php
+³   ³       CarpoolController.php
+³   ³       cept ride.php
+³   ³       DriverController.php
+³   ³       EmployeeController copy.php
+³   ³       EmployeeController.php
+³   ³       HomeController.php
+³   ³       ReviewController.php
+³   ³       RideController BALINE.php
+³   ³       RideController copy 2.php
+³   ³       RideController copy.php
+³   ³       RideController.php
+³   ³       UserController copy.php
+³   ³       UserController.php
+³   ³       
+³   ÃÄÄÄModels
+³   ³       Carpool copy.php
+³   ³       Carpool.php
+³   ³       Ride.php
+³   ³       RideRequest.php
+³   ³       User.php
+³   ³       Vehicle.php
+³   ³       
+³   ÀÄÄÄtemplates
+³           active-rides.twig
+³           admin copy 2.twig
+³           admin copy.twig
+³           admin.twig
+³           carpool copy 2.twig
+³           carpool copy.twig
+³           carpool-create.twig
+³           carpool-detail.twig
+³           carpool-list.twig
+³           carpool.twig
+³           dispute-detail.twig
+³           driver-carpools copy.twig
+³           driver-carpools.twig
+³           driver-requests.twig
+³           driver-ride-history copy.twig
+³           employee copy 2.twig
+³           employee copy 3.twig
+³           employee copy.twig
+³           employee.twig
+³           home copy.twig
+³           home.twig
+³           layout copy 2.twig
+³           layout copy.twig
+³           layout.twig
+³           layoutorigin.twig
+³           login.twig
+³           menu.twig
+³           profile.twig
+³           register.twig
+³           review.twig
+³           ride-history.twig
+³           
+ÃÄÄÄdata
+³       dIAGRAM.PNG
+³       ecoridepool.user_preferences.json
+³       ecoridepool_rides.sql
+³       ecoridepool_users.sql
+³       ecoridepool_vehicles.sql
+³       ful.sql
+³       POOL.pdf
+³       schema.mwb
+³       
+ÃÄÄÄpublic
+³   ³   index.php
+³   ³   
+³   ÃÄÄÄcss
+³   ³       style.css
+³   ³       
+³   ÃÄÄÄimages
+³   ³       caecoride_img_0.webp
+³   ³       
+³   ÀÄÄÄjs
+³           admin-charts.js
+³           admin.js
+³           driver-history.js
+³           driver-requests.js
+³           login.js
+³           register.js
+³           ride-history.js
+³           
+ÀÄÄÄvendor
+    ³   autoload.php
+    ³   
+    ÃÄÄÄcomposer
+    ³       autoload_classmap.php
+    ³       autoload_files.php
+    ³       autoload_namespaces.php
+    ³       autoload_psr4.php
+    ³       autoload_real.php
+    ³       autoload_static.php
+    ³       ClassLoader.php
+    ³       installed.json
+    ³       installed.php
+    ³       InstalledVersions.php
+    ³       LICENSE
+    ³       platform_check.php
+    ³       
+    ÃÄÄÄfig
+    ³   ÀÄÄÄhttp-message-util
+    ³       ³   .gitignore
+    ³       ³   CHANGELOG.md
+    ³       ³   composer.json
+    ³       ³   LICENSE
+    ³       ³   README.md
+    ³       ³   
+    ³       ÀÄÄÄsrc
+    ³               RequestMethodInterface.php
+    ³               StatusCodeInterface.php
+    ³               
+    ÃÄÄÄfirebase
+    ³   ÀÄÄÄphp-jwt
+    ³       ³   CHANGELOG.md
+    ³       ³   composer.json
+    ³       ³   LICENSE
+    ³       ³   README.md
+    ³       ³   
+    ³       ÀÄÄÄsrc
+    ³               BeforeValidException.php
+    ³               CachedKeySet.php
+    ³               ExpiredException.php
+    ³               JWK.php
+    ³               JWT.php
+    ³               JWTExceptionWithPayloadInterface.php
+    ³               Key.php
+    ³               SignatureInvalidException.php
+    ³               
+    ÃÄÄÄlaravel
+    ³   ÀÄÄÄserializable-closure
+    ³       ³   composer.json
+    ³       ³   LICENSE.md
+    ³       ³   README.md
+    ³       ³   
+    ³       ÀÄÄÄsrc
+    ³           ³   SerializableClosure.php
+    ³           ³   UnsignedSerializableClosure.php
+    ³           ³   
+    ³           ÃÄÄÄContracts
+    ³           ³       Serializable.php
+    ³           ³       Signer.php
+    ³           ³       
+    ³           ÃÄÄÄExceptions
+    ³           ³       InvalidSignatureException.php
+    ³           ³       MissingSecretKeyException.php
+    ³           ³       PhpVersionNotSupportedException.php
+    ³           ³       
+    ³           ÃÄÄÄSerializers
+    ³           ³       Native.php
+    ³           ³       Signed.php
+    ³           ³       
+    ³           ÃÄÄÄSigners
+    ³           ³       Hmac.php
+    ³           ³       
+    ³           ÀÄÄÄSupport
+    ³                   ClosureScope.php
+    ³                   ClosureStream.php
+    ³                   ReflectionClosure.php
+    ³                   SelfReference.php
+    ³                   
+    ÃÄÄÄmongodb
+    ³   ÀÄÄÄmongodb
+    ³       ³   composer.json
+    ³       ³   LICENSE
+    ³       ³   rector.php
+    ³       ³   sbom.json
+    ³       ³   
+    ³       ÀÄÄÄsrc
+    ³           ³   BulkWriteResult.php
+    ³           ³   ChangeStream.php
+    ³           ³   Client.php
+    ³           ³   Collection.php
+    ³           ³   Database.php
+    ³           ³   DeleteResult.php
+    ³           ³   functions.php
+    ³           ³   InsertManyResult.php
+    ³           ³   InsertOneResult.php
+    ³           ³   MapReduceResult.php
+    ³           ³   PsrLogAdapter.php
+    ³           ³   UpdateResult.php
+    ³           ³   
+    ³           ÃÄÄÄCodec
+    ³           ³       Codec.php
+    ³           ³       DecodeIfSupported.php
+    ³           ³       Decoder.php
+    ³           ³       DocumentCodec.php
+    ³           ³       EncodeIfSupported.php
+    ³           ³       Encoder.php
+    ³           ³       
+    ³           ÃÄÄÄCommand
+    ³           ³       ListCollections.php
+    ³           ³       ListDatabases.php
+    ³           ³       
+    ³           ÃÄÄÄException
+    ³           ³       BadMethodCallException.php
+    ³           ³       CreateEncryptedCollectionException.php
+    ³           ³       Exception.php
+    ³           ³       InvalidArgumentException.php
+    ³           ³       ResumeTokenException.php
+    ³           ³       RuntimeException.php
+    ³           ³       UnexpectedValueException.php
+    ³           ³       UnsupportedException.php
+    ³           ³       UnsupportedValueException.php
+    ³           ³       
+    ³           ÃÄÄÄGridFS
+    ³           ³   ³   Bucket.php
+    ³           ³   ³   CollectionWrapper.php
+    ³           ³   ³   ReadableStream.php
+    ³           ³   ³   StreamWrapper.php
+    ³           ³   ³   WritableStream.php
+    ³           ³   ³   
+    ³           ³   ÀÄÄÄException
+    ³           ³           CorruptFileException.php
+    ³           ³           FileNotFoundException.php
+    ³           ³           LogicException.php
+    ³           ³           StreamException.php
+    ³           ³           
+    ³           ÃÄÄÄModel
+    ³           ³       BSONArray.php
+    ³           ³       BSONDocument.php
+    ³           ³       BSONIterator.php
+    ³           ³       CachingIterator.php
+    ³           ³       CallbackIterator.php
+    ³           ³       ChangeStreamIterator.php
+    ³           ³       CodecCursor.php
+    ³           ³       CollectionInfo.php
+    ³           ³       CollectionInfoCommandIterator.php
+    ³           ³       CollectionInfoIterator.php
+    ³           ³       DatabaseInfo.php
+    ³           ³       DatabaseInfoIterator.php
+    ³           ³       DatabaseInfoLegacyIterator.php
+    ³           ³       IndexInfo.php
+    ³           ³       IndexInfoIterator.php
+    ³           ³       IndexInfoIteratorIterator.php
+    ³           ³       IndexInput.php
+    ³           ³       SearchIndexInput.php
+    ³           ³       
+    ³           ÀÄÄÄOperation
+    ³                   Aggregate.php
+    ³                   BulkWrite.php
+    ³                   Count.php
+    ³                   CountDocuments.php
+    ³                   CreateCollection.php
+    ³                   CreateEncryptedCollection.php
+    ³                   CreateIndexes.php
+    ³                   CreateSearchIndexes.php
+    ³                   DatabaseCommand.php
+    ³                   Delete.php
+    ³                   DeleteMany.php
+    ³                   DeleteOne.php
+    ³                   Distinct.php
+    ³                   DropCollection.php
+    ³                   DropDatabase.php
+    ³                   DropEncryptedCollection.php
+    ³                   DropIndexes.php
+    ³                   DropSearchIndex.php
+    ³                   EstimatedDocumentCount.php
+    ³                   Executable.php
+    ³                   Explain.php
+    ³                   Explainable.php
+    ³                   Find.php
+    ³                   FindAndModify.php
+    ³                   FindOne.php
+    ³                   FindOneAndDelete.php
+    ³                   FindOneAndReplace.php
+    ³                   FindOneAndUpdate.php
+    ³                   InsertMany.php
+    ³                   InsertOne.php
+    ³                   ListCollectionNames.php
+    ³                   ListCollections.php
+    ³                   ListDatabaseNames.php
+    ³                   ListDatabases.php
+    ³                   ListIndexes.php
+    ³                   ListSearchIndexes.php
+    ³                   MapReduce.php
+    ³                   ModifyCollection.php
+    ³                   RenameCollection.php
+    ³                   ReplaceOne.php
+    ³                   Update.php
+    ³                   UpdateMany.php
+    ³                   UpdateOne.php
+    ³                   UpdateSearchIndex.php
+    ³                   Watch.php
+    ³                   WithTransaction.php
+    ³                   
+    ÃÄÄÄnikic
+    ³   ÀÄÄÄfast-route
+    ³       ³   .gitignore
+    ³       ³   .hhconfig
+    ³       ³   .travis.yml
+    ³       ³   composer.json
+    ³       ³   FastRoute.hhi
+    ³       ³   LICENSE
+    ³       ³   phpunit.xml
+    ³       ³   psalm.xml
+    ³       ³   README.md
+    ³       ³   
+    ³       ÃÄÄÄsrc
+    ³       ³   ³   BadRouteException.php
+    ³       ³   ³   bootstrap.php
+    ³       ³   ³   DataGenerator.php
+    ³       ³   ³   Dispatcher.php
+    ³       ³   ³   functions.php
+    ³       ³   ³   Route.php
+    ³       ³   ³   RouteCollector.php
+    ³       ³   ³   RouteParser.php
+    ³       ³   ³   
+    ³       ³   ÃÄÄÄDataGenerator
+    ³       ³   ³       CharCountBased.php
+    ³       ³   ³       GroupCountBased.php
+    ³       ³   ³       GroupPosBased.php
+    ³       ³   ³       MarkBased.php
+    ³       ³   ³       RegexBasedAbstract.php
+    ³       ³   ³       
+    ³       ³   ÃÄÄÄDispatcher
+    ³       ³   ³       CharCountBased.php
+    ³       ³   ³       GroupCountBased.php
+    ³       ³   ³       GroupPosBased.php
+    ³       ³   ³       MarkBased.php
+    ³       ³   ³       RegexBasedAbstract.php
+    ³       ³   ³       
+    ³       ³   ÀÄÄÄRouteParser
+    ³       ³           Std.php
+    ³       ³           
+    ³       ÀÄÄÄtest
+    ³           ³   bootstrap.php
+    ³           ³   RouteCollectorTest.php
+    ³           ³   
+    ³           ÃÄÄÄDispatcher
+    ³           ³       CharCountBasedTest.php
+    ³           ³       DispatcherTest.php
+    ³           ³       GroupCountBasedTest.php
+    ³           ³       GroupPosBasedTest.php
+    ³           ³       MarkBasedTest.php
+    ³           ³       
+    ³           ÃÄÄÄHackTypechecker
+    ³           ³   ³   HackTypecheckerTest.php
+    ³           ³   ³   
+    ³           ³   ÀÄÄÄfixtures
+    ³           ³           all_options.php
+    ³           ³           empty_options.php
+    ³           ³           no_options.php
+    ³           ³           
+    ³           ÀÄÄÄRouteParser
+    ³                   StdTest.php
+    ³                   
+    ÃÄÄÄphp-di
+    ³   ÃÄÄÄinvoker
+    ³   ³   ³   composer.json
+    ³   ³   ³   LICENSE
+    ³   ³   ³   README.md
+    ³   ³   ³   
+    ³   ³   ÀÄÄÄsrc
+    ³   ³       ³   CallableResolver.php
+    ³   ³       ³   Invoker.php
+    ³   ³       ³   InvokerInterface.php
+    ³   ³       ³   
+    ³   ³       ÃÄÄÄException
+    ³   ³       ³       InvocationException.php
+    ³   ³       ³       NotCallableException.php
+    ³   ³       ³       NotEnoughParametersException.php
+    ³   ³       ³       
+    ³   ³       ÃÄÄÄParameterResolver
+    ³   ³       ³   ³   AssociativeArrayResolver.php
+    ³   ³       ³   ³   DefaultValueResolver.php
+    ³   ³       ³   ³   NumericArrayResolver.php
+    ³   ³       ³   ³   ParameterResolver.php
+    ³   ³       ³   ³   ResolverChain.php
+    ³   ³       ³   ³   TypeHintResolver.php
+    ³   ³       ³   ³   
+    ³   ³       ³   ÀÄÄÄContainer
+    ³   ³       ³           ParameterNameContainerResolver.php
+    ³   ³       ³           TypeHintContainerResolver.php
+    ³   ³       ³           
+    ³   ³       ÀÄÄÄReflection
+    ³   ³               CallableReflection.php
+    ³   ³               
+    ³   ÀÄÄÄphp-di
+    ³       ³   change-log.md
+    ³       ³   composer.json
+    ³       ³   LICENSE
+    ³       ³   README.md
+    ³       ³   support.md
+    ³       ³   
+    ³       ÀÄÄÄsrc
+    ³           ³   CompiledContainer.php
+    ³           ³   Container.php
+    ³           ³   ContainerBuilder.php
+    ³           ³   DependencyException.php
+    ³           ³   FactoryInterface.php
+    ³           ³   functions.php
+    ³           ³   NotFoundException.php
+    ³           ³   
+    ³           ÃÄÄÄAttribute
+    ³           ³       Inject.php
+    ³           ³       Injectable.php
+    ³           ³       
+    ³           ÃÄÄÄCompiler
+    ³           ³       Compiler.php
+    ³           ³       ObjectCreationCompiler.php
+    ³           ³       RequestedEntryHolder.php
+    ³           ³       Template.php
+    ³           ³       
+    ³           ÃÄÄÄDefinition
+    ³           ³   ³   ArrayDefinition.php
+    ³           ³   ³   ArrayDefinitionExtension.php
+    ³           ³   ³   AutowireDefinition.php
+    ³           ³   ³   DecoratorDefinition.php
+    ³           ³   ³   Definition.php
+    ³           ³   ³   EnvironmentVariableDefinition.php
+    ³           ³   ³   ExtendsPreviousDefinition.php
+    ³           ³   ³   FactoryDefinition.php
+    ³           ³   ³   InstanceDefinition.php
+    ³           ³   ³   ObjectDefinition.php
+    ³           ³   ³   Reference.php
+    ³           ³   ³   SelfResolvingDefinition.php
+    ³           ³   ³   StringDefinition.php
+    ³           ³   ³   ValueDefinition.php
+    ³           ³   ³   
+    ³           ³   ÃÄÄÄDumper
+    ³           ³   ³       ObjectDefinitionDumper.php
+    ³           ³   ³       
+    ³           ³   ÃÄÄÄException
+    ³           ³   ³       InvalidAttribute.php
+    ³           ³   ³       InvalidDefinition.php
+    ³           ³   ³       
+    ³           ³   ÃÄÄÄHelper
+    ³           ³   ³       AutowireDefinitionHelper.php
+    ³           ³   ³       CreateDefinitionHelper.php
+    ³           ³   ³       DefinitionHelper.php
+    ³           ³   ³       FactoryDefinitionHelper.php
+    ³           ³   ³       
+    ³           ³   ÃÄÄÄObjectDefinition
+    ³           ³   ³       MethodInjection.php
+    ³           ³   ³       PropertyInjection.php
+    ³           ³   ³       
+    ³           ³   ÃÄÄÄResolver
+    ³           ³   ³       ArrayResolver.php
+    ³           ³   ³       DecoratorResolver.php
+    ³           ³   ³       DefinitionResolver.php
+    ³           ³   ³       EnvironmentVariableResolver.php
+    ³           ³   ³       FactoryResolver.php
+    ³           ³   ³       InstanceInjector.php
+    ³           ³   ³       ObjectCreator.php
+    ³           ³   ³       ParameterResolver.php
+    ³           ³   ³       ResolverDispatcher.php
+    ³           ³   ³       
+    ³           ³   ÀÄÄÄSource
+    ³           ³           AttributeBasedAutowiring.php
+    ³           ³           Autowiring.php
+    ³           ³           DefinitionArray.php
+    ³           ³           DefinitionFile.php
+    ³           ³           DefinitionNormalizer.php
+    ³           ³           DefinitionSource.php
+    ³           ³           MutableDefinitionSource.php
+    ³           ³           NoAutowiring.php
+    ³           ³           ReflectionBasedAutowiring.php
+    ³           ³           SourceCache.php
+    ³           ³           SourceChain.php
+    ³           ³           
+    ³           ÃÄÄÄFactory
+    ³           ³       RequestedEntry.php
+    ³           ³       
+    ³           ÃÄÄÄInvoker
+    ³           ³       DefinitionParameterResolver.php
+    ³           ³       FactoryParameterResolver.php
+    ³           ³       
+    ³           ÀÄÄÄProxy
+    ³                   ProxyFactory.php
+    ³                   
+    ÃÄÄÄpsr
+    ³   ÃÄÄÄcontainer
+    ³   ³   ³   .gitignore
+    ³   ³   ³   composer.json
+    ³   ³   ³   LICENSE
+    ³   ³   ³   README.md
+    ³   ³   ³   
+    ³   ³   ÀÄÄÄsrc
+    ³   ³           ContainerExceptionInterface.php
+    ³   ³           ContainerInterface.php
+    ³   ³           NotFoundExceptionInterface.php
+    ³   ³           
+    ³   ÃÄÄÄhttp-factory
+    ³   ³   ³   composer.json
+    ³   ³   ³   LICENSE
+    ³   ³   ³   README.md
+    ³   ³   ³   
+    ³   ³   ÀÄÄÄsrc
+    ³   ³           RequestFactoryInterface.php
+    ³   ³           ResponseFactoryInterface.php
+    ³   ³           ServerRequestFactoryInterface.php
+    ³   ³           StreamFactoryInterface.php
+    ³   ³           UploadedFileFactoryInterface.php
+    ³   ³           UriFactoryInterface.php
+    ³   ³           
+    ³   ÃÄÄÄhttp-message
+    ³   ³   ³   CHANGELOG.md
+    ³   ³   ³   composer.json
+    ³   ³   ³   LICENSE
+    ³   ³   ³   README.md
+    ³   ³   ³   
+    ³   ³   ÃÄÄÄdocs
+    ³   ³   ³       PSR7-Interfaces.md
+    ³   ³   ³       PSR7-Usage.md
+    ³   ³   ³       
+    ³   ³   ÀÄÄÄsrc
+    ³   ³           MessageInterface.php
+    ³   ³           RequestInterface.php
+    ³   ³           ResponseInterface.php
+    ³   ³           ServerRequestInterface.php
+    ³   ³           StreamInterface.php
+    ³   ³           UploadedFileInterface.php
+    ³   ³           UriInterface.php
+    ³   ³           
+    ³   ÃÄÄÄhttp-server-handler
+    ³   ³   ³   composer.json
+    ³   ³   ³   LICENSE
+    ³   ³   ³   README.md
+    ³   ³   ³   
+    ³   ³   ÀÄÄÄsrc
+    ³   ³           RequestHandlerInterface.php
+    ³   ³           
+    ³   ÃÄÄÄhttp-server-middleware
+    ³   ³   ³   composer.json
+    ³   ³   ³   LICENSE
+    ³   ³   ³   README.md
+    ³   ³   ³   
+    ³   ³   ÀÄÄÄsrc
+    ³   ³           MiddlewareInterface.php
+    ³   ³           
+    ³   ÀÄÄÄlog
+    ³       ³   composer.json
+    ³       ³   LICENSE
+    ³       ³   README.md
+    ³       ³   
+    ³       ÀÄÄÄsrc
+    ³               AbstractLogger.php
+    ³               InvalidArgumentException.php
+    ³               LoggerAwareInterface.php
+    ³               LoggerAwareTrait.php
+    ³               LoggerInterface.php
+    ³               LoggerTrait.php
+    ³               LogLevel.php
+    ³               NullLogger.php
+    ³               
+    ÃÄÄÄralouphie
+    ³   ÀÄÄÄgetallheaders
+    ³       ³   composer.json
+    ³       ³   LICENSE
+    ³       ³   README.md
+    ³       ³   
+    ³       ÀÄÄÄsrc
+    ³               getallheaders.php
+    ³               
+    ÃÄÄÄslim
+    ³   ÃÄÄÄpsr7
+    ³   ³   ³   composer.json
+    ³   ³   ³   LICENSE.md
+    ³   ³   ³   phpunit.xml.dist
+    ³   ³   ³   
+    ³   ³   ÃÄÄÄsrc
+    ³   ³   ³   ³   Cookies.php
+    ³   ³   ³   ³   Environment.php
+    ³   ³   ³   ³   Header.php
+    ³   ³   ³   ³   Headers.php
+    ³   ³   ³   ³   Message.php
+    ³   ³   ³   ³   NonBufferedBody.php
+    ³   ³   ³   ³   Request.php
+    ³   ³   ³   ³   Response.php
+    ³   ³   ³   ³   Stream.php
+    ³   ³   ³   ³   UploadedFile.php
+    ³   ³   ³   ³   Uri.php
+    ³   ³   ³   ³   
+    ³   ³   ³   ÃÄÄÄFactory
+    ³   ³   ³   ³       RequestFactory.php
+    ³   ³   ³   ³       ResponseFactory.php
+    ³   ³   ³   ³       ServerRequestFactory.php
+    ³   ³   ³   ³       StreamFactory.php
+    ³   ³   ³   ³       UploadedFileFactory.php
+    ³   ³   ³   ³       UriFactory.php
+    ³   ³   ³   ³       
+    ³   ³   ³   ÀÄÄÄInterfaces
+    ³   ³   ³           HeadersInterface.php
+    ³   ³   ³           
+    ³   ³   ÀÄÄÄtests
+    ³   ³       ³   BodyTest.php
+    ³   ³       ³   bootstrap.php
+    ³   ³       ³   CookiesTest.php
+    ³   ³       ³   EnvironmentTest.php
+    ³   ³       ³   HeadersTest.php
+    ³   ³       ³   HeaderTest.php
+    ³   ³       ³   MessageTest.php
+    ³   ³       ³   NonBufferedBodyTest.php
+    ³   ³       ³   RequestTest.php
+    ³   ³       ³   ResponseTest.php
+    ³   ³       ³   StreamTest.php
+    ³   ³       ³   UploadedFileTest.php
+    ³   ³       ³   UriTest.php
+    ³   ³       ³   
+    ³   ³       ÃÄÄÄAssets
+    ³   ³       ³       HeaderStack.php
+    ³   ³       ³       
+    ³   ³       ÃÄÄÄFactory
+    ³   ³       ³       RequestFactoryTest.php
+    ³   ³       ³       ResponseFactoryTest.php
+    ³   ³       ³       ServerRequestFactoryTest.php
+    ³   ³       ³       StreamFactoryTest.php
+    ³   ³       ³       UploadedFileFactoryTest.php
+    ³   ³       ³       UriFactoryTest.php
+    ³   ³       ³       
+    ³   ³       ÃÄÄÄIntegration
+    ³   ³       ³       BaseTestFactories.php
+    ³   ³       ³       RequestTest.php
+    ³   ³       ³       ResponseTest.php
+    ³   ³       ³       ServerRequestTest.php
+    ³   ³       ³       StreamTest.php
+    ³   ³       ³       UploadedFileTest.php
+    ³   ³       ³       UriTest.php
+    ³   ³       ³       
+    ³   ³       ÀÄÄÄMocks
+    ³   ³               MessageStub.php
+    ³   ³               
+    ³   ÃÄÄÄslim
+    ³   ³   ³   CHANGELOG.md
+    ³   ³   ³   composer.json
+    ³   ³   ³   LICENSE.md
+    ³   ³   ³   MAINTAINERS.md
+    ³   ³   ³   psalm.xml
+    ³   ³   ³   SECURITY.md
+    ³   ³   ³   
+    ³   ³   ÀÄÄÄSlim
+    ³   ³       ³   App.php
+    ³   ³       ³   CallableResolver.php
+    ³   ³       ³   Logger.php
+    ³   ³       ³   MiddlewareDispatcher.php
+    ³   ³       ³   ResponseEmitter.php
+    ³   ³       ³   
+    ³   ³       ÃÄÄÄError
+    ³   ³       ³   ³   AbstractErrorRenderer.php
+    ³   ³       ³   ³   
+    ³   ³       ³   ÀÄÄÄRenderers
+    ³   ³       ³           HtmlErrorRenderer.php
+    ³   ³       ³           JsonErrorRenderer.php
+    ³   ³       ³           PlainTextErrorRenderer.php
+    ³   ³       ³           XmlErrorRenderer.php
+    ³   ³       ³           
+    ³   ³       ÃÄÄÄException
+    ³   ³       ³       HttpBadRequestException.php
+    ³   ³       ³       HttpException.php
+    ³   ³       ³       HttpForbiddenException.php
+    ³   ³       ³       HttpGoneException.php
+    ³   ³       ³       HttpInternalServerErrorException.php
+    ³   ³       ³       HttpMethodNotAllowedException.php
+    ³   ³       ³       HttpNotFoundException.php
+    ³   ³       ³       HttpNotImplementedException.php
+    ³   ³       ³       HttpSpecializedException.php
+    ³   ³       ³       HttpTooManyRequestsException.php
+    ³   ³       ³       HttpUnauthorizedException.php
+    ³   ³       ³       
+    ³   ³       ÃÄÄÄFactory
+    ³   ³       ³   ³   AppFactory.php
+    ³   ³       ³   ³   ServerRequestCreatorFactory.php
+    ³   ³       ³   ³   
+    ³   ³       ³   ÀÄÄÄPsr17
+    ³   ³       ³           GuzzlePsr17Factory.php
+    ³   ³       ³           HttpSoftPsr17Factory.php
+    ³   ³       ³           LaminasDiactorosPsr17Factory.php
+    ³   ³       ³           NyholmPsr17Factory.php
+    ³   ³       ³           Psr17Factory.php
+    ³   ³       ³           Psr17FactoryProvider.php
+    ³   ³       ³           ServerRequestCreator.php
+    ³   ³       ³           SlimHttpPsr17Factory.php
+    ³   ³       ³           SlimHttpServerRequestCreator.php
+    ³   ³       ³           SlimPsr17Factory.php
+    ³   ³       ³           
+    ³   ³       ÃÄÄÄHandlers
+    ³   ³       ³   ³   ErrorHandler.php
+    ³   ³       ³   ³   
+    ³   ³       ³   ÀÄÄÄStrategies
+    ³   ³       ³           RequestHandler.php
+    ³   ³       ³           RequestResponse.php
+    ³   ³       ³           RequestResponseArgs.php
+    ³   ³       ³           RequestResponseNamedArgs.php
+    ³   ³       ³           
+    ³   ³       ÃÄÄÄInterfaces
+    ³   ³       ³       AdvancedCallableResolverInterface.php
+    ³   ³       ³       CallableResolverInterface.php
+    ³   ³       ³       DispatcherInterface.php
+    ³   ³       ³       ErrorHandlerInterface.php
+    ³   ³       ³       ErrorRendererInterface.php
+    ³   ³       ³       InvocationStrategyInterface.php
+    ³   ³       ³       MiddlewareDispatcherInterface.php
+    ³   ³       ³       Psr17FactoryInterface.php
+    ³   ³       ³       Psr17FactoryProviderInterface.php
+    ³   ³       ³       RequestHandlerInvocationStrategyInterface.php
+    ³   ³       ³       RouteCollectorInterface.php
+    ³   ³       ³       RouteCollectorProxyInterface.php
+    ³   ³       ³       RouteGroupInterface.php
+    ³   ³       ³       RouteInterface.php
+    ³   ³       ³       RouteParserInterface.php
+    ³   ³       ³       RouteResolverInterface.php
+    ³   ³       ³       ServerRequestCreatorInterface.php
+    ³   ³       ³       
+    ³   ³       ÃÄÄÄMiddleware
+    ³   ³       ³       BodyParsingMiddleware.php
+    ³   ³       ³       ContentLengthMiddleware.php
+    ³   ³       ³       ErrorMiddleware.php
+    ³   ³       ³       MethodOverrideMiddleware.php
+    ³   ³       ³       OutputBufferingMiddleware.php
+    ³   ³       ³       RoutingMiddleware.php
+    ³   ³       ³       
+    ³   ³       ÀÄÄÄRouting
+    ³   ³               Dispatcher.php
+    ³   ³               FastRouteDispatcher.php
+    ³   ³               Route.php
+    ³   ³               RouteCollector.php
+    ³   ³               RouteCollectorProxy.php
+    ³   ³               RouteContext.php
+    ³   ³               RouteGroup.php
+    ³   ³               RouteParser.php
+    ³   ³               RouteResolver.php
+    ³   ³               RouteRunner.php
+    ³   ³               RoutingResults.php
+    ³   ³               
+    ³   ÀÄÄÄtwig-view
+    ³       ³   composer.json
+    ³       ³   LICENSE.md
+    ³       ³   phpcs.xml
+    ³       ³   phpstan.neon
+    ³       ³   phpunit.xml
+    ³       ³   
+    ³       ÀÄÄÄsrc
+    ³               Twig.php
+    ³               TwigExtension.php
+    ³               TwigMiddleware.php
+    ³               TwigRuntimeExtension.php
+    ³               TwigRuntimeLoader.php
+    ³               
+    ÃÄÄÄsymfony
+    ³   ÃÄÄÄdeprecation-contracts
+    ³   ³       CHANGELOG.md
+    ³   ³       composer.json
+    ³   ³       function.php
+    ³   ³       LICENSE
+    ³   ³       README.md
+    ³   ³       
+    ³   ÃÄÄÄpolyfill-ctype
+    ³   ³       bootstrap.php
+    ³   ³       bootstrap80.php
+    ³   ³       composer.json
+    ³   ³       Ctype.php
+    ³   ³       LICENSE
+    ³   ³       README.md
+    ³   ³       
+    ³   ÃÄÄÄpolyfill-mbstring
+    ³   ³   ³   bootstrap.php
+    ³   ³   ³   bootstrap80.php
+    ³   ³   ³   composer.json
+    ³   ³   ³   LICENSE
+    ³   ³   ³   Mbstring.php
+    ³   ³   ³   README.md
+    ³   ³   ³   
+    ³   ³   ÀÄÄÄResources
+    ³   ³       ÀÄÄÄunidata
+    ³   ³               caseFolding.php
+    ³   ³               lowerCase.php
+    ³   ³               titleCaseRegexp.php
+    ³   ³               upperCase.php
+    ³   ³               
+    ³   ÃÄÄÄpolyfill-php80
+    ³   ³   ³   bootstrap.php
+    ³   ³   ³   composer.json
+    ³   ³   ³   LICENSE
+    ³   ³   ³   Php80.php
+    ³   ³   ³   PhpToken.php
+    ³   ³   ³   README.md
+    ³   ³   ³   
+    ³   ³   ÀÄÄÄResources
+    ³   ³       ÀÄÄÄstubs
+    ³   ³               Attribute.php
+    ³   ³               PhpToken.php
+    ³   ³               Stringable.php
+    ³   ³               UnhandledMatchError.php
+    ³   ³               ValueError.php
+    ³   ³               
+    ³   ÀÄÄÄpolyfill-php81
+    ³       ³   bootstrap.php
+    ³       ³   composer.json
+    ³       ³   LICENSE
+    ³       ³   Php81.php
+    ³       ³   README.md
+    ³       ³   
+    ³       ÀÄÄÄResources
+    ³           ÀÄÄÄstubs
+    ³                   CURLStringFile.php
+    ³                   ReturnTypeWillChange.php
+    ³                   
+    ÀÄÄÄtwig
+        ÀÄÄÄtwig
+            ³   CHANGELOG
+            ³   composer.json
+            ³   LICENSE
+            ³   phpstan-baseline.neon
+            ³   phpstan.neon.dist
+            ³   README.rst
+            ³   
+            ÀÄÄÄsrc
+                ³   AbstractTwigCallable.php
+                ³   Compiler.php
+                ³   DeprecatedCallableInfo.php
+                ³   Environment.php
+                ³   ExpressionParser.php
+                ³   ExtensionSet.php
+                ³   FileExtensionEscapingStrategy.php
+                ³   Lexer.php
+                ³   Markup.php
+                ³   NodeTraverser.php
+                ³   OperatorPrecedenceChange.php
+                ³   Parser.php
+                ³   Source.php
+                ³   Template.php
+                ³   TemplateWrapper.php
+                ³   Token.php
+                ³   TokenStream.php
+                ³   TwigCallableInterface.php
+                ³   TwigFilter.php
+                ³   TwigFunction.php
+                ³   TwigTest.php
+                ³   
+                ÃÄÄÄAttribute
+                ³       FirstClassTwigCallableReady.php
+                ³       YieldReady.php
+                ³       
+                ÃÄÄÄCache
+                ³       CacheInterface.php
+                ³       ChainCache.php
+                ³       FilesystemCache.php
+                ³       NullCache.php
+                ³       ReadOnlyFilesystemCache.php
+                ³       RemovableCacheInterface.php
+                ³       
+                ÃÄÄÄError
+                ³       Error.php
+                ³       LoaderError.php
+                ³       RuntimeError.php
+                ³       SyntaxError.php
+                ³       
+                ÃÄÄÄExtension
+                ³       AbstractExtension.php
+                ³       CoreExtension.php
+                ³       DebugExtension.php
+                ³       EscaperExtension.php
+                ³       ExtensionInterface.php
+                ³       GlobalsInterface.php
+                ³       LastModifiedExtensionInterface.php
+                ³       OptimizerExtension.php
+                ³       ProfilerExtension.php
+                ³       RuntimeExtensionInterface.php
+                ³       SandboxExtension.php
+                ³       StagingExtension.php
+                ³       StringLoaderExtension.php
+                ³       YieldNotReadyExtension.php
+                ³       
+                ÃÄÄÄLoader
+                ³       ArrayLoader.php
+                ³       ChainLoader.php
+                ³       FilesystemLoader.php
+                ³       LoaderInterface.php
+                ³       
+                ÃÄÄÄNode
+                ³   ³   AutoEscapeNode.php
+                ³   ³   BlockNode.php
+                ³   ³   BlockReferenceNode.php
+                ³   ³   BodyNode.php
+                ³   ³   CaptureNode.php
+                ³   ³   CheckSecurityCallNode.php
+                ³   ³   CheckSecurityNode.php
+                ³   ³   CheckToStringNode.php
+                ³   ³   DeprecatedNode.php
+                ³   ³   DoNode.php
+                ³   ³   EmbedNode.php
+                ³   ³   EmptyNode.php
+                ³   ³   FlushNode.php
+                ³   ³   ForElseNode.php
+                ³   ³   ForLoopNode.php
+                ³   ³   ForNode.php
+                ³   ³   IfNode.php
+                ³   ³   ImportNode.php
+                ³   ³   IncludeNode.php
+                ³   ³   MacroNode.php
+                ³   ³   ModuleNode.php
+                ³   ³   NameDeprecation.php
+                ³   ³   Node.php
+                ³   ³   NodeCaptureInterface.php
+                ³   ³   NodeOutputInterface.php
+                ³   ³   Nodes.php
+                ³   ³   PrintNode.php
+                ³   ³   SandboxNode.php
+                ³   ³   SetNode.php
+                ³   ³   TextNode.php
+                ³   ³   TypesNode.php
+                ³   ³   WithNode.php
+                ³   ³   
+                ³   ÀÄÄÄExpression
+                ³       ³   AbstractExpression.php
+                ³       ³   ArrayExpression.php
+                ³       ³   ArrowFunctionExpression.php
+                ³       ³   AssignNameExpression.php
+                ³       ³   BlockReferenceExpression.php
+                ³       ³   CallExpression.php
+                ³       ³   ConditionalExpression.php
+                ³       ³   ConstantExpression.php
+                ³       ³   FilterExpression.php
+                ³       ³   FunctionExpression.php
+                ³       ³   GetAttrExpression.php
+                ³       ³   InlinePrint.php
+                ³       ³   MacroReferenceExpression.php
+                ³       ³   MethodCallExpression.php
+                ³       ³   NameExpression.php
+                ³       ³   NullCoalesceExpression.php
+                ³       ³   OperatorEscapeInterface.php
+                ³       ³   ParentExpression.php
+                ³       ³   TempNameExpression.php
+                ³       ³   TestExpression.php
+                ³       ³   VariadicExpression.php
+                ³       ³   
+                ³       ÃÄÄÄBinary
+                ³       ³       AbstractBinary.php
+                ³       ³       AddBinary.php
+                ³       ³       AndBinary.php
+                ³       ³       BinaryInterface.php
+                ³       ³       BitwiseAndBinary.php
+                ³       ³       BitwiseOrBinary.php
+                ³       ³       BitwiseXorBinary.php
+                ³       ³       ConcatBinary.php
+                ³       ³       DivBinary.php
+                ³       ³       ElvisBinary.php
+                ³       ³       EndsWithBinary.php
+                ³       ³       EqualBinary.php
+                ³       ³       FloorDivBinary.php
+                ³       ³       GreaterBinary.php
+                ³       ³       GreaterEqualBinary.php
+                ³       ³       HasEveryBinary.php
+                ³       ³       HasSomeBinary.php
+                ³       ³       InBinary.php
+                ³       ³       LessBinary.php
+                ³       ³       LessEqualBinary.php
+                ³       ³       MatchesBinary.php
+                ³       ³       ModBinary.php
+                ³       ³       MulBinary.php
+                ³       ³       NotEqualBinary.php
+                ³       ³       NotInBinary.php
+                ³       ³       NullCoalesceBinary.php
+                ³       ³       OrBinary.php
+                ³       ³       PowerBinary.php
+                ³       ³       RangeBinary.php
+                ³       ³       SpaceshipBinary.php
+                ³       ³       StartsWithBinary.php
+                ³       ³       SubBinary.php
+                ³       ³       XorBinary.php
+                ³       ³       
+                ³       ÃÄÄÄFilter
+                ³       ³       DefaultFilter.php
+                ³       ³       RawFilter.php
+                ³       ³       
+                ³       ÃÄÄÄFunctionNode
+                ³       ³       EnumCasesFunction.php
+                ³       ³       EnumFunction.php
+                ³       ³       
+                ³       ÃÄÄÄTernary
+                ³       ³       ConditionalTernary.php
+                ³       ³       
+                ³       ÃÄÄÄTest
+                ³       ³       ConstantTest.php
+                ³       ³       DefinedTest.php
+                ³       ³       DivisiblebyTest.php
+                ³       ³       EvenTest.php
+                ³       ³       NullTest.php
+                ³       ³       OddTest.php
+                ³       ³       SameasTest.php
+                ³       ³       
+                ³       ÃÄÄÄUnary
+                ³       ³       AbstractUnary.php
+                ³       ³       NegUnary.php
+                ³       ³       NotUnary.php
+                ³       ³       PosUnary.php
+                ³       ³       SpreadUnary.php
+                ³       ³       StringCastUnary.php
+                ³       ³       UnaryInterface.php
+                ³       ³       
+                ³       ÀÄÄÄVariable
+                ³               AssignContextVariable.php
+                ³               AssignTemplateVariable.php
+                ³               ContextVariable.php
+                ³               LocalVariable.php
+                ³               TemplateVariable.php
+                ³               
+                ÃÄÄÄNodeVisitor
+                ³       AbstractNodeVisitor.php
+                ³       EscaperNodeVisitor.php
+                ³       NodeVisitorInterface.php
+                ³       OptimizerNodeVisitor.php
+                ³       SafeAnalysisNodeVisitor.php
+                ³       SandboxNodeVisitor.php
+                ³       YieldNotReadyNodeVisitor.php
+                ³       
+                ÃÄÄÄProfiler
+                ³   ³   Profile.php
+                ³   ³   
+                ³   ÃÄÄÄDumper
+                ³   ³       BaseDumper.php
+                ³   ³       BlackfireDumper.php
+                ³   ³       HtmlDumper.php
+                ³   ³       TextDumper.php
+                ³   ³       
+                ³   ÃÄÄÄNode
+                ³   ³       EnterProfileNode.php
+                ³   ³       LeaveProfileNode.php
+                ³   ³       
+                ³   ÀÄÄÄNodeVisitor
+                ³           ProfilerNodeVisitor.php
+                ³           
+                ÃÄÄÄResources
+                ³       core.php
+                ³       debug.php
+                ³       escaper.php
+                ³       string_loader.php
+                ³       
+                ÃÄÄÄRuntime
+                ³       EscaperRuntime.php
+                ³       
+                ÃÄÄÄRuntimeLoader
+                ³       ContainerRuntimeLoader.php
+                ³       FactoryRuntimeLoader.php
+                ³       RuntimeLoaderInterface.php
+                ³       
+                ÃÄÄÄSandbox
+                ³       SecurityError.php
+                ³       SecurityNotAllowedFilterError.php
+                ³       SecurityNotAllowedFunctionError.php
+                ³       SecurityNotAllowedMethodError.php
+                ³       SecurityNotAllowedPropertyError.php
+                ³       SecurityNotAllowedTagError.php
+                ³       SecurityPolicy.php
+                ³       SecurityPolicyInterface.php
+                ³       SourcePolicyInterface.php
+                ³       
+                ÃÄÄÄTest
+                ³       IntegrationTestCase.php
+                ³       NodeTestCase.php
+                ³       
+                ÃÄÄÄTokenParser
+                ³       AbstractTokenParser.php
+                ³       ApplyTokenParser.php
+                ³       AutoEscapeTokenParser.php
+                ³       BlockTokenParser.php
+                ³       DeprecatedTokenParser.php
+                ³       DoTokenParser.php
+                ³       EmbedTokenParser.php
+                ³       ExtendsTokenParser.php
+                ³       FlushTokenParser.php
+                ³       ForTokenParser.php
+                ³       FromTokenParser.php
+                ³       GuardTokenParser.php
+                ³       IfTokenParser.php
+                ³       ImportTokenParser.php
+                ³       IncludeTokenParser.php
+                ³       MacroTokenParser.php
+                ³       SandboxTokenParser.php
+                ³       SetTokenParser.php
+                ³       TokenParserInterface.php
+                ³       TypesTokenParser.php
+                ³       UseTokenParser.php
+                ³       WithTokenParser.php
+                ³       
+                ÀÄÄÄUtil
+                        CallableArgumentsExtractor.php
+                        DeprecationCollector.php
+                        ReflectionCallable.php
+                        TemplateDirIterator.php
+                        
