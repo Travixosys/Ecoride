@@ -1,11 +1,7 @@
 <?php
 
 
-
-
-<?php
-
-// ✅ MYSQL CONNECTION FROM ENV
+// ✅ MYSQL (AlwaysData or Heroku ENV)
 $mysqlHost = getenv('DB_HOST') ?: 'mysql-ecoridepool.alwaysdata.net';
 $mysqlDbname = getenv('DB_NAME') ?: 'ecoridepool_eco';
 $mysqlUsername = getenv('DB_USER') ?: '418123';
@@ -14,22 +10,25 @@ $mysqlPassword = getenv('DB_PASS') ?: 'dataSQL45';
 try {
     $pdo = new PDO("mysql:host=$mysqlHost;dbname=$mysqlDbname;charset=utf8mb4", $mysqlUsername, $mysqlPassword);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "✅ MySQL connected to $mysqlDbname at $mysqlHost<br>";
+    echo "✅ MySQL connected<br>";
 } catch (PDOException $e) {
-    die("❌ MySQL connection failed: " . $e->getMessage());
+    die("❌ MySQL error: " . $e->getMessage());
 }
 
-// ✅ MONGODB CONNECTION FROM ENV
+// ✅ MONGODB ATLAS
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$mongoUri = getenv('MONGO_URI') ?: 'mongodb://localhost:27017';
+$mongoUri = getenv('MONGO_URI') ?: 'mongodb+srv://uwaugboaja:6bEKOKuDTtsk2CLf@cluster0.nwx7mtr.mongodb.net/ecoridepool?retryWrites=true&w=majority';
 
 try {
     $mongoClient = new MongoDB\Client($mongoUri);
-    echo "✅ MongoDB connected successfully<br>";
+    $mongoDB = $mongoClient->ecoridepool;
+    $userPreferences = $mongoDB->user_preferences;
+    echo "✅ MongoDB connected to ecoridepool.user_preferences<br>";
 } catch (Exception $e) {
-    die("❌ MongoDB connection failed: " . $e->getMessage());
+    die("❌ MongoDB error: " . $e->getMessage());
 }
+
 
 // $mysqlHost = '127.0.0.1';
 // $mysqlDbname = 'ecoridepool';
