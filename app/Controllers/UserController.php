@@ -78,7 +78,12 @@ class UserController
             return $this->jsonResponse($response, ['message' => 'Utilisateur enregistré avec succès / User registered successfully'], 201);
         } catch (PDOException $e) {
             error_log("Erreur DB : " . $e->getMessage());
-            return $this->jsonResponse($response, ['error' => 'Erreur de base de données / Database error'], 500);
+            return $this->jsonResponse(
+                $response,
+                ['error' => $e->getMessage()],
+                400
+            );
+            //return $this->jsonResponse($response, ['error' => 'Erreur de base de données / Database error'], 500);
         }
     }
 
