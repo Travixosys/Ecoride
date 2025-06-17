@@ -80,6 +80,13 @@
 				</div>
 			</div>
 
+			{# CSRF token name key/value #}
+			<input type="hidden" name="{{ csrf.keys.name }}" value="{{ csrf.name }}">
+			<input type="hidden" name="{{ csrf.keys.value }}" value="{{ csrf.value }}">
+
+
+
+
 			<!-- Bouton de Soumission / Submit Button -->
 			<button type="submit" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700">
 				S'inscrire / Register

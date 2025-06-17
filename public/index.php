@@ -11,6 +11,8 @@ use Slim\Factory\AppFactory;
 use Slim\Middleware\MethodOverrideMiddleware;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
+use Slim\Csrf\Guard;
+use Psr\Http\Message\ResponseFactoryInterface;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -67,6 +69,12 @@ $app->addRoutingMiddleware();
 $app->add(MethodOverrideMiddleware::class);
 // Twig view rendering
 $app->add(TwigMiddleware::create($app, $container->get('view')));
+
+// CSRF protection
+/** @var ResponseFactoryInterface $responseFactory */
+$responseFactory = $app->getResponseFactory();
+$csrf = new Guard($responseFactory);
+$app->add($csrf);
 
 // ────────────────────────────────────────────────────────────
 // Error handling (full details while debugging)
