@@ -1,47 +1,75 @@
 // public/js/register.js
 
-// Wait for the DOM to be fully loaded
 document.addEventListener("DOMContentLoaded", function () {
-  // Grab the registration form
-  var form = document.getElementById("registerForm");
+  const form = document.getElementById("registerForm");
 
-  form.addEventListener("submit", function (event) {
+  form.addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    // Build a FormData object from the form (includes CSRF tokens)
-    var formData = new FormData(form);
+    // 1) Build your payload exactly as before
+    const roleDropdown = document.getElementById("role").value;
+    const role =
+      roleDropdown.toLowerCase() === "passenger"
+        ? "user"
+        : roleDropdown.toLowerCase();
 
-    // Normalize the role select
-    var rawRole = document.getElementById("role").value.toLowerCase();
-    var normalizedRole = rawRole === "passenger" ? "user" : rawRole;
-    formData.set("role", normalizedRole);
+    const payload = {
+      name: document.getElementById("name").value,
+      email: document.getElementById("email").value,
+      password: document.getElementById("password").value,
+      phone_number: document.getElementById("phone_number").value,
+      role: role,
+    };
 
-    // Send the form as multipart/form-data
-    fetch("/register", {
-      method: "POST",
-      credentials: "include", // include cookies for CSRF
-      body: formData,
-    })
-      .then(function (response) {
-        return response.text();
-      })
-      .then(function (text) {
-        if (
-          !text ||
-          text.indexOf("Failed CSRF") === 0 ||
-          text.indexOf("error") > -1
-        ) {
-          // If the server returned an error string, show it
-          alert("Registration failed: " + text);
-        } else {
-          // Success → redirect or inform
-          alert("Registration successful! You can now log in.");
-          window.location.href = "/login";
-        }
-      })
-      .catch(function (err) {
-        console.error("Registration Error:", err);
-        alert("An unexpected error occurred. Please try again.");
+    if (role === "driver") {
+      payload.make = document.getElementById("make").value || null;
+      payload.model = document.getElementById("model").value || null;
+      payload.year = document.getElementById("year").value || null;
+      payload.plate = document.getElementById("plate").value || null;
+      payload.seats = document.getElementById("seats").value || null;
+      payload.energy_type =
+        document.getElementById("energy_type").value || null;
+    }
+
+    console.log("Final Role Sent:", payload.role);
+
+    // 2) Grab the CSRF keys & values from the hidden inputs
+    //    (Assuming your Twig used the default names: csrf_name & csrf_value)
+    const nameKeyInput = form.elements["csrf_name"];
+    const valueKeyInput = form.elements["csrf_value"];
+
+    payload[nameKeyInput.name] = nameKeyInput.value;
+    payload[valueKeyInput.name] = valueKeyInput.value;
+
+    try {
+      // 3) Send JSON *and* include cookies so Slim-Csrf sees it
+      const response = await fetch("/register", {
+        method: "POST",
+        credentials: "include", // send session & CSRF cookie
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
+
+      // 4) Parse and handle the JSON response (or error text)
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        data = text;
+      }
+
+      if (!response.ok) {
+        // server will reply "Failed CSRF check!" or your own error
+        alert("Registration failed: " + (data.error || data));
+        return;
+      }
+
+      alert("Registration successful!");
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Registration Error:", error);
+      alert("Something went wrong. Try again!");
+    }
   });
 });
