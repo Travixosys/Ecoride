@@ -12,10 +12,13 @@ use App\Controllers\EmployeeController;
 use App\Controllers\ProfileController;
 use MongoDB\Client as MongoDBClient;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface     as Response;
 
 return function (App $app) {
     $container = $app->getContainer();
     $twig = Twig::create(__DIR__ . '/../app/templates');
+    $twig = $container->get('view');
 
     if (session_status() === PHP_SESSION_NONE) session_start();
 
@@ -40,7 +43,26 @@ return function (App $app) {
     // =========================
     // REGISTRATION
     // =========================
-    $app->get('/register', fn($req, $res) => $twig->render($res, 'register.twig'));
+    // =========================
+    // REGISTRATION (GET)
+    // =========================
+    $app->get('/register', function (Request $req, Response $res) use ($twig) {
+        // Slim-CSRF’s default key names:
+        $nameKey  = 'csrf_name';
+        $valueKey = 'csrf_value';
+
+        // These attributes were populated on the Request by the CSRF guard
+        $nameVal  = $req->getAttribute($nameKey);
+        $valueVal = $req->getAttribute($valueKey);
+
+        return $twig->render($res, 'register.twig', [
+            'csrf' => [
+                'keys'  => ['name' => $nameKey, 'value' => $valueKey],
+                'name'  => $nameVal,
+                'value' => $valueVal,
+            ],
+        ]);
+    });
     $app->post('/register', [UserController::class, 'register']);
     $app->post('/register-driver', [DriverController::class, 'registerDriver']);
 
