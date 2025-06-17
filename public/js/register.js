@@ -1,52 +1,48 @@
-document.addEventListener("DOMContentLoaded", function () {
-  document
-    .getElementById("registerForm")
-    .addEventListener("submit", async function (event) {
-      event.preventDefault();
+// public/js/register.js
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("registerForm");
 
-      const roleDropdown = document.getElementById("role").value;
-      let role =
-        roleDropdown.toLowerCase() === "passenger"
-          ? "user"
-          : roleDropdown.toLowerCase();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-      let formData = {
-        name: document.getElementById("name").value,
-        email: document.getElementById("email").value,
-        password: document.getElementById("password").value,
-        phone_number: document.getElementById("phone_number").value,
-        role: role, // Ensure correct role is assigned
-      };
+    // Build FormData from the <form>, so it includes your CSRF hidden inputs
+    const formData = new FormData(form);
 
-      if (role === "driver") {
-        formData.make = document.getElementById("make").value || null;
-        formData.model = document.getElementById("model").value || null;
-        formData.year = document.getElementById("year").value || null;
-        formData.plate = document.getElementById("plate").value || null;
-        formData.seats = document.getElementById("seats").value || null;
-        formData.energy_type =
-          document.getElementById("energy_type").value || null; // Add this line
-      }
+    // Normalize the "role" field
+    const roleDropdown = formData.get("role");
+    const role =
+      roleDropdown.toLowerCase() === "passenger"
+        ? "user"
+        : roleDropdown.toLowerCase();
+    formData.set("role", role);
 
-      console.log("Final Role Sent:", formData.role); // 
-
-      try {
-        const response = await fetch("http://localhost:8000/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-
-        const data = await response.json();
-        if (response.ok) {
-          alert("Registration successful!");
-          window.location.href = "/login";
-        } else {
-          alert("Error: " + data.error);
-        }
-      } catch (error) {
-        console.error("Registration Error:", error);
-        alert("Something went wrong. Try again!");
-      }
+    // Convert FormData → plain object for JSON
+    const payload = {};
+    formData.forEach((value, key) => {
+      // formData.get() returns strings for all fields, which is fine
+      payload[key] = value;
     });
+
+    try {
+      const res = await fetch("/register", {
+        method: "POST",
+        credentials: "include", // ← send cookies (CSRF token)
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("Registration successful!");
+        window.location.href = "/login";
+      } else {
+        alert("Error: " + (data.error || JSON.stringify(data)));
+      }
+    } catch (err) {
+      console.error("Registration Error:", err);
+      alert("Something went wrong. Try again!");
+    }
+  });
 });
