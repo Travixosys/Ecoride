@@ -1,52 +1,47 @@
 // public/js/register.js
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("registerForm");
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+// Wait for the DOM to be fully loaded
+document.addEventListener("DOMContentLoaded", function () {
+  // Grab the registration form
+  var form = document.getElementById("registerForm");
 
-    // Build FormData from the <form>, so it includes your CSRF hidden inputs
-    const formData = new FormData(form);
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
 
-    // Grab the role directly from the select element
-    const roleDropdown = document.getElementById("role").value;
+    // Build a FormData object from the form (includes CSRF tokens)
+    var formData = new FormData(form);
 
-    // Compute the normalized role
-    const role =
-      roleDropdown.toLowerCase() === "passenger"
-        ? "user"
-        : roleDropdown.toLowerCase();
+    // Normalize the role select
+    var rawRole = document.getElementById("role").value.toLowerCase();
+    var normalizedRole = rawRole === "passenger" ? "user" : rawRole;
+    formData.set("role", normalizedRole);
 
-    // Ensure the payload has the normalized role
-    formData.set("role", role);
-
-    // Convert FormData → plain object for JSON
-    const payload = {};
-    formData.forEach((value, key) => {
-      // formData.get() returns strings for all fields, which is fine
-      payload[key] = value;
-    });
-
-    try {
-      const res = await fetch("/register", {
-        method: "POST",
-        credentials: "include", // ← send cookies (CSRF token)
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+    // Send the form as multipart/form-data
+    fetch("/register", {
+      method: "POST",
+      credentials: "include", // include cookies for CSRF
+      body: formData,
+    })
+      .then(function (response) {
+        return response.text();
+      })
+      .then(function (text) {
+        if (
+          !text ||
+          text.indexOf("Failed CSRF") === 0 ||
+          text.indexOf("error") > -1
+        ) {
+          // If the server returned an error string, show it
+          alert("Registration failed: " + text);
+        } else {
+          // Success → redirect or inform
+          alert("Registration successful! You can now log in.");
+          window.location.href = "/login";
+        }
+      })
+      .catch(function (err) {
+        console.error("Registration Error:", err);
+        alert("An unexpected error occurred. Please try again.");
       });
-
-      const data = await res.json();
-      if (res.ok) {
-        alert("Registration successful!");
-        window.location.href = "/login";
-      } else {
-        alert("Error: " + (data.error || JSON.stringify(data)));
-      }
-    } catch (err) {
-      console.error("Registration Error:", err);
-      alert("Something went wrong. Try again!");
-    }
   });
 });
