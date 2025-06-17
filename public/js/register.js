@@ -8,12 +8,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // Build FormData from the <form>, so it includes your CSRF hidden inputs
     const formData = new FormData(form);
 
-    // Normalize the "role" field
-    const roleDropdown = formData.get("role");
+    // Grab the role directly from the select element
+    const roleDropdown = document.getElementById("role").value;
+
+    // Compute the normalized role
     const role =
       roleDropdown.toLowerCase() === "passenger"
         ? "user"
         : roleDropdown.toLowerCase();
+
+    // Ensure the payload has the normalized role
     formData.set("role", role);
 
     // Convert FormData → plain object for JSON
