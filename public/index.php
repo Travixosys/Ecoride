@@ -71,10 +71,10 @@ $app->add(MethodOverrideMiddleware::class);
 $app->add(TwigMiddleware::create($app, $container->get('view')));
 
 // CSRF protection
-/** @var ResponseFactoryInterface $responseFactory */
-$responseFactory = $app->getResponseFactory();
-$csrf = new Guard($responseFactory);
-$app->add($csrf);
+// /** @var ResponseFactoryInterface $responseFactory */
+// $responseFactory = $app->getResponseFactory();
+// $csrf = new Guard($responseFactory);
+// $app->add($csrf);
 
 // ────────────────────────────────────────────────────────────
 // Error handling (full details while debugging)
