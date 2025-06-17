@@ -6,7 +6,11 @@
 
 		<!-- Formulaire d'inscription / Registration Form -->
 		<form
-			id="registerForm" class="mt-4">
+			id="registerForm" class="mt-4" method="post" action="/register">
+			{# CSRF hidden inputs #}
+			<input type="hidden" name="{{ csrf.keys.name }}" value="{{ csrf.name }}">
+			<input
+			type="hidden" name="{{ csrf.keys.value }}" value="{{ csrf.value }}">
 
 			<!-- Nom Complet / Full Name -->
 			<div class="mb-4">
@@ -82,9 +86,8 @@
 
 			{# CSRF token name key/value #}
 			<input type="hidden" name="{{ csrf.keys.name }}" value="{{ csrf.name }}">
-			<input type="hidden" name="{{ csrf.keys.value }}" value="{{ csrf.value }}">
-
-
+			<input
+			type="hidden" name="{{ csrf.keys.value }}" value="{{ csrf.value }}">
 
 
 			<!-- Bouton de Soumission / Submit Button -->
