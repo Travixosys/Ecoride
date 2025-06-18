@@ -1,114 +1,127 @@
-# EcoRide - Plateforme de Covoiturage
+# EcoRide – Plateforme de Covoiturage
 
-## Présentation du Projet
-**EcoRide** est une plateforme de covoiturage développée avec **Slim PHP**, **MySQL** et **MongoDB**, permettant aux utilisateurs de proposer et réserver des trajets.  
-L'interface est **mobile-first**, utilisant **Twig** (Blade-like) et **Tailwind CSS**.
+**EcoRide** est une application de covoiturage mobile-first, développée avec Slim PHP, MySQL et MongoDB. Elle permet aux conducteurs de proposer des trajets et aux passagers de réserver en quelques clics.
 
-## 📌 Fonctionnalités Principales
-- **Inscription et connexion sécurisées** (Sessions persistantes).
-- **Réservation et acceptation des trajets en temps réel**.
-- **Historique des trajets** pour conducteurs et passagers.
-- **Gestion des préférences utilisateurs** avec MongoDB.
-- **Administration des utilisateurs** (modification des rôles et licences).
-- **Interface mobile-friendly** avec navigation fluide.
+---
 
-## 🛠️ Technologies Utilisées
-- **Backend** : Slim PHP 4
-- **Base de données** : MySQL (relationnel) + MongoDB (préférences utilisateur)
-- **Frontend** : Twig (Blade-like) + Tailwind CSS
-- **Sessions & Authentification** : Sessions PHP (Pas de JWT)
-- **Déploiement** : Compatible avec Apache/Nginx (Heroku, Fly.io)
+## 🚀 Aperçu & Démonstration
 
-## 📂 Installation et Configuration
+* [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://ecoride-mirror-1-fcd84d9225d6.herokuapp.com/)
 
-### 1️⃣ Prérequis
-- PHP 8+
-- MySQL 5.7+
-- MongoDB 4.4+
-- Composer (gestionnaire de dépendances PHP)
+---
 
-### 2️⃣ Installation de Slim PHP
-- Cloner le projet avec la commande :  
-  `git clone https://github.com/theWQLker/Ecoridepool-Ride-web-app.git`
-- Aller dans le dossier du projet :  
-  `cd ecoride-slim`
-- Installer Slim et les dépendances PHP avec :  
-  `composer install`
+## 📌 Fonctionnalités Clés
 
-### 3️⃣ Configuration de MySQL
-Importer la base de données avec les utilisateurs et trajets préexistants dans le dossier `/ecoride-slim/data`.
+1. **Inscription & Connexion**
+2. **Création / Réservation de trajets** (CRUD)
+3. **Tableau de bord conducteur / passager / admin**
+4. **Gestion des préférences (MongoDB)**
+5. **Recherche avancée** (filtres écologique, prix, durée…)
+6. **Sécurité & Sessions PHP**
 
-### 4️⃣ Configuration de MongoDB
-Importer les préférences utilisateurs MongoDB depuis le dossier `C:\ecoride-slim\data`.
+> **Note de sécurité (CSRF)**
+> Par contrainte de temps pour l’examen, la protection CSRF a été temporairement désactivée afin d’assurer un déploiement pleinement fonctionnel. Une réintégration via Slim-CSRF et FormData est planifiée pour la version post-révision.
 
-### 5️⃣ Démarrer le serveur PHP
-Lancer le serveur PHP localement avec la commande :  
-  `php -S localhost:8000 -t public`
+---
 
-## 🔧 Déploiement
+## 👥 Comptes de Test
 
-### 👥 Comptes de Test
-| Rôle      | Email                    | Mot de passe    |
-|-----------|--------------------------|-----------------|
-| Admin     | admin1@ecoride.com        | adminsecure     |
-| Admin     | admin2@ecoride.com        | adminsecure     |
-| Conducteur| driver1@ecoride.com       | driverpass      |
-| Conducteur| driver2@ecoride.com       | driverpass      |
-| Conducteur| driver3@ecoride.com       | driverpass      |
-| Passager  | user1@ecoride.com         | userpassword    |
-| Passager  | user2@ecoride.com         | userpassword    |
-| Passager  | user3@ecoride.com         | userpassword    |
+### Admin Principal
 
-## 📂 Structure des Fichiers
+* **Nom** : Admin One
+* **Email** : [admin1@ecoride.com](mailto:admin1@ecoride.com)
+* **Mot de passe** : adminsecure
+
+### Autres Comptes
+
+| Rôle       | Nom          | Email                                             | Mot de passe |
+| ---------- | ------------ | ------------------------------------------------- | ------------ |
+| Conducteur | Driver One   | [driver1@ecoride.com](mailto:driver1@ecoride.com) | driverpass   |
+| Conducteur | Driver Two   | [driver2@ecoride.com](mailto:driver2@ecoride.com) | driverpass   |
+| Conducteur | Driver Three | [driver3@ecoride.com](mailto:driver3@ecoride.com) | driverpass   |
+| Conducteur | Driver Four  | [driver4@ecoride.com](mailto:driver4@ecoride.com) | driverpass   |
+| Passager   | User One     | [user1@ecoride.com](mailto:user1@ecoride.com)     | password123  |
+| Passager   | User Two     | [user2@ecoride.com](mailto:user2@ecoride.com)     | password123  |
+| Passager   | User Three   | [user3@ecoride.com](mailto:user3@ecoride.com)     | password123  |
+| Passager   | User Four    | [user4@ecoride.com](mailto:user4@ecoride.com)     | password123  |
+| Passager   | User Five    | [user5@ecoride.com](mailto:user5@ecoride.com)     | password123  |
+| Passager   | User Six     | [user6@ecoride.com](mailto:user6@ecoride.com)     | password123  |
+
+---
+
+## 🛠️ Installation & Déploiement
+
+### Prérequis
+
+* PHP 8+
+* Composer
+* MySQL 5.7+
+* MongoDB 4.4+
+
+### Installation locale
+
+```bash
+git clone https://github.com/theWQLker/Ecoridepool-Ride-web-app.git
+cd ecoride-slim
+composer install
+# Importez le dump MySQL et le backup MongoDB :
+# mysql -u user -p ecoride < ecoride_dump.sql
+# mongorestore --db ecoride_mongo_backup ecoride_mongo_backup/
+php -S localhost:8000 -t public
 ```
+Accédez à [http://localhost:8000](http://localhost:8000)
+---
+
+## 📂 Structure du Projet
+
+```text
 ecoride-slim/
-│── app/
-│   ├── Controllers/
-│   │   ├── AdminController.php
-│   │   ├── DriverController.php
-│   │   ├── HomeController.php
-│   │   ├── RideController.php
-│   │   ├── UserController.php
-│   ├── templates/  (Vue - Twig)
-│   │   ├── layout.twig
-│   │   ├── home.twig
-│   │   ├── login.twig
-│   │   ├── register.twig
-│   │   ├── profile.twig
-│   │   ├── menu.twig
-│   │   ├── request-ride.twig
-│   │   ├── ride-history.twig
-│   │   ├── driver-ride-history.twig
-│   │   ├── admin.twig  (Gestion admin)
-│   ├── routes.php  (Toutes les routes API & web)
-│   ├── dependencies.php  (Dépendances du projet)
-│   ├── mongodb.php  (Connexion MongoDB)
-│── public/
-│   ├── index.php
-│   ├── assets/
-│── vendor/ (Dépendances Composer)
-│── ecoride_dump.sql (Export MySQL)
-│── ecoride_mongo_backup/ (Backup MongoDB)
+├── app/
+│   ├── Controllers/    # Logique métier
+│   ├── templates/      # Vues Twig
+│   ├── routes.php      # Définitions des routes
+│   └── mongodb.php     # Connexion MongoDB
+├── public/
+│   ├── index.php       # Point d’entrée Slim
+│   └── js/             # Scripts front-end
+├── vendor/             # Bibliothèques Composer
+├── ecoride_dump.sql    # Dump MySQL initial
+└── ecoride_mongo_backup/ # Backup MongoDB
 ```
 
-## 🔍 Gestion des Branches Git
+---
 
-### Organisation des Branches
-- **main** → Version stable
-- **dev** → Développement en cours
-- **feature-*** → Nouvelle fonctionnalité
+## 🔄 Git & Branches
 
-### Commandes Git
-- Créer une nouvelle branche de développement :  
-  `git checkout -b dev`
+* **main** : version stable & déployée
+* **dev** : développement en cours
+* **feature-**\* : nouvelles fonctionnalités
 
-### Fonctionnalités et État
-- **Inscription et connexion sécurisée** - ✅ Terminé
-- **Gestion des sessions persistantes** - ✅ Terminé
-- **Interface mobile-first** - ✅ Terminé
-- **Demande et acceptation de trajets** - ✅ Terminé
-- **Historique des trajets pour conducteurs et passagers** - ✅ Terminé
-- **Préférences utilisateur (MongoDB)** - ✅ Terminé
-- **Interface administrateur** - ✅ Terminé
-- **Modification des rôles et licences** - ✅ Terminé
-- **Affichage des trajets actifs** - ✅ Terminé
+```bash
+# Créer une branche de fonctionnalité
+git checkout -b feature-login-enhancements
+```
+
+---
+
+## 🎯 Usage & Tests
+
+1. Inscrire un utilisateur (passager ou conducteur)
+2. Créer un trajet en tant que conducteur
+3. Rechercher et rejoindre un trajet en tant que passager
+4. Explorer les dashboards Admin / Employé
+
+---
+
+## 🔮 Prochaines évolutions
+
+* Mise en place de tests automatisés (PHPUnit)
+* Notifications e-mail (SwiftMailer / SMTP)
+* Intégration d’un système de paiement (Stripe)
+
+---
+
+© 2025 EcoRide – Tous droits réservés.
+
+---
+```
