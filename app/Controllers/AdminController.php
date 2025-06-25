@@ -132,8 +132,8 @@ class AdminController
     }
 
     /**
-     * 📊 Return graph data for admin dashboard charts
-     * 📈 Retourne les données pour les graphiques du tableau de bord admin
+     * Return graph data for admin dashboard charts
+     * Retourne les données pour les graphiques du tableau de bord admin
      */
     public function getGraphData(Request $request, Response $response, array $args): Response
     {
@@ -141,7 +141,7 @@ class AdminController
             return $this->jsonResponse($response, ['error' => 'Non autorisé / Unauthorized'], 403);
         }
 
-        // ✅ Carpools per day
+        //Carpools per day
         $carpoolsQuery = $this->db->query("
         SELECT DATE(created_at) AS date, COUNT(*) AS count 
         FROM carpools 
@@ -150,7 +150,7 @@ class AdminController
     ");
         $carpoolsPerDay = $carpoolsQuery->fetchAll(PDO::FETCH_ASSOC);
 
-        // ✅ Credits earned per day
+        //Credits earned per day
         $creditsQuery = $this->db->query("
         SELECT DATE(created_at) AS date, COUNT(*) * 2 AS credits_earned 
         FROM ride_requests 
@@ -160,7 +160,7 @@ class AdminController
     ");
         $creditsPerDay = $creditsQuery->fetchAll(PDO::FETCH_ASSOC);
 
-        // ✅ Total credits
+        //Total credits
         $totalQuery = $this->db->query("SELECT COUNT(*) * 2 AS total_credits FROM ride_requests WHERE status = 'completed'");
         $total = $totalQuery->fetch(PDO::FETCH_ASSOC);
 

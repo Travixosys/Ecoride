@@ -156,8 +156,8 @@ class UserController
                 ], 403);
             }
 
-            // 🔐 Validate password
-            // 🔐 Vérifie le mot de passe
+            //Validate password
+            //Vérifie le mot de passe
             if (!password_verify($data['password'], $user['password'])) {
                 error_log("Invalid password for email: " . $data['email']);
                 return $this->jsonResponse($response, [
