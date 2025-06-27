@@ -5,7 +5,7 @@ use PDO;
 /* 1 — Connect to the database */
 
 $pdo = new PDO(
-    'mysql:host=127.0.0.1;dbname=ecoridepool;charset=utf8mb4',
+    'mysql:host=127.0.0.1;dbname=ecoridepool;charset=utf8mb4', // Change to your local DB settings
     '',
     '',
     [
