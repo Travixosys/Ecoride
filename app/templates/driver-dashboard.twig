@@ -1,27 +1,38 @@
 {% extends "layout.twig" %}
 
 {% block content %}
-	<div class="max-w-2xl mx-auto mt-8 bg-white px-4 py-4 rounded-lg shadow-md space-y-8 w-full">
+	<div
+		class="max-w-2xl mx-auto mt-8 bg-white px-4 py-4 rounded-lg shadow-md space-y-8 w-full">
 
-		<h2 class="text-2xl font-semibold text-center text-green-800">Driver Dashboard</h2>
+		{# 🇬🇧 Page Title  
+				       🇫🇷 Titre de la page #}
+		<h2 class="text-2xl font-semibold text-center text-green-800">
+			Driver Dashboard
+		</h2>
 
-		{# Section: Quick Access Links #}
-		<div class="text-center space-y-2">
-			<h3 class="text-xl font-bold mb-2 text-gray-800">Quick Actions</h3>
-			<a href="/driver/dashboard" class="block bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-sm">
-				View Completed Rides
+		{# 🇬🇧 Quick Actions (anchors scroll or navigate)  
+				       🇫🇷 Actions rapides (ancre ou navigation) #}
+		<div
+			class="text-center space-y-2">
+			{# 🇬🇧 Scroll to Reviews section | 🇫🇷 Aller à la section Avis voyageurs #}
+			<a href="#reviewsSection" class="block bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-sm">
+				View Passenger Reviews
 			</a>
+			{# 🇬🇧 Link to create new carpool | 🇫🇷 Lien pour proposer un nouveau covoiturage #}
 			<a href="/driver/carpools/create" class="block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
 				Offer a New Carpool
 			</a>
 		</div>
 
-		{# Section: Active Carpools #}
-		<div>
+		{# 🇬🇧 Active Carpools Section  
+				       🇫🇷 Section des covoiturages actifs #}
+		<section class="space-y-4">
 			<h3 class="text-xl font-bold mb-4 text-gray-800">Active Carpools</h3>
 			{% set active = carpools|filter(c => c.status in ['upcoming', 'in progress']) %}
 			{% if active is empty %}
-				<p class="text-sm text-gray-600">You have no upcoming or in-progress carpools.</p>
+				<p class="text-sm text-gray-600">
+					You have no upcoming or in-progress carpools.
+				</p>
 			{% else %}
 				<ul class="space-y-4">
 					{% for carpool in active %}
@@ -37,10 +48,12 @@
 							<div class="flex justify-between text-sm text-gray-600">
 								<div>
 									<strong>Departure:</strong>
-									{{ carpool.departure_time|date("M j, H:i") }}</div>
+									{{ carpool.departure_time|date("M j, H:i") }}
+								</div>
 								<div>
 									<strong>Status:</strong>
-									{{ carpool.status|capitalize }}</div>
+									{{ carpool.status|capitalize }}
+								</div>
 							</div>
 							<p class="text-sm text-gray-600">
 								<strong>Occupied Seats:</strong>
@@ -48,7 +61,8 @@
 							</p>
 							{% if carpool.status == 'upcoming' %}
 								<form method="POST" action="/driver/carpools/{{ carpool.id }}/start">
-									<button class="w-full bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded {% if carpool.occupied_seats == 0 %}opacity-50 cursor-not-allowed{% endif %}" {% if carpool.occupied_seats == 0 %} disabled {% endif %}>
+									<button class="w-full bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded
+																				                           {% if carpool.occupied_seats == 0 %}opacity-50 cursor-not-allowed{% endif %}" {% if carpool.occupied_seats == 0 %} disabled {% endif %}>
 										Start Carpool
 									</button>
 								</form>
@@ -63,10 +77,11 @@
 					{% endfor %}
 				</ul>
 			{% endif %}
-		</div>
+		</section>
 
-		{# Section: Past Carpools #}
-		<div>
+		{# 🇬🇧 Past Carpools Section  
+				       🇫🇷 Section des covoiturages passés #}
+		<section class="space-y-4">
 			<h3 class="text-xl font-bold mb-4 text-gray-800">Past Carpools</h3>
 			{% set past = carpools|filter(c => c.status in ['completed', 'canceled']) %}
 			{% if past is empty %}
@@ -86,10 +101,12 @@
 							<div class="flex justify-between text-sm text-gray-600">
 								<div>
 									<strong>Departure:</strong>
-									{{ carpool.departure_time|date("M j, H:i") }}</div>
+									{{ carpool.departure_time|date("M j, H:i") }}
+								</div>
 								<div>
 									<strong>Status:</strong>
-									{{ carpool.status|capitalize }}</div>
+									{{ carpool.status|capitalize }}
+								</div>
 							</div>
 							<p class="text-sm text-gray-600">
 								<strong>Occupied Seats:</strong>
@@ -99,10 +116,11 @@
 					{% endfor %}
 				</ul>
 			{% endif %}
-		</div>
+		</section>
 
-		{# Section: Reviews #}
-		<div>
+		{# 🇬🇧 Reviews Section (anchor target)  
+				       🇫🇷 Section des avis (cible d’ancrage) #}
+		<section id="reviewsSection" class="space-y-4">
 			<h3 class="text-xl font-bold mb-4 text-gray-800">Passenger Reviews</h3>
 			{% if reviews is empty %}
 				<p class="text-sm text-gray-600">No reviews received yet.</p>
@@ -112,21 +130,24 @@
 						<li class="bg-white border border-gray-200 rounded-xl shadow p-4 space-y-1">
 							<p class="text-sm">
 								<strong>Rating:</strong>
-								{% for i in 1..review.rating %}⭐
+								{% for i in 1..review.rating %}★
 								{% endfor %}
-								({{ review.rating }}/5)</p>
+								({{ review.rating }}/5)
+							</p>
 							<p class="text-sm">
 								<strong>Comment:</strong>
 								{{ review.comment }}</p>
-							<p class="text-xs text-gray-500">By
+							<p class="text-xs text-gray-500">
+								By
 								{{ review.reviewer_name }}
 								on
-								{{ review.created_at|date("d M Y") }}</p>
+								{{ review.created_at|date("d M Y") }}
+							</p>
 						</li>
 					{% endfor %}
 				</ul>
 			{% endif %}
-		</div>
+		</section>
 
 	</div>
 {% endblock %}
