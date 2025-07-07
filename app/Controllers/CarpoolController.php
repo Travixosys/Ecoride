@@ -117,13 +117,26 @@ class CarpoolController
 
     public function joinCarpool(Request $request, Response $response, array $args): Response
     {
-        $carpoolId      = (int)$args['id'];
-        $userId         = $_SESSION['user']['id'] ?? null;
+        // Ensure user is authenticated
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $carpoolId = (int)$args['id'];
+        $userId    = $_SESSION['user']['id'] ?? null;
+
+        if (!$userId) {
+            // Redirect guests to register/login before joining
+            return $response
+                ->withHeader('Location', "/register?redirect=/carpools/{$carpoolId}")
+                ->withStatus(302);
+        }
+
         $data           = $request->getParsedBody();
-        $requestedSeats = max(1, (int)$data['passenger_count']);
+        $requestedSeats = max(1, (int)($data['passenger_count'] ?? 1));
         $costPerSeat    = 5;
         $totalCost      = $requestedSeats * $costPerSeat;
 
+        // Load carpool
         $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ?");
         $stmt->execute([$carpoolId]);
         $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -133,30 +146,52 @@ class CarpoolController
             return $response->withStatus(404);
         }
 
+        // Check seat availability
         $availableSeats = $carpool['total_seats'] - $carpool['occupied_seats'];
         if ($requestedSeats > $availableSeats) {
-            return $this->reloadCarpoolWithMessage($response, $carpoolId, "Not enough available seats. Only $availableSeats left.");
+            return $this->reloadCarpoolWithMessage(
+                $response,
+                $carpoolId,
+                "Not enough available seats. Only {$availableSeats} left."
+            );
         }
 
+        // Check user credits
         $stmt = $this->db->prepare("SELECT credits FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$user || $user['credits'] < $totalCost) {
-            return $this->reloadCarpoolWithMessage($response, $carpoolId, "You need $totalCost credits to join. You have " . ($user['credits'] ?? 0) . ".");
+            return $this->reloadCarpoolWithMessage(
+                $response,
+                $carpoolId,
+                "You need {$totalCost} credits to join. You have " . ($user['credits'] ?? 0) . "."
+            );
         }
 
-        $stmt = $this->db->prepare("SELECT id FROM ride_requests WHERE passenger_id = ? AND carpool_id = ?");
+        // Prevent duplicate join
+        $stmt = $this->db->prepare("
+            SELECT id
+              FROM ride_requests
+             WHERE passenger_id = ?
+               AND carpool_id   = ?
+        ");
         $stmt->execute([$userId, $carpoolId]);
         if ($stmt->fetch()) {
-            return $this->reloadCarpoolWithMessage($response, $carpoolId, "You have already joined this ride.");
+            return $this->reloadCarpoolWithMessage(
+                $response,
+                $carpoolId,
+                "You have already joined this ride."
+            );
         }
 
-        $stmt = $this->db->prepare("
-            INSERT INTO ride_requests (passenger_id, driver_id, carpool_id, pickup_location, dropoff_location, passenger_count, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, 'accepted', NOW())
-        ");
-        $stmt->execute([
+        // Create ride request
+        $this->db->prepare("
+            INSERT INTO ride_requests
+                (passenger_id, driver_id, carpool_id, pickup_location, dropoff_location, passenger_count, status, created_at)
+            VALUES
+                (?, ?, ?, ?, ?, ?, 'accepted', NOW())
+        ")->execute([
             $userId,
             $carpool['driver_id'],
             $carpoolId,
@@ -165,14 +200,26 @@ class CarpoolController
             $requestedSeats
         ]);
 
-        $this->db->prepare("UPDATE carpools SET occupied_seats = occupied_seats + ? WHERE id = ?")
-            ->execute([$requestedSeats, $carpoolId]);
+        // Update seats and deduct credits
+        $this->db->prepare("
+            UPDATE carpools
+               SET occupied_seats = occupied_seats + ?
+             WHERE id             = ?
+        ")->execute([$requestedSeats, $carpoolId]);
 
-        $this->db->prepare("UPDATE users SET credits = credits - ? WHERE id = ?")
-            ->execute([$totalCost, $userId]);
+        $this->db->prepare("
+            UPDATE users
+               SET credits = credits - ?
+             WHERE id      = ?
+        ")->execute([$totalCost, $userId]);
 
-        return $this->reloadCarpoolWithMessage($response, $carpoolId, "Successfully joined. {$totalCost} credits deducted.");
+        return $this->reloadCarpoolWithMessage(
+            $response,
+            $carpoolId,
+            "Successfully joined. {$totalCost} credits deducted."
+        );
     }
+
 
     public function startCarpool(Request $request, Response $response, array $args): Response
     {

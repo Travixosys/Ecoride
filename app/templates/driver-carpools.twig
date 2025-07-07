@@ -7,7 +7,6 @@
 		{# Section: Active Carpools #}
 		<div>
 			<h3 class="text-xl font-bold mb-4 text-gray-800">Active Carpools</h3>
-
 			{% set active = carpools|filter(c => c.status in ['upcoming', 'in progress']) %}
 			{% if active is empty %}
 				<p class="text-sm text-gray-600">You have no upcoming or in-progress carpools.</p>
@@ -35,7 +34,6 @@
 								<strong>Occupied Seats:</strong>
 								{{ carpool.occupied_seats }}/{{ carpool.total_seats }}
 							</p>
-
 							{% if carpool.status == 'upcoming' %}
 								<form method="POST" action="/driver/carpools/{{ carpool.id }}/start">
 									<button class="w-full bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded
