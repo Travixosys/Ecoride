@@ -122,13 +122,24 @@ class CarpoolController
             session_start();
         }
         $carpoolId = (int)$args['id'];
-        $userId    = $_SESSION['user']['id'] ?? null;
+        $user      = $_SESSION['user'] ?? null;
+        $userId    = $user['id'] ?? null;
+        $role      = $user['role'] ?? null;
 
         if (!$userId) {
             // Redirect guests to register/login before joining
             return $response
                 ->withHeader('Location', "/register?redirect=/carpools/{$carpoolId}")
                 ->withStatus(302);
+        }
+
+        // Prevent drivers from joining any carpool
+        if ($role === 'driver') {
+            return $this->reloadCarpoolWithMessage(
+                $response,
+                $carpoolId,
+                "Drivers cannot join carpools."
+            );
         }
 
         $data           = $request->getParsedBody();
@@ -159,13 +170,13 @@ class CarpoolController
         // Check user credits
         $stmt = $this->db->prepare("SELECT credits FROM users WHERE id = ?");
         $stmt->execute([$userId]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $userCredits = $stmt->fetchColumn();
 
-        if (!$user || $user['credits'] < $totalCost) {
+        if ($userCredits === false || $userCredits < $totalCost) {
             return $this->reloadCarpoolWithMessage(
                 $response,
                 $carpoolId,
-                "You need {$totalCost} credits to join. You have " . ($user['credits'] ?? 0) . "."
+                "You need {$totalCost} credits to join. You have " . ($userCredits ?? 0) . "."
             );
         }
 
@@ -219,6 +230,7 @@ class CarpoolController
             "Successfully joined. {$totalCost} credits deducted."
         );
     }
+
 
 
     public function startCarpool(Request $request, Response $response, array $args): Response
