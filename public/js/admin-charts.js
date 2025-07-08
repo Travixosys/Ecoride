@@ -10,8 +10,8 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .then((data) => {
       // 1) Carpools per Day (Bar chart)
-      const carpoolDates = data.carpoolsPerDay.map((item) => item.date);
-      const carpoolCounts = data.carpoolsPerDay.map((item) => item.count);
+      const carpoolDates = data.carpoolsPerDay.map((d) => d.date);
+      const carpoolCounts = data.carpoolsPerDay.map((d) => d.count);
 
       new Chart(document.getElementById("carpoolsChart").getContext("2d"), {
         type: "bar",
@@ -28,17 +28,18 @@ document.addEventListener("DOMContentLoaded", function () {
         options: {
           responsive: true,
           scales: {
-            y: { beginAtZero: true },
+            x: { title: { display: true, text: "Date" } },
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "Number of Carpools" },
+            },
           },
         },
       });
 
       // 2) Driver Net Payouts per Day (Line chart)
-      //    creditsPerDay now holds the net amount paid to drivers
-      const payoutDates = data.creditsPerDay.map((item) => item.date);
-      const payoutAmounts = data.creditsPerDay.map(
-        (item) => item.credits_earned
-      );
+      const payoutDates = data.creditsPerDay.map((d) => d.date);
+      const payoutAmounts = data.creditsPerDay.map((d) => d.credits_earned);
 
       new Chart(document.getElementById("creditsChart").getContext("2d"), {
         type: "line",
@@ -58,17 +59,25 @@ document.addEventListener("DOMContentLoaded", function () {
         options: {
           responsive: true,
           scales: {
-            y: { beginAtZero: true },
+            x: { title: { display: true, text: "Date" } },
+            y: { beginAtZero: true, title: { display: true, text: "Credits" } },
           },
         },
       });
 
-      // 3) Platform Commission per Day (Line chart)
-      //    commissionPerDay holds the 2-credit cut × seats
-      const commissionDates = data.commissionPerDay.map((item) => item.date);
+      // 3) Platform Commission per Day (Line chart + cumulative total)
+      const commissionDates = data.commissionPerDay.map((d) => d.date);
       const commissionAmounts = data.commissionPerDay.map(
-        (item) => item.commission_earned
+        (d) => d.commission_earned
       );
+
+      // Calculate cumulative total commissions
+      const cumulativeCommissions = [];
+      commissionAmounts.reduce((sum, curr) => {
+        sum += curr;
+        cumulativeCommissions.push(sum);
+        return sum;
+      }, 0);
 
       new Chart(document.getElementById("commissionChart").getContext("2d"), {
         type: "line",
@@ -76,11 +85,20 @@ document.addEventListener("DOMContentLoaded", function () {
           labels: commissionDates,
           datasets: [
             {
-              label: "Platform Commission",
+              label: "Daily Commission",
               data: commissionAmounts,
               borderColor: "rgba(220,38,38,1)",
               backgroundColor: "rgba(220,38,38,0.1)",
               fill: true,
+              tension: 0.3,
+            },
+            {
+              label: "Total Commission",
+              data: cumulativeCommissions,
+              borderColor: "rgba(220,38,38,0.6)",
+              backgroundColor: "transparent",
+              borderDash: [5, 5],
+              fill: false,
               tension: 0.3,
             },
           ],
@@ -88,12 +106,13 @@ document.addEventListener("DOMContentLoaded", function () {
         options: {
           responsive: true,
           scales: {
-            y: { beginAtZero: true },
+            x: { title: { display: true, text: "Date" } },
+            y: { beginAtZero: true, title: { display: true, text: "Credits" } },
           },
         },
       });
     })
     .catch((error) => {
-      console.error("Failed to load chart data:", error);
+      console.error("Failed to load admin chart data:", error);
     });
 });
