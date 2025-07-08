@@ -1,121 +1,118 @@
 {% extends "layout.twig" %}
 
 {% block content %}
-	<div class="max-w-md mx-auto mt-12 bg-white px-4 py-4 rounded-lg shadow-md w-full px-2" w-full px-2>
+	<div
+		class="max-w-md mx-auto mt-12 bg-white px-4 py-4 rounded-lg shadow-md w-full">
+
+		{# Titre de la page – Registration page title #}
 		<h2 class="text-xl font-semibold text-center">Inscription / Register</h2>
 
-		<!-- Formulaire d'inscription / Registration Form -->
+		{# Formulaire POST vers la route register – Registration POST form #}
 		<form
-			id="registerForm" method="post" action="/register" class="mt-4">
+			id="registerForm" class="mt-4 space-y-4" method="POST" action="{{ path_for('register') }}" autocomplete="off" enctype="application/x-www-form-urlencoded">
 
+			{# Nom complet / Full name #}
+			<label class="block">
+				<span class="text-gray-700">Nom Complet / Full Name</span>
+				<input id="name" name="name" type="text" required minlength="2" maxlength="60" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring" placeholder="Jean Dupont">
+			</label>
 
-			<!-- Nom Complet / Full Name -->
-			<div class="mb-4">
-				<label class="block text-gray-700">Nom Complet / Full Name</label>
-				<input type="text" id="name" required class="w-full px-3 py-2 border rounded-md">
-			</div>
+			{# Email #}
+			<label class="block">
+				<span class="text-gray-700">Email</span>
+				<input id="email" name="email" type="email" required maxlength="190" pattern="^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" autocomplete="email" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring" placeholder="jean@example.com">
+			</label>
 
-			<!-- Email -->
-			<div class="mb-4">
-				<label class="block text-gray-700">Email</label>
-				<input type="email" id="email" required class="w-full px-3 py-2 border rounded-md">
-			</div>
+			{# Mot de passe / Password (8+ carac., majuscule, minuscule, chiffre, symbole) #}
+			<label class="block">
+				<span class="text-gray-700">Mot de Passe / Password</span>
+				<input id="password" name="password" type="password" required minlength="8" maxlength="72" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$" title="Au moins 8 caractères, avec majuscule, minuscule, chiffre et symbole." autocomplete="new-password" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring">
+			</label>
 
-			<!-- Mot de Passe / Password -->
-			<div class="mb-4">
-				<label class="block text-gray-700">Mot de Passe / Password</label>
-				<input type="password" id="password" required class="w-full px-3 py-2 border rounded-md">
-			</div>
+			{# Confirmation mot de passe / Password confirmation #}
+			<label class="block">
+				<span class="text-gray-700">Confirmer le mot de passe / Confirm Password</span>
+				<input name="password_confirm" type="password" required autocomplete="new-password" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring">
+			</label>
 
-			<!-- Numéro de Téléphone / Phone Number -->
-			<div class="mb-4">
-				<label class="block text-gray-700">Numéro de Téléphone / Phone Number</label>
-				<input type="text" id="phone_number" required class="w-full px-3 py-2 border rounded-md">
-			</div>
+			{# Téléphone / Phone #}
+			<label class="block">
+				<span class="text-gray-700">Numéro de Téléphone / Phone Number</span>
+				<input id="phone_number" name="phone_number" type="tel" required maxlength="20" inputmode="tel" pattern="^\+?[0-9\s\-]{6,20}$" title="Ex. +33612345678" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring">
+			</label>
 
-			<!-- Sélection du Rôle / Role Selection -->
-			<div class="mb-4">
-				<label class="block text-gray-700">Inscription en tant que / Register As</label>
-				<select id="role" class="w-full px-3 py-2 border rounded-md" required>
+			{# Choix du rôle – user ou driver / Role selection – user or driver #}
+			<label class="block">
+				<span class="text-gray-700">Inscription en tant que / Register As</span>
+				<select id="role" name="role" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring">
 					<option value="user">Passager / Passenger</option>
 					<option value="driver">Conducteur / Driver</option>
 				</select>
-			</div>
+			</label>
 
-			<!-- Détails du Véhicule (Uniquement pour Conducteurs) / Vehicle Details (Drivers Only) -->
+			{# Bloc véhicule (visible uniquement si rôle driver) / Vehicle block (driver only) #}
 			<div id="vehicle-details" class="hidden">
 				<h3 class="text-lg font-semibold mt-4 mb-2">Détails du Véhicule / Vehicle Details</h3>
 
-				<div class="mb-4">
-					<label class="block text-gray-700">Marque du Véhicule / Car Make</label>
-					<input type="text" id="make" class="w-full px-3 py-2 border rounded-md">
-				</div>
+				<label class="block">
+					<span class="text-gray-700">Marque / Make</span>
+					<input id="make" name="make" type="text" maxlength="40" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring">
+				</label>
 
-				<div class="mb-4">
-					<label class="block text-gray-700">Modèle du Véhicule / Car Model</label>
-					<input type="text" id="model" class="w-full px-3 py-2 border rounded-md">
-				</div>
+				<label class="block">
+					<span class="text-gray-700">Modèle / Model</span>
+					<input id="model" name="model" type="text" maxlength="40" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring">
+				</label>
 
-				<div class="mb-4">
-					<label class="block text-gray-700">Année de Fabrication / Year of Manufacture</label>
-					<input type="number" id="year" min="1980" max="2030" class="w-full px-3 py-2 border rounded-md">
-				</div>
-				<div>
-					<label for="energy_type" class="block text-sm font-medium text-gray-700">Energy Type / Type d'énergie</label>
-					<select name="energy_type" id="energy_type" class="mt-1 block w-full border rounded-md shadow-sm p-2">
-						<option value="gasoline">Gasoline / Essence</option>
+				<label class="block">
+					<span class="text-gray-700">Année / Year (1980-2030)</span>
+					<input id="year" name="year" type="number" min="1980" max="2030" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring">
+				</label>
+
+				<label class="block">
+					<span class="text-gray-700">Énergie / Energy Type</span>
+					<select id="energy_type" name="energy_type" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring">
+						<option value="gasoline">Essence / Gasoline</option>
 						<option value="diesel">Diesel</option>
-						<option value="electric">Electric / Électrique</option>
-						<option value="hybrid">Hybrid / Hybride</option>
+						<option value="electric">Électrique / Electric</option>
+						<option value="hybrid">Hybride / Hybrid</option>
 					</select>
-				</div>
+				</label>
 
-				<div class="mb-4">
-					<label class="block text-gray-700">Numéro d'Immatriculation / License Plate</label>
-					<input type="text" id="plate" class="w-full px-3 py-2 border rounded-md">
-				</div>
+				<label class="block">
+					<span class="text-gray-700">Immatriculation / License Plate</span>
+					<input id="plate" name="plate" type="text" maxlength="15" pattern="^[A-Z0-9\-]{4,15}$" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring">
+				</label>
 
-				<div class="mb-4">
-					<label class="block text-gray-700">Nombre de Sièges / Seats Available</label>
-					<input type="number" id="seats" min="2" max="8" class="w-full px-3 py-2 border rounded-md">
-				</div>
+				<label class="block">
+					<span class="text-gray-700">Sièges / Seats</span>
+					<input id="seats" name="seats" type="number" min="2" max="8" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring">
+				</label>
 			</div>
 
-			{# CSRF token name key/value #}
-			<input type="hidden" name="{{ csrf.keys.name }}" value="{{ csrf.name }}">
-			<input
-			type="hidden" name="{{ csrf.keys.value }}" value="{{ csrf.value }}">
-
-
-			<!-- Bouton de Soumission / Submit Button -->
-			<button type="submit" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700">
+			<button type="submit" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 focus:ring">
 				S'inscrire / Register
 			</button>
 		</form>
 
-		<p class="text-center text-sm mt-4">Déjà un compte ? / Already have an account?
+		<p class="text-center text-sm mt-4">
+			Déjà un compte ? / Already have an account?
 			<a href="/login" class="text-green-600 hover:underline">Connectez-vous ici / Login here</a>
 		</p>
 	</div>
 
-	<!-- JavaScript pour Afficher/Masquer les Champs Véhicule -->
-	<script>
-		document.addEventListener("DOMContentLoaded", function () {
-const roleSelect = document.getElementById("role");
-const vehicleDetails = document.getElementById("vehicle-details");
+	{# JS : affiche bloc véhicule + vérifie confirmation mot de passe #}
+	<script defer>
+		document.addEventListener('DOMContentLoaded', () => {
+const roleSel = document.getElementById('role');
+const vehBlock = document.getElementById('vehicle-details');
+const pwd = document.querySelector('input[name="password"]');
+const confirm = document.querySelector('input[name="password_confirm"]');
 
-roleSelect.addEventListener("change", function () {
-if (roleSelect.value === "driver") {
-vehicleDetails.classList.remove("hidden"); // Afficher si conducteur
-} else {
-vehicleDetails.classList.add("hidden"); // Cacher si passager
-}
-});
+roleSel.addEventListener('change', () => vehBlock.classList.toggle('hidden', roleSel.value !== 'driver'));
+
+confirm.addEventListener('input', () => confirm.setCustomValidity(pwd.value === confirm.value ? '' : 'Passwords do not match'));
 });
 	</script>
-
-	<!-- Charger le fichier JavaScript Externe -->
-	<script src="/js/register.js"></script>
-
 {% endblock %}
 

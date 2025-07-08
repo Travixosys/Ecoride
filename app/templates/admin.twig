@@ -1,29 +1,47 @@
 {% extends "layout.twig" %}
+{# FR : Ce template hérite du layout principal. | EN : This template extends the main layout. #}
 
 {% block content %}
-	<div class="max-w-5xl mx-auto mt-10 w-full px-2">
+	{# FR : Début du bloc de contenu spécifique à la page. | EN : Start of the page-specific content block. #}
+
+	<div
+		class="max-w-5xl mx-auto mt-10 w-full px-2">
+		{# FR : Conteneur principal centré et limité en largeur. | EN : Main centered container with max width. #}
 
 		<h2 class="text-2xl font-bold text-green-800 text-center mb-6">
 			Admin Dashboard
+			{# FR : Titre de la page. | EN : Page heading. #}
 		</h2>
 
 		<!-- Navigation Buttons -->
-		<div class="flex justify-center space-x-4 mb-8">
-			<button type="button" onclick="document.getElementById('userSection').scrollIntoView({ behavior: 'smooth' })" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">User Management</button>
+		<div
+			class="flex justify-center space-x-4 mb-8">
+			{# FR : Boutons de navigation ancrés. | EN : Anchor navigation buttons. #}
+			<button type="button" onclick="document.getElementById('userSection').scrollIntoView({ behavior: 'smooth' })" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">
+				User Management
+				{# FR : Lien vers la section utilisateurs. | EN : Link to Users section. #}
+			</button>
 
-			<button type="button" onclick="document.getElementById('statsSection').scrollIntoView({ behavior: 'smooth' })" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">Statistics Performance</button>
+			<button type="button" onclick="document.getElementById('statsSection').scrollIntoView({ behavior: 'smooth' })" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg">
+				Statistics Performance
+				{# FR : Lien vers la section statistiques. | EN : Link to Statistics section. #}
+			</button>
 		</div>
 
 		<!-- Users Section -->
 		<div id="userSection" class="scroll-mt-20 bg-white rounded-lg shadow-md p-4 mb-8">
-			<input type="text" id="searchUser" class="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-4" placeholder="Search users...">
+			<input
+			type="text" id="searchUser" class="w-full px-3 py-2 border border-gray-300 rounded text-sm mb-4" placeholder="Search users...">
+			{# FR : Champ de recherche utilisateur. | EN : User search field. #}
 
-			<div
-				class="max-h-80 overflow-y-auto space-y-4 pr-2">
+			<div class="max-h-80 overflow-y-auto space-y-4 pr-2">
+				{# FR : Zone défilable pour la liste des utilisateurs. | EN : Scrollable area for user list. #}
 
-				<!-- Mobile Card View (all users, hide beyond 6) -->
-				<div class="sm:hidden space-y-4">
+				<!-- Mobile Card View -->
+					<div
+					class="sm:hidden space-y-4"> {# FR : Affichage cartes (mobile), ne montre que 6+ cachés. | EN : Card view for mobile; hides beyond 6th card. #}
 					{% for user in users %}
+						{# FR : Boucle sur tous les utilisateurs. | EN : Loop through all users. #}
 						<div class="bg-gray-50 border border-gray-200 rounded-xl shadow p-4 space-y-2 {% if loop.index > 6 %}hidden sm:block{% endif %}">
 							<p class="text-sm">
 								<strong>Name:</strong>
@@ -31,6 +49,8 @@
 							<p class="text-sm">
 								<strong>Email:</strong>
 								{{ user.email }}</p>
+
+							<!-- Role selector -->
 							<div>
 								<label class="text-sm font-medium">Role:</label>
 								<select class="role-select w-full border rounded text-sm px-2 py-1 mt-1" data-user-id="{{ user.id }}">
@@ -39,17 +59,24 @@
 									<option value="admin" {% if user.role == 'admin' %} selected {% endif %}>Admin</option>
 								</select>
 							</div>
+
 							{% if user.role == 'driver' %}
+								{# FR : Champ permis visible seulement pour un conducteur. | EN : License field shown only for drivers. #}
 								<div>
 									<label class="text-sm font-medium">License #:</label>
 									<input type="text" class="license-input w-full border rounded px-2 py-1 text-sm mt-1" data-user-id="{{ user.id }}" value="{{ user.license_number }}">
 								</div>
 							{% endif %}
+
+							<!-- Action buttons -->
 							<div class="flex gap-2">
 								<button class="update-user w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm" data-user-id="{{ user.id }}">
 									Save
+									{# FR : Enregistrer les changements. | EN : Save changes. #}
 								</button>
+
 								{% if user.role != 'admin' %}
+									{# FR : Un admin ne peut pas se suspendre lui-même. | EN : Prevent self-suspension for admins. #}
 									<form method="POST" action="/admin/user/{{ user.id }}/suspend" class="w-full">
 										<button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded text-sm">
 											{% if user.suspended %}Unsuspend{% else %}Suspend
@@ -62,7 +89,7 @@
 					{% endfor %}
 				</div>
 
-				<!-- Desktop Table View (all users) -->
+				<!-- Desktop Table View -->
 				<div class="hidden sm:block overflow-x-auto">
 					<table class="min-w-full text-sm border border-gray-300 mt-4">
 						<thead>
@@ -79,6 +106,8 @@
 								<tr class="hover:bg-gray-50 border-t">
 									<td class="p-2 border">{{ user.name }}</td>
 									<td class="p-2 border break-all">{{ user.email }}</td>
+
+									<!-- Role selector (desktop) -->
 									<td class="p-2 border">
 										<select class="role-select w-full border rounded text-sm px-2 py-1" data-user-id="{{ user.id }}">
 											<option value="user" {% if user.role == 'user' %} selected {% endif %}>User</option>
@@ -86,11 +115,15 @@
 											<option value="admin" {% if user.role == 'admin' %} selected {% endif %}>Admin</option>
 										</select>
 									</td>
+
+									<!-- License field (desktop) -->
 									<td class="p-2 border">
 										{% if user.role == 'driver' %}
 											<input type="text" class="license-input w-full border rounded px-2 py-1 text-sm" data-user-id="{{ user.id }}" value="{{ user.license_number }}">
 										{% endif %}
 									</td>
+
+									<!-- Actions -->
 									<td class="p-2 border">
 										<div class="flex gap-1">
 											<button class="update-user bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs" data-user-id="{{ user.id }}">
@@ -111,38 +144,53 @@
 						</tbody>
 					</table>
 				</div>
-
 			</div>
+			{# /Scrollable user list #}
 		</div>
+		{# /Users section #}
 
 		<!-- Statistics Section -->
 		<div id="statsSection" class="scroll-mt-20 bg-white rounded-lg shadow-md p-4 space-y-6 mb-10">
 			<div class="text-left mb-4">
-				<button type="button" onclick="document.getElementById('userSection')
-					 .scrollIntoView({ behavior: 'smooth', block: 'start' })" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm">
+				<button type="button" onclick="document.getElementById('userSection').scrollIntoView({ behavior: 'smooth', block: 'start' })" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm">
 					← Back to Users
+					{# FR : Retour à la section utilisateurs. | EN : Back to Users section. #}
 				</button>
 			</div>
+
 			<h3 class="text-xl font-semibold text-center">Platform Statistics</h3>
+
+			<!-- Charts rendered by Chart.js -->
 			<canvas id="carpoolsChart" class="w-full h-64"></canvas>
 			<canvas id="creditsChart" class="w-full h-64"></canvas>
+
 			<div class="text-center text-sm text-gray-700">
 				Total Credits Earned:
 				<span class="font-bold">{{ total_credits }}</span>
 			</div>
 
+			<!-- Back-to-top floating button -->
 			<div class="fixed bottom-4 right-4">
 				<button type="button" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" class="p-2 bg-gray-200 hover:bg-gray-300 rounded-full shadow-lg" aria-label="Back to top">
 					↑
 				</button>
 			</div>
 		</div>
+		{# /Statistics section #}
+
 	</div>
+	{# /Main container #}
+
+	<!-- Smooth scrolling for browsers that ignore inline JS -->
 	<script>
 		document.documentElement.style.scrollBehavior = 'smooth';
 	</script>
+
+	<!-- External libraries and custom scripts -->
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script src="/js/admin.js"></script>
 	<script src="/js/admin-charts.js"></script>
+
 {% endblock %}
+{# FR : Fin du bloc 'content'. | EN : End of the 'content' block. #}
 

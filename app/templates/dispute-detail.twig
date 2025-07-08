@@ -1,28 +1,51 @@
 {% extends "layout.twig" %}
+
 {% block content %}
-<div class="max-w-3xl mx-auto px-4 py-4 bg-white rounded shadow w-full px-2" w-full px-2>
-    <h2 class="text-2xl font-bold text-green-800 text-center mb-6">Dispute Details</h2>
+	<div
+		class="max-w-3xl mx-auto px-4 py-4 bg-white rounded shadow w-full px-2" w-full px-2>
+		{# Conteneur principal centré | Main centered container #}
+		<h2 class="text-2xl font-bold text-green-800 text-center mb-6">Dispute Details</h2>
+		{# Titre de la page | Page heading #}
 
-    <div class="mb-4">
-        <p><strong>Driver:</strong> {{ carpool.driver_name }}</p>
-        <p><strong>From:</strong> {{ carpool.pickup_location }}</p>
-        <p><strong>To:</strong> {{ carpool.dropoff_location }}</p>
-        <p><strong>Status:</strong> {{ carpool.status }}</p>
-    </div>
+		<div class="mb-4">
+			<p>
+				<strong>Driver:</strong>
+				{{ carpool.driver_name }}</p>
+			{# Nom du conducteur | Driver name #}
+			<p>
+				<strong>From:</strong>
+				{{ carpool.pickup_location }}</p>
+			{# Lieu de départ | Pickup location #}
+			<p>
+				<strong>To:</strong>
+				{{ carpool.dropoff_location }}</p>
+			{# Destination | Drop-off location #}
+			<p>
+				<strong>Status:</strong>
+				{{ carpool.status }}</p>
+			{# Statut actuel de la course | Current ride status #}
+		</div>
 
-    <hr class="my-4">
+		<hr class="my-4">
 
-    <h3 class="text-xl font-semibold mb-2">Flagged by:</h3>
-    <ul class="list-disc ml-6">
-        {% for p in flaggers %}
-            <li>{{ p.name }} (ID: {{ p.passenger_id }})</li>
-        {% else %}
-            <li class="text-gray-500">No flagged passengers found.</li>
-        {% endfor %}
-    </ul>
+		<h3 class="text-xl font-semibold mb-2">Flagged by:</h3>
+		{# Liste des passagers ayant signalé | Passengers who flagged #}
+		<ul class="list-disc ml-6">
+			{% for p in flaggers %}
+				<li>{{ p.name }}
+					(ID:
+					{{ p.passenger_id }})</li>
+				{# Élément de liste passager | Passenger list item #}
+			{% else %}
+				<li class="text-gray-500">No flagged passengers found.</li>
+				{# Aucun signalement | No flagged passengers #}
+			{% endfor %}
+		</ul>
 
-    <div class="mt-6 text-center">
-        <a href="/employee" class="text-green-600 underline text-sm">← Back to list</a>
-    </div>
-</div>
+		<div class="mt-6 text-center">
+			<a href="/employee" class="text-green-600 underline text-sm">← Back to list</a>
+			{# Lien retour | Back link #}
+		</div>
+	</div>
 {% endblock %}
+

@@ -1,20 +1,25 @@
 {% extends "layout.twig" %}
 
+{# Page title shown in <title> tag #}
 {% block title %}My Ride History | EcoRide
 {% endblock %}
 
 {% block content %}
-	<div class="max-w-2xl mx-auto px-4 py-6 w-full px-2" w-full px-2>
+	<div
+		class="max-w-2xl mx-auto px-4 py-6 w-full px-2">
 
+		{# Main heading #}
 		<h2 class="text-2xl font-semibold text-center mb-6 text-green-700">My Ride History</h2>
 
+		{# Map internal status codes → readable labels #}
 		{% set labels = {
-        'upcoming': 'Upcoming',
-        'in progress': 'In Progress',
-        'completed': 'Completed',
-        'canceled': 'Canceled'
-    } %}
+			'upcoming':    'Upcoming',
+			'in progress': 'In Progress',
+			'completed':   'Completed',
+			'canceled':    'Canceled'
+		} %}
 
+		{# Loop through each status group with rides #}
 		{% for group, rides in grouped_rides %}
 			{% if rides is not empty %}
 				<h3 class="text-xl font-bold mt-8 mb-4 text-gray-800">
@@ -26,7 +31,7 @@
 						<div
 							class="bg-white border border-gray-200 rounded-xl shadow p-4 space-y-3">
 
-							<!-- Route Info -->
+							{# Route (pickup → drop-off) #}
 							<div class="flex justify-between items-center text-sm text-gray-700">
 								<div>
 									<strong>From:</strong>
@@ -36,25 +41,28 @@
 									{{ ride.dropoff_location }}</div>
 							</div>
 
-							<!-- Seats & Departure -->
+							{# Seats booked + departure time #}
 							<div class="flex justify-between items-center text-sm text-gray-600">
 								<div>
 									<strong>Seats:</strong>
 									{{ ride.passenger_count }}</div>
-								<div class="text-left">
+								<div>
 									<strong>Departure:</strong>
-									{{ ride.departure_time|date("M j, H:i") }}
-								</div>
+									{{ ride.departure_time|date("M j, H:i") }}</div>
 							</div>
 
-							<!-- Status -->
+							{# Current status #}
 							<div class="text-sm text-gray-600">
 								<strong>Status:</strong>
 								{{ ride.carpool_status|capitalize }}
 							</div>
 
+							{# Extra actions for completed rides #}
 							{% if group == 'completed' %}
-								<div class="flex flex-col space-y-2 pt-2">
+								<div
+									class="flex flex-col space-y-2 pt-2">
+
+									{# Leave review if none yet #}
 									{% if not ride.review_exists %}
 										<form method="GET" action="/review/{{ ride.id }}">
 											<button class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-1 rounded w-full">
@@ -62,6 +70,8 @@
 											</button>
 										</form>
 									{% endif %}
+
+									{# Report a problem (opens dispute) #}
 									<form method="POST" action="/dispute/{{ ride.id }}">
 										<button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-1 rounded w-full">
 											Report Problem

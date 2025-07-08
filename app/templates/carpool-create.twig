@@ -1,24 +1,52 @@
 {% extends 'layout.twig' %}
+{# FR : Ce template hérite de la mise en page principale. | EN : This template extends the main layout. #}
 
 {% block content %}
-<div class="p-4 max-w-md mx-auto">
-  <h2 class="text-xl font-bold mb-4">Offer a Carpool / Proposer un covoiturage</h2>
+	{# FR : Début du bloc de contenu spécifique. | EN : Start of the page-specific content block. #}
+	<div
+		class="p-4 max-w-md mx-auto">
+		{# FR : Conteneur centré avec largeur maximale. | EN : Centered container with max width. #}
+		<h2 class="text-xl font-bold mb-4">Offer a Carpool / Proposer un covoiturage</h2>
+		{# FR : Titre bilingue. | EN : Bilingual heading. #}
 
-  <form method="post" action="/driver/carpools" class="space-y-4">
-    <input name="pickup_location" placeholder="Departure / Départ" class="w-full p-2 border rounded" required>
-    <input name="dropoff_location" placeholder="Arrival / Destination" class="w-full p-2 border rounded" required>
-    <input name="departure_time" type="datetime-local" class="w-full p-2 border rounded" required>
-    <input name="total_seats" type="number" min="1" placeholder="Number of seats / Nombre de places" class="w-full p-2 border rounded" required>
-    
+		<form
+			method="post" action="/driver/carpools" class="space-y-4">
+			{# FR : Formulaire POST pour créer un trajet. | EN : POST form to create a carpool ride. #}
+			<input
+			name="pickup_location" placeholder="Departure / Départ" class="w-full p-2 border rounded" required>
+			{# FR : Champ départ. | EN : Pickup field. #}
 
-    <select name="vehicle_id" required class="w-full p-2 border rounded">
-      <option disabled selected>Select your vehicle / Choisissez votre véhicule</option>
-      {% for v in vehicles %}
-        <option value="{{ v.id }}">{{ v.make }} {{ v.model }} - {{ v.energy_type }}</option>
-      {% endfor %}
-    </select>
+			<input
+			name="dropoff_location" placeholder="Arrival / Destination" class="w-full p-2 border rounded" required>
+			{# FR : Champ arrivée. | EN : Drop-off field. #}
 
-    <button type="submit" class="bg-green-700 text-white px-4 py-2 rounded">Publish Carpool / Publier le trajet</button>
-  </form>
-</div>
+			<input
+			name="departure_time" type="datetime-local" class="w-full p-2 border rounded" required>
+			{# FR : Date/heure de départ. | EN : Departure date-time. #}
+
+			<input
+			name="total_seats" type="number" min="1" placeholder="Number of seats / Nombre de places" class="w-full p-2 border rounded" required>
+			{# FR : Nombre de places disponibles. | EN : Available seat count. #}
+
+			<select
+				name="vehicle_id" required class="w-full p-2 border rounded">
+				{# FR : Sélection du véhicule. | EN : Vehicle selection. #}
+				<option disabled selected>Select your vehicle / Choisissez votre véhicule</option>
+				{% for v in vehicles %}
+					{# FR : Boucle sur la liste des véhicules. | EN : Loop through vehicles list. #}
+					<option value="{{ v.id }}">{{ v.make }}
+						{{ v.model }}
+						-
+						{{ v.energy_type }}</option>
+				{% endfor %}
+			</select>
+
+			<button type="submit" class="bg-green-700 text-white px-4 py-2 rounded">
+				Publish Carpool / Publier le trajet
+			</button>
+			{# FR : Bouton d’envoi. | EN : Submit button. #}
+		</form>
+	</div>
 {% endblock %}
+{# FR : Fin du bloc 'content'. | EN : End of the 'content' block. #}
+

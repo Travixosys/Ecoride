@@ -1,10 +1,12 @@
 {% extends "layout.twig" %}
 
 {% block content %}
-	<div class="max-w-2xl mx-auto mt-8 bg-white px-4 py-4 rounded-lg shadow-md space-y-8 w-full px-2" w-full px-2>
+	<div
+		class="max-w-2xl mx-auto mt-8 bg-white px-4 py-4 rounded-lg shadow-md space-y-8 w-full px-2" w-full px-2>
+		{# Conteneur principal du tableau de bord | Main dashboard container #}
 		<h2 class="text-2xl font-semibold text-center text-green-800">Driver Dashboard</h2>
 
-		{# Section: Active Carpools #}
+		{# Section : Covoiturages actifs | Active carpools section #}
 		<div>
 			<h3 class="text-xl font-bold mb-4 text-gray-800">Active Carpools</h3>
 			{% set active = carpools|filter(c => c.status in ['upcoming', 'in progress']) %}
@@ -32,12 +34,11 @@
 							</div>
 							<p class="text-sm text-gray-600">
 								<strong>Occupied Seats:</strong>
-								{{ carpool.occupied_seats }}/{{ carpool.total_seats }}
-							</p>
+								{{ carpool.occupied_seats }}/{{ carpool.total_seats }}</p>
+
 							{% if carpool.status == 'upcoming' %}
 								<form method="POST" action="/driver/carpools/{{ carpool.id }}/start">
-									<button class="w-full bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded
-										                                {% if carpool.occupied_seats == 0 %}opacity-50 cursor-not-allowed{% endif %}" {% if carpool.occupied_seats == 0 %} disabled {% endif %}>
+									<button class="w-full bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded {% if carpool.occupied_seats == 0 %}opacity-50 cursor-not-allowed{% endif %}" {% if carpool.occupied_seats == 0 %} disabled {% endif %}>
 										Start Carpool
 									</button>
 								</form>
@@ -54,10 +55,9 @@
 			{% endif %}
 		</div>
 
-		{# Section: Past Carpools #}
+		{# Section : Covoiturages passés | Past carpools section #}
 		<div>
 			<h3 class="text-xl font-bold mb-4 text-gray-800">Past Carpools</h3>
-
 			{% set past = carpools|filter(c => c.status in ['completed', 'canceled']) %}
 			{% if past is empty %}
 				<p class="text-sm text-gray-600">No past carpools to display.</p>
@@ -83,18 +83,16 @@
 							</div>
 							<p class="text-sm text-gray-600">
 								<strong>Occupied Seats:</strong>
-								{{ carpool.occupied_seats }}/{{ carpool.total_seats }}
-							</p>
+								{{ carpool.occupied_seats }}/{{ carpool.total_seats }}</p>
 						</li>
 					{% endfor %}
 				</ul>
 			{% endif %}
 		</div>
 
-		{# Section: Reviews #}
+		{# Section : Avis des passagers | Passenger reviews section #}
 		<div>
 			<h3 class="text-xl font-bold mb-4 text-gray-800">Passenger Reviews</h3>
-
 			{% if reviews is empty %}
 				<p class="text-sm text-gray-600">No reviews received yet.</p>
 			{% else %}
@@ -103,11 +101,9 @@
 						<li class="bg-white border border-gray-200 rounded-xl shadow p-4 space-y-1">
 							<p class="text-sm">
 								<strong>Rating:</strong>
-								{% for i in 1..review.rating %}
-									⭐
+								{% for i in 1..review.rating %}⭐
 								{% endfor %}
-								({{ review.rating }}/5)
-							</p>
+								({{ review.rating }}/5)</p>
 							<p class="text-sm">
 								<strong>Comment:</strong>
 								{{ review.comment }}</p>
@@ -121,13 +117,12 @@
 			{% endif %}
 		</div>
 
-		{# Section: Quick Access Links #}
+		{# Section : Liens rapides | Quick action links #}
 		<div class="text-center space-y-2">
 			<h3 class="text-xl font-bold mb-2 text-gray-800">Quick Actions</h3>
 			<a href="/driver/ride-history" class="block bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded text-sm">
 				View Completed Rides
 			</a>
-
 			<a href="/driver/carpools/create" class="block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
 				Offer a New Carpool
 			</a>

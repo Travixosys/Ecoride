@@ -4,11 +4,13 @@
 	<div
 		class="max-w-md mx-auto bg-white px-3 py-6 rounded-lg shadow-md mt-6 space-y-6">
 
-		<!-- User Info -->
+		{# Titre + résumé utilisateur | User heading + summary #}
 		<div class="text-center space-y-1">
 			<img src="https://i.pravatar.cc/100?u={{ user.email }}" alt="{{ user.name }} profile picture" class="w-24 h-24 rounded-full mx-auto shadow-md border">
 			<h2 class="text-xl font-semibold">{{ user.name ?? "Guest User" }}</h2>
 			<p class="text-gray-600 text-sm">{{ user.role | capitalize }}</p>
+
+			{# Solde crédits | Credit balance #}
 			<div class="flex justify-center items-center gap-1 text-sm text-gray-700">
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-green-600" fill="none" viewbox="0 0 24 24" stroke="currentColor">
 					<circle cx="12" cy="12" r="10" stroke-width="2"/>
@@ -19,7 +21,7 @@
 			</div>
 		</div>
 
-		<!-- Driver Stats -->
+		{# Statistiques conducteur | Driver statistics #}
 		<div class="flex justify-around text-center text-sm">
 			<div>
 				<div class="flex justify-center items-center gap-1">
@@ -30,6 +32,7 @@
 				</div>
 				<p class="text-gray-500">Rating</p>
 			</div>
+
 			<div>
 				<div class="flex justify-center items-center gap-1">
 					<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-500" fill="currentColor" viewbox="0 0 24 24">
@@ -41,7 +44,7 @@
 			</div>
 		</div>
 
-		<!-- Vehicle Section -->
+		{# Détails véhicule (affiché si existant) | Vehicle details (if provided) #}
 		{% if vehicle %}
 			<div class="mt-6">
 				<h3 class="text-lg font-semibold mb-2">Your Vehicle</h3>
@@ -68,16 +71,15 @@
 			</div>
 		{% endif %}
 
-		<!-- Preferences Section -->
+		{# Préférences trajet : résumé + formulaire éditable #}
 		<div>
 			<h3 class="text-lg font-semibold mb-2 mt-6">Preferences</h3>
 
-			<!-- Toggle Button -->
 			<button type="button" onclick="togglePreferencesForm()" class="text-sm text-blue-600 hover:underline mb-2">
 				Modify Preferences
 			</button>
 
-			<!-- Non-editable Display -->
+			{# Affichage non éditable / read-only summary #}
 			<div id="preferences-summary" class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-700">
 				<p>
 					<strong>Music:</strong>
@@ -93,7 +95,7 @@
 					{{ preferences.allow_pets is defined and preferences.allow_pets ? 'Yes' : 'No' }}</p>
 			</div>
 
-			<!-- Editable Form (hidden by default) -->
+			{# Formulaire masqué par défaut / hidden edit form #}
 			<form action="/profile" method="POST" id="preferences-form" class="space-y-3 hidden mt-4">
 				<div>
 					<label class="block text-sm font-medium mb-1">Music Preference</label>
@@ -103,6 +105,8 @@
 					<label class="block text-sm font-medium mb-1">Chat Preference</label>
 					<input type="text" name="chat_preference" placeholder="e.g. Talkative" value="{{ preferences.chat_preference ?? '' }}" class="w-full border border-gray-300 p-2 rounded text-sm">
 				</div>
+
+				{# Radios oui/non pour fumeur/animaux / yes-no radios for smoking/pets #}
 				<div>
 					<label class="block text-sm font-medium mb-1">Allow Smoking</label>
 					<div class="flex gap-4">
@@ -129,7 +133,7 @@
 			</form>
 		</div>
 
-		<!-- Reviews Received -->
+		{# Avis reçus / Reviews received #}
 		{% if reviews_received is not empty %}
 			<div>
 				<h3 class="text-lg font-semibold mb-2">Passenger Reviews</h3>
@@ -149,7 +153,7 @@
 			</div>
 		{% endif %}
 
-		<!-- Reviews Written -->
+		{# Avis écrits / Reviews written #}
 		{% if reviews_written is not empty %}
 			<div>
 				<h3 class="text-lg font-semibold mt-6 mb-2">Reviews You've Written</h3>
@@ -169,10 +173,12 @@
 			</div>
 		{% endif %}
 
-		<!-- Actions -->
+		{# Liens rapides + déconnexion / Quick links + logout #}
 		<div class="mt-8 space-y-3 text-sm">
 			<a href="/legal" class="block text-green-700 font-medium hover:underline">Support</a>
-			<a href="{% if user.role == 'driver' %}/driver/dashboard{% else %}/rides{% endif %}" class="block text-green-700 font-medium hover:underline">Ride History</a>
+			<a href="{% if user.role == 'driver' %}/driver/dashboard{% else %}/rides{% endif %}" class="block text-green-700 font-medium hover:underline">
+				Ride History
+			</a>
 			<button onclick="logout()" class="w-full mt-2 bg-red-600 text-white py-2 rounded hover:bg-red-500">
 				Logout
 			</button>
@@ -188,3 +194,4 @@ summary.classList.toggle('hidden');
 }
 	</script>
 {% endblock %}
+
