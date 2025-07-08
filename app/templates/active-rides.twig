@@ -1,25 +1,48 @@
 {% extends "layout.twig" %}
+{# FR : Ce template hérite de la mise en page principale. | EN : This template extends the main layout. #}
 
 {% block content %}
-<div class="max-w-lg mx-auto bg-white px-4 py-4 rounded-lg shadow-md mt-6 w-full px-2" w-full px-2>
-    <h2 class="text-xl font-semibold text-center mb-4">Active Ride Requests</h2>
+	{# FR : Début du bloc de contenu spécifique à cette page. | EN : Start of the page-specific content block. #}
 
-    {% if activeRides|length > 0 %}
-        <ul class="space-y-4">
-            {% for ride in activeRides %}
-                <li class="p-4 border rounded-lg shadow flex justify-between items-center">
-                    <div>
-                        <p class="font-semibold">{{ ride.pickup }} → {{ ride.dropoff }}</p>
-                        <p class="text-sm text-gray-500">{{ ride.date }}</p>
-                    </div>
-                    <span class="px-2 py-1 rounded text-white {% if ride.status == 'Accepted' %}bg-blue-600{% else %}bg-yellow-500{% endif %}">
-                        {{ ride.status }}
-                    </span>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="text-center text-gray-600">No active rides at the moment.</p>
-    {% endif %}
-</div>
+	<div class="max-w-lg mx-auto bg-white px-4 py-4 rounded-lg shadow-md mt-6 w-full px-2">
+		<h2 class="text-xl font-semibold text-center mb-4">Active Ride Requests</h2>
+		{# FR : Titre de la section. | EN : Section heading. #}
+
+		{% if activeRides|length > 0 %}
+			{# FR : Vérifie s'il existe des trajets actifs. | EN : Checks if there are active rides. #}
+			<ul
+				class="space-y-4">
+				{# FR : Liste non ordonnée avec espacement vertical entre les éléments. | EN : Unordered list with vertical spacing between items. #}
+				{% for ride in activeRides %}
+					{# FR : Boucle sur chaque trajet actif. | EN : Loop through each active ride. #}
+					<li
+						class="p-4 border rounded-lg shadow flex justify-between items-center">
+						{# FR : Élément de liste stylisé comme carte, disposition flex. | EN : List item styled as a card, flex layout. #}
+						<div>
+							<p class="font-semibold">{{ ride.pickup }}
+								→
+								{{ ride.dropoff }}</p>
+							{# FR : Affiche les lieux de départ et d'arrivée. | EN : Displays pickup and drop-off locations. #}
+							<p class="text-sm text-gray-500">{{ ride.date }}</p>
+							{# FR : Date prévue du trajet. | EN : Scheduled ride date. #}
+						</div>
+						<span class="px-2 py-1 rounded text-white
+								                        {% if ride.status == 'Accepted' %}bg-blue-600{% else %}bg-yellow-500{% endif %}">
+							{{ ride.status }}
+							{# FR : Statut du trajet (Accepté, En attente, etc.). | EN : Ride status (Accepted, Pending, etc.). #}
+						</span>
+					</li>
+				{% endfor %}
+				{# FR : Fin de la boucle. | EN : End of the loop. #}
+			</ul>
+		{% else %}
+			{# FR : Aucun trajet actif n'a été trouvé. | EN : No active rides found. #}
+			<p class="text-center text-gray-600">No active rides at the moment.</p>
+			{# FR : Message indiquant l'absence de trajets. | EN : Message indicating no rides. #}
+		{% endif %}
+		{# FR : Fin de la condition. | EN : End of the condition. #}
+	</div>
+
 {% endblock %}
+{# FR : Fin du bloc 'content'. | EN : End of the 'content' block. #}
+
