@@ -56,8 +56,9 @@ document.addEventListener("DOMContentLoaded", function () {
         data.commissionPerDay.map((d) => [d.date, d.commission_earned])
       );
 
-      const netSeries = allDates.map((d) => netMap[d] || 0);
-      const commSeries = allDates.map((d) => commMap[d] || 0);
+      // Map each date to its numeric value (or 0)
+      const netSeries = allDates.map((d) => Number(netMap[d] || 0));
+      const commSeries = allDates.map((d) => Number(commMap[d] || 0));
 
       new Chart(document.getElementById("creditsChart").getContext("2d"), {
         type: "line",
