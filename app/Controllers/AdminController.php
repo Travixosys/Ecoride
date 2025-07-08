@@ -137,46 +137,78 @@ class AdminController
      */
     public function getGraphData(Request $request, Response $response, array $args): Response
     {
+        // Vérification d'accès : seul l'admin peut voir ces données
         if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
-            return $this->jsonResponse($response, ['error' => 'Non autorisé / Unauthorized'], 403);
+            return $this->jsonResponse($response, [
+                'error' => 'Non autorisé / Unauthorized'
+            ], 403);
         }
 
-        //Carpools per day
+        // 1) Carpools per day (créations de covoiturages)
+        //    on compte toutes les créations, quel que soit le statut
         $carpoolsQuery = $this->db->query("
-        SELECT DATE(created_at) AS date, COUNT(*) AS count 
-        FROM carpools 
-        GROUP BY DATE(created_at) 
-        ORDER BY date ASC
+        SELECT DATE(created_at) AS date,
+               COUNT(*)           AS count
+          FROM carpools
+         GROUP BY DATE(created_at)
+         ORDER BY date ASC
     ");
         $carpoolsPerDay = $carpoolsQuery->fetchAll(PDO::FETCH_ASSOC);
 
-        //Credits earned per day
+        // 2) Driver net payouts per day (crédits nets versés aux chauffeurs)
+        //    on calcule (5 crédits × sièges) – commission, groupé par date de complétion
         $creditsQuery = $this->db->query("
-        SELECT DATE(created_at) AS date, COUNT(*) * 2 AS credits_earned 
-        FROM ride_requests 
-        WHERE status = 'completed' 
-        GROUP BY DATE(created_at) 
-        ORDER BY date ASC
+        SELECT DATE(rr.completed_at) AS date,
+               SUM(rr.passenger_count * 5) - SUM(rr.commission) AS credits_earned
+          FROM ride_requests rr
+         WHERE rr.status = 'completed'
+         GROUP BY DATE(rr.completed_at)
+         ORDER BY date ASC
     ");
         $creditsPerDay = $creditsQuery->fetchAll(PDO::FETCH_ASSOC);
 
-        //Total credits
-        $totalQuery = $this->db->query("SELECT COUNT(*) * 2 AS total_credits FROM ride_requests WHERE status = 'completed'");
-        $total = $totalQuery->fetch(PDO::FETCH_ASSOC);
+        // 3) Commission per day (commission prélevée par la plateforme)
+        $commissionQuery = $this->db->query("
+        SELECT DATE(rr.completed_at) AS date,
+               SUM(rr.commission) AS commission_earned
+          FROM ride_requests rr
+         WHERE rr.status = 'completed'
+         GROUP BY DATE(rr.completed_at)
+         ORDER BY date ASC
+    ");
+        $commissionPerDay = $commissionQuery->fetchAll(PDO::FETCH_ASSOC);
+
+        // 4) Totals
+        //    - total net payouts to drivers
+        //    - total commissions collected
+        $totalsQuery = $this->db->query("
+        SELECT
+           SUM(rr.passenger_count * 5) - SUM(rr.commission) AS total_credits,
+           SUM(rr.commission)                                AS total_commissions
+          FROM ride_requests rr
+         WHERE rr.status = 'completed'
+    ");
+        $totals = $totalsQuery->fetch(PDO::FETCH_ASSOC);
 
         return $this->jsonResponse($response, [
-            'carpoolsPerDay' => $carpoolsPerDay,
-            'creditsPerDay' => $creditsPerDay,
-            'total_credits' => $total['total_credits'] ?? 0
+            'carpoolsPerDay'    => $carpoolsPerDay,
+            'creditsPerDay'     => $creditsPerDay,
+            'commissionPerDay'  => $commissionPerDay,
+            'total_credits'     => (int)($totals['total_credits'] ?? 0),
+            'total_commissions' => (int)($totals['total_commissions'] ?? 0),
         ]);
     }
 
     /**
      * Utility method for JSON responses
+     * Méthode utilitaire pour réponses JSON
      */
     private function jsonResponse(Response $response, array $data, int $statusCode = 200): Response
     {
-        $response->getBody()->write(json_encode($data));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
+        $payload = json_encode($data, JSON_UNESCAPED_UNICODE);
+        $response->getBody()->write($payload);
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus($statusCode);
     }
 }
