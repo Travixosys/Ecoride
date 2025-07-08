@@ -256,112 +256,44 @@ class CarpoolController
         return $response->withHeader('Location', '/driver/dashboard')->withStatus(302);
     }
 
-    /**
-     * Complete a carpool: mark it and its ride requests as completed,
-     * credit the driver with net earnings (fare minus commission),
-     * and record the platform commission.
-     */
     public function completeCarpool(Request $request, Response $response, array $args): Response
     {
-        // 1) Ensure driver is logged in
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        if (session_status() === PHP_SESSION_NONE) session_start();
         $driverId  = $_SESSION['user']['id'] ?? null;
         $carpoolId = (int)$args['id'];
 
-        // 2) Load the carpool and verify ownership & status
-        $stmt = $this->db->prepare("
-        SELECT * 
-          FROM carpools 
-         WHERE id = :id 
-           AND driver_id = :driver_id
-    ");
-        $stmt->execute([
-            'id'        => $carpoolId,
-            'driver_id' => $driverId
-        ]);
-        $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$carpool) {
-            // Not found or not this driver's carpool
-            return $response->withStatus(403);
-        }
-        if ($carpool['status'] !== 'in progress') {
-            // 400 Bad Request if ride isn't in progress
-            $response->getBody()->write('Cannot complete a ride that is not in progress.');
-            return $response->withStatus(400);
-        }
-
         try {
-            // 3) Start transaction
-            $this->db->beginTransaction();
+            $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = :id AND driver_id = :driver_id");
+            $stmt->execute(['id' => $carpoolId, 'driver_id' => $driverId]);
+            $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // 4) Mark the carpool itself as completed
-            $this->db->prepare("
-            UPDATE carpools
-               SET status     = 'completed',
-                   updated_at = NOW()
-             WHERE id = :id
-        ")->execute(['id' => $carpoolId]);
-
-            // 5) Mark all accepted ride_requests for this carpool as completed
-            $this->db->prepare("
-            UPDATE ride_requests
-               SET status     = 'completed',
-                   completed_at = NOW()
-             WHERE carpool_id = :id
-               AND status     = 'accepted'
-        ")->execute(['id' => $carpoolId]);
-
-            // 6) Compute totals: driver net pay & platform commission
-            //    - fare is passenger_count * 5 per seat
-            //    - commission stored on each request
-            $stmt = $this->db->prepare("
-            SELECT 
-              SUM(passenger_count * 5)                 AS total_fares,
-              SUM(commission)                           AS total_commission,
-              SUM(passenger_count * 5) - SUM(commission) AS total_driver_net
-            FROM ride_requests
-            WHERE carpool_id = :id
-              AND status     = 'completed'
-        ");
-            $stmt->execute(['id' => $carpoolId]);
-            $totals = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            $driverNet       = (int)($totals['total_driver_net'] ?? 0);
-            $platformCut     = (int)($totals['total_commission'] ?? 0);
-
-            // 7) Credit the driver with their net earnings
-            if ($driverNet > 0) {
-                $this->db->prepare("
-                UPDATE users
-                   SET credits = credits + :amount
-                 WHERE id      = :driver_id
-            ")->execute([
-                    'amount'    => $driverNet,
-                    'driver_id' => $driverId
-                ]);
+            if (!$carpool || $carpool['status'] !== 'in progress') {
+                return $response->withStatus(403);
             }
 
-            // (Optional) 8) Record platform commission somewhere, e.g. in a financials table
-            // $this->db->prepare("INSERT INTO platform_earnings (date, amount) VALUES (CURDATE(), ?)")
-            //          ->execute([$platformCut]);
+            $this->db->beginTransaction();
 
-            // 9) Commit all changes
+            $this->db->prepare("UPDATE carpools SET status = 'completed' WHERE id = :id")
+                ->execute(['id' => $carpoolId]);
+
+            $this->db->prepare("UPDATE ride_requests SET status = 'completed' WHERE carpool_id = :id AND status = 'accepted'")
+                ->execute(['id' => $carpoolId]);
+
+            $stmt = $this->db->prepare("SELECT passenger_id FROM ride_requests WHERE carpool_id = :id AND status = 'completed'");
+            $stmt->execute(['id' => $carpoolId]);
+            $passengers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($passengers as $passenger) {
+                $this->db->prepare("UPDATE users SET credits = credits + 10 WHERE id = :id")
+                    ->execute(['id' => $passenger['passenger_id']]);
+            }
+
             $this->db->commit();
-
-            // 10) Redirect back to driver dashboard
-            return $response
-                ->withHeader('Location', '/driver/dashboard')
-                ->withStatus(302);
+            return $response->withHeader('Location', '/driver/dashboard')->withStatus(302);
         } catch (\PDOException $e) {
-            // Roll back on error
             $this->db->rollBack();
-            $payload = ['error' => 'Database error', 'details' => $e->getMessage()];
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(500);
+            $response->getBody()->write(json_encode(['error' => 'Database error', 'details' => $e->getMessage()]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
     }
 
