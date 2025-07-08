@@ -117,23 +117,17 @@ class CarpoolController
 
     public function joinCarpool(Request $request, Response $response, array $args): Response
     {
-        // Ensure user is authenticated
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        $carpoolId = (int)$args['id'];
-        $user      = $_SESSION['user'] ?? null;
-        $userId    = $user['id'] ?? null;
-        $role      = $user['role'] ?? null;
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        $carpoolId      = (int)$args['id'];
+        $user           = $_SESSION['user'] ?? null;
+        $userId         = $user['id']   ?? null;
+        $role           = $user['role'] ?? null;
 
         if (!$userId) {
-            // Redirect guests to register/login before joining
             return $response
                 ->withHeader('Location', "/register?redirect=/carpools/{$carpoolId}")
                 ->withStatus(302);
         }
-
-        // Prevent drivers from joining any carpool
         if ($role === 'driver') {
             return $this->reloadCarpoolWithMessage(
                 $response,
@@ -145,19 +139,23 @@ class CarpoolController
         $data           = $request->getParsedBody();
         $requestedSeats = max(1, (int)($data['passenger_count'] ?? 1));
         $costPerSeat    = 5;
-        $totalCost      = $requestedSeats * $costPerSeat;
+        $commissionPerSeat = 2;
 
-        // Load carpool
-        $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ?");
+        // total fare & how much the platform takes
+        $totalCost   = $requestedSeats * $costPerSeat;
+        $commission  = $requestedSeats * $commissionPerSeat;
+        // (driver’s net is paid later on completion)
+
+        // load the carpool
+        $stmt    = $this->db->prepare("SELECT * FROM carpools WHERE id = ?");
         $stmt->execute([$carpoolId]);
         $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
-
         if (!$carpool) {
             $response->getBody()->write("Carpool not found.");
             return $response->withStatus(404);
         }
 
-        // Check seat availability
+        // seats available?
         $availableSeats = $carpool['total_seats'] - $carpool['occupied_seats'];
         if ($requestedSeats > $availableSeats) {
             return $this->reloadCarpoolWithMessage(
@@ -167,11 +165,10 @@ class CarpoolController
             );
         }
 
-        // Check user credits
+        // passenger has enough credits?
         $stmt = $this->db->prepare("SELECT credits FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $userCredits = $stmt->fetchColumn();
-
         if ($userCredits === false || $userCredits < $totalCost) {
             return $this->reloadCarpoolWithMessage(
                 $response,
@@ -180,7 +177,7 @@ class CarpoolController
             );
         }
 
-        // Prevent duplicate join
+        // no duplicate joins
         $stmt = $this->db->prepare("
             SELECT id
               FROM ride_requests
@@ -196,40 +193,44 @@ class CarpoolController
             );
         }
 
-        // Create ride request
+        // --- INSERT booking, including commission ---
         $this->db->prepare("
             INSERT INTO ride_requests
-                (passenger_id, driver_id, carpool_id, pickup_location, dropoff_location, passenger_count, status, created_at)
-            VALUES
-                (?, ?, ?, ?, ?, ?, 'accepted', NOW())
+               (passenger_id, driver_id, carpool_id,
+                pickup_location, dropoff_location,
+                passenger_count, status, created_at, commission)
+            VALUES (?, ?, ?, ?, ?, ?, 'accepted', NOW(), ?)
         ")->execute([
             $userId,
             $carpool['driver_id'],
             $carpoolId,
             $carpool['pickup_location'],
             $carpool['dropoff_location'],
-            $requestedSeats
+            $requestedSeats,
+            $commission
         ]);
 
-        // Update seats and deduct credits
+        // mark seats occupied
         $this->db->prepare("
             UPDATE carpools
                SET occupied_seats = occupied_seats + ?
-             WHERE id             = ?
+             WHERE id = ?
         ")->execute([$requestedSeats, $carpoolId]);
 
+        // debit passenger the full fare
         $this->db->prepare("
             UPDATE users
                SET credits = credits - ?
-             WHERE id      = ?
+             WHERE id = ?
         ")->execute([$totalCost, $userId]);
 
         return $this->reloadCarpoolWithMessage(
             $response,
             $carpoolId,
-            "Successfully joined. {$totalCost} credits deducted."
+            "Successfully joined. {$totalCost} credits deducted (platform cut: {$commission})."
         );
     }
+
 
 
 
@@ -256,44 +257,92 @@ class CarpoolController
         return $response->withHeader('Location', '/driver/dashboard')->withStatus(302);
     }
 
+    /**
+     * Driver completes the ride: pays out driver net, keeps commission.
+     */
     public function completeCarpool(Request $request, Response $response, array $args): Response
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
         $driverId  = $_SESSION['user']['id'] ?? null;
         $carpoolId = (int)$args['id'];
 
+        // verify driver & in-progress
+        $stmt = $this->db->prepare("
+        SELECT status
+          FROM carpools
+         WHERE id = :id
+           AND driver_id = :driver_id
+    ");
+        $stmt->execute([
+            'id'        => $carpoolId,
+            'driver_id' => $driverId
+        ]);
+        $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$carpool || $carpool['status'] !== 'in progress') {
+            return $response->withStatus(403);
+        }
+
         try {
-            $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = :id AND driver_id = :driver_id");
-            $stmt->execute(['id' => $carpoolId, 'driver_id' => $driverId]);
-            $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!$carpool || $carpool['status'] !== 'in progress') {
-                return $response->withStatus(403);
-            }
-
             $this->db->beginTransaction();
 
-            $this->db->prepare("UPDATE carpools SET status = 'completed' WHERE id = :id")
-                ->execute(['id' => $carpoolId]);
+            // close out the carpool
+            $this->db->prepare("
+            UPDATE carpools
+               SET status = 'completed',
+                   updated_at = NOW()
+             WHERE id = :id
+        ")->execute(['id' => $carpoolId]);
 
-            $this->db->prepare("UPDATE ride_requests SET status = 'completed' WHERE carpool_id = :id AND status = 'accepted'")
-                ->execute(['id' => $carpoolId]);
+            // mark all accepted requests as completed
+            $this->db->prepare("
+            UPDATE ride_requests
+               SET status = 'completed',
+                   completed_at = NOW()
+             WHERE carpool_id = :id
+               AND status     = 'accepted'
+        ")->execute(['id' => $carpoolId]);
 
-            $stmt = $this->db->prepare("SELECT passenger_id FROM ride_requests WHERE carpool_id = :id AND status = 'completed'");
-            $stmt->execute(['id' => $carpoolId]);
-            $passengers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // compute sums: total fares, total commission, net to driver
+            $totalsStmt = $this->db->prepare("
+            SELECT
+              SUM(passenger_count * 5)                   AS total_fares,
+              SUM(commission)                             AS total_commission,
+              (SUM(passenger_count * 5) - SUM(commission)) AS total_driver_net
+            FROM ride_requests
+            WHERE carpool_id = :id
+              AND status     = 'completed'
+        ");
+            $totalsStmt->execute(['id' => $carpoolId]);
+            $t                = $totalsStmt->fetch(PDO::FETCH_ASSOC);
+            $driverNet        = (int)($t['total_driver_net']   ?? 0);
+            $platformCommission = (int)($t['total_commission'] ?? 0);
 
-            foreach ($passengers as $passenger) {
-                $this->db->prepare("UPDATE users SET credits = credits + 10 WHERE id = :id")
-                    ->execute(['id' => $passenger['passenger_id']]);
+            // credit driver their net
+            if ($driverNet > 0) {
+                $this->db->prepare("
+                UPDATE users
+                   SET credits = credits + :amount
+                 WHERE id      = :driver_id
+            ")->execute([
+                    'amount'    => $driverNet,
+                    'driver_id' => $driverId
+                ]);
             }
 
             $this->db->commit();
-            return $response->withHeader('Location', '/driver/dashboard')->withStatus(302);
+            return $response
+                ->withHeader('Location', '/driver/dashboard')
+                ->withStatus(302);
         } catch (\PDOException $e) {
             $this->db->rollBack();
-            $response->getBody()->write(json_encode(['error' => 'Database error', 'details' => $e->getMessage()]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            $payload = json_encode([
+                'error'   => 'Database error',
+                'details' => $e->getMessage()
+            ]);
+            $response->getBody()->write($payload);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(500);
         }
     }
 
