@@ -7,7 +7,9 @@ document.addEventListener("DOMContentLoaded", function () {
       return response.json();
     })
     .then((data) => {
-      // 1) Carpools per Day (green bar)
+      //
+      // 1) BAR CHART → Carpools per Day (green)
+      //
       const carpoolDates = data.carpoolsPerDay.map((d) => d.date);
       const carpoolCounts = data.carpoolsPerDay.map((d) => d.count);
 
@@ -35,73 +37,49 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       });
 
-      // 2) Driver Net Payouts per Day (orange line)
-      const payoutDates = data.driverNetPerDay.map((d) => d.date);
-      const payoutAmounts = data.driverNetPerDay.map((d) => d.driver_net);
+      //
+      // 2) LINE CHART → Driver Net vs Platform Commission
+      //
+      // Build a unified list of dates (so both series align)
+      const allDates = Array.from(
+        new Set([
+          ...data.driverNetPerDay.map((d) => d.date),
+          ...data.commissionPerDay.map((d) => d.date),
+        ])
+      ).sort();
+
+      // Map each date to its value (or 0)
+      const netMap = Object.fromEntries(
+        data.driverNetPerDay.map((d) => [d.date, d.driver_net])
+      );
+      const commMap = Object.fromEntries(
+        data.commissionPerDay.map((d) => [d.date, d.commission_earned])
+      );
+
+      const netSeries = allDates.map((d) => netMap[d] || 0);
+      const commSeries = allDates.map((d) => commMap[d] || 0);
 
       new Chart(document.getElementById("creditsChart").getContext("2d"), {
         type: "line",
         data: {
-          labels: payoutDates,
+          labels: allDates,
           datasets: [
             {
               label: "Driver Net Payouts",
-              data: payoutAmounts,
+              data: netSeries,
               borderColor: "rgba(245,130,32,1)", // orange
               backgroundColor: "rgba(245,130,32,0.1)", // light orange fill
               fill: true,
               tension: 0.3,
             },
-          ],
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: { title: { display: true, text: "Date" } },
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: "Credits" },
-            },
-          },
-        },
-      });
-
-      // 3) Platform Commission per Day (purple line + cumulative dashed)
-      const commissionDates = data.commissionPerDay.map((d) => d.date);
-      const commissionAmounts = data.commissionPerDay.map(
-        (d) => d.commission_earned
-      );
-
-      // cumulative total
-      const cumulative = [];
-      commissionAmounts.reduce((sum, val) => {
-        sum += val;
-        cumulative.push(sum);
-        return sum;
-      }, 0);
-
-      new Chart(document.getElementById("commissionChart").getContext("2d"), {
-        type: "line",
-        data: {
-          labels: commissionDates,
-          datasets: [
             {
-              label: "Daily Commission",
-              data: commissionAmounts,
+              label: "Platform Commission",
+              data: commSeries,
               borderColor: "rgba(128,0,128,1)", // purple
               backgroundColor: "rgba(128,0,128,0.1)", // light purple fill
               fill: true,
               tension: 0.3,
             },
-            {
-              label: "Total Commission",
-              data: cumulative,
-              borderColor: "rgba(128,0,128,0.6)", // faded purple
-              backgroundColor: "transparent",
-              borderDash: [5, 5],
-              fill: false,
-              tension: 0.3,
-            },
           ],
         },
         options: {
@@ -116,14 +94,26 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       });
 
-      // 4) Summary line under commission chart
-      const totalComm = commissionAmounts.reduce((s, v) => s + v, 0);
-      const container = document.getElementById("commissionChart").parentNode;
-      const p = document.createElement("p");
-      p.style.marginTop = "0.5em";
-      p.style.fontWeight = "bold";
-      p.textContent = `Total Commissions: ${totalComm} credits`;
-      container.appendChild(p);
+      //
+      // 3) SUMMARY LINES under the line chart
+      //
+      const totalNet = netSeries.reduce((sum, v) => sum + v, 0);
+      const totalComm = commSeries.reduce((sum, v) => sum + v, 0);
+
+      const container = document.getElementById("creditsChart").parentNode;
+      const netP = document.createElement("p");
+      const commP = document.createElement("p");
+
+      netP.style.marginTop = "0.5em";
+      netP.style.fontWeight = "bold";
+      netP.textContent = `Total Driver Net Payouts: ${totalNet} credits`;
+
+      commP.style.marginTop = "0.25em";
+      commP.style.fontWeight = "bold";
+      commP.textContent = `Total Platform Commissions: ${totalComm} credits`;
+
+      container.appendChild(netP);
+      container.appendChild(commP);
     })
     .catch((error) => {
       console.error("Failed to load admin chart data:", error);
