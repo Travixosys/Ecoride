@@ -128,4 +128,5 @@ document.addEventListener("DOMContentLoaded", function () {
     .catch((error) => {
       console.error("Failed to load admin chart data:", error);
     });
+    
 });
