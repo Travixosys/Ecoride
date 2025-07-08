@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
       });
 
-      // 3) Platform Commission per Day (Line chart + cumulative total)
+      // 3) Platform Commission per Day (Line chart)
       const commissionDates = data.commissionPerDay.map((d) => d.date);
       const commissionAmounts = data.commissionPerDay.map(
         (d) => d.commission_earned
@@ -111,6 +111,19 @@ document.addEventListener("DOMContentLoaded", function () {
           },
         },
       });
+
+      // 4) Display total commissions underneath the commission chart
+      const totalCommission = commissionAmounts.reduce(
+        (sum, val) => sum + val,
+        0
+      );
+      const commissionContainer =
+        document.getElementById("commissionChart").parentNode;
+      const totalEl = document.createElement("p");
+      totalEl.style.marginTop = "0.5em";
+      totalEl.style.fontWeight = "bold";
+      totalEl.textContent = `Total Commissions: ${totalCommission} credits`;
+      commissionContainer.appendChild(totalEl);
     })
     .catch((error) => {
       console.error("Failed to load admin chart data:", error);
