@@ -220,6 +220,94 @@ class AdminController
     }
 
     /**
+     * Delete a ride request (Admin only)
+     * Supprimer une demande de trajet (Admin uniquement)
+     */
+    public function deleteRide(Request $request, Response $response, array $args): Response
+    {
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+            return $this->jsonResponse($response, ['error' => 'Non autorisé / Unauthorized'], 403);
+        }
+
+        $rideId = $args['id'];
+
+        try {
+            $this->db->beginTransaction();
+
+            // Get ride request details first
+            $stmt = $this->db->prepare("SELECT * FROM ride_requests WHERE id = :id");
+            $stmt->execute(['id' => $rideId]);
+            $ride = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$ride) {
+                $this->db->rollBack();
+                return $this->jsonResponse($response, ['error' => 'Ride not found'], 404);
+            }
+
+            // If ride was accepted, release the seats from the carpool
+            if ($ride['status'] === 'accepted' && !empty($ride['carpool_id'])) {
+                $this->db->prepare("
+                    UPDATE carpools
+                    SET occupied_seats = occupied_seats - :seats
+                    WHERE id = :carpool_id
+                ")->execute([
+                    'seats' => $ride['passenger_count'],
+                    'carpool_id' => $ride['carpool_id']
+                ]);
+            }
+
+            // Delete the ride request
+            $this->db->prepare("DELETE FROM ride_requests WHERE id = :id")->execute(['id' => $rideId]);
+
+            $this->db->commit();
+
+            return $this->jsonResponse($response, ['message' => 'Ride deleted successfully']);
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            error_log("deleteRide error: " . $e->getMessage());
+            return $this->jsonResponse($response, ['error' => 'Error deleting ride'], 500);
+        }
+    }
+
+    /**
+     * Suspend or unsuspend a user (Admin only)
+     * Suspendre ou réactiver un utilisateur (Admin uniquement)
+     */
+    public function suspendUser(Request $request, Response $response, array $args): Response
+    {
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+            return $this->jsonResponse($response, ['error' => 'Non autorisé / Unauthorized'], 403);
+        }
+
+        $userId = $args['id'];
+        $data = json_decode($request->getBody()->getContents(), true);
+        $suspend = isset($data['suspend']) ? (bool)$data['suspend'] : true;
+
+        try {
+            // Prevent admin from suspending themselves
+            if ((int)$userId === (int)$_SESSION['user']['id']) {
+                return $this->jsonResponse($response, ['error' => 'Cannot suspend yourself'], 400);
+            }
+
+            $stmt = $this->db->prepare("UPDATE users SET suspended = :suspended WHERE id = :id");
+            $stmt->execute([
+                'suspended' => $suspend ? 1 : 0,
+                'id' => $userId
+            ]);
+
+            if ($stmt->rowCount() === 0) {
+                return $this->jsonResponse($response, ['error' => 'User not found'], 404);
+            }
+
+            $message = $suspend ? 'User suspended successfully' : 'User unsuspended successfully';
+            return $this->jsonResponse($response, ['message' => $message]);
+        } catch (\Exception $e) {
+            error_log("suspendUser error: " . $e->getMessage());
+            return $this->jsonResponse($response, ['error' => 'Error updating user'], 500);
+        }
+    }
+
+    /**
      * Utility method for JSON responses
      * Méthode utilitaire pour réponses JSON
      */

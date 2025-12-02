@@ -1,10 +1,13 @@
 <?php
 // public/index.php
 
-// Force PHP to show all errors (for development only!)
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
+// Environment detection (set APP_ENV=production in production)
+$isProduction = getenv('APP_ENV') === 'production';
+
+// Only show errors in development
+ini_set('display_errors', $isProduction ? '0' : '1');
+ini_set('display_startup_errors', $isProduction ? '0' : '1');
+error_reporting($isProduction ? 0 : E_ALL);
 
 // Start session once
 if (session_status() === PHP_SESSION_NONE) {
@@ -35,12 +38,24 @@ AppFactory::setContainer($container);
 // ────────────────────────────────────────────────────────────
 // Register Twig view in container
 // ────────────────────────────────────────────────────────────
-$container->set('view', function () {
+$container->set('view', function () use ($container) {
     $twig = Twig::create(__DIR__ . '/../app/templates', [
         'cache' => false,
     ]);
     $currentUser = $_SESSION['user'] ?? null;
     $twig->getEnvironment()->addGlobal('user', $currentUser);
+
+    // Add CSRF token functions for forms
+    $twig->getEnvironment()->addFunction(new \Twig\TwigFunction('csrf_tokens', function () use ($container) {
+        $csrf = $container->get('csrf');
+        $nameKey = $csrf->getTokenNameKey();
+        $valueKey = $csrf->getTokenValueKey();
+        $name = $csrf->getTokenName();
+        $value = $csrf->getTokenValue();
+        return '<input type="hidden" name="' . $nameKey . '" value="' . $name . '">' .
+               '<input type="hidden" name="' . $valueKey . '" value="' . $value . '">';
+    }, ['is_safe' => ['html']]));
+
     return $twig;
 });
 
@@ -76,18 +91,19 @@ $app->add(MethodOverrideMiddleware::class);
 $app->add(TwigMiddleware::create($app, $container->get('view')));
 
 // CSRF protection
-// /** @var ResponseFactoryInterface $responseFactory */
-// $responseFactory = $app->getResponseFactory();
-// $csrf = new Guard($responseFactory);
-// $app->add($csrf);
+/** @var ResponseFactoryInterface $responseFactory */
+$responseFactory = $app->getResponseFactory();
+$csrf = new Guard($responseFactory);
+$container->set('csrf', $csrf);
+$app->add($csrf);
 
 // ────────────────────────────────────────────────────────────
-// Error handling (full details while debugging)
+// Error handling (environment-aware)
 // ────────────────────────────────────────────────────────────
 $errorMiddleware = $app->addErrorMiddleware(
-    true,  // displayErrorDetails
-    true,  // logErrors
-    true   // logErrorDetails
+    !$isProduction,  // displayErrorDetails - only in dev
+    true,            // logErrors - always log
+    true             // logErrorDetails - always log details
 );
 
 // ────────────────────────────────────────────────────────────

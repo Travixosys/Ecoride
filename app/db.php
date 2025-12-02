@@ -39,10 +39,16 @@ if ($mongoUri === '') {
     throw new RuntimeException('MONGO_URI environment variable is required');
 }
 
-// Bypass all TLS checks in one option:
-$driverOptions = [
-    'tlsInsecure' => true,
-];
+// Environment-aware TLS settings
+// In production, enforce proper TLS verification
+// Set MONGO_TLS_INSECURE=true only for local development with self-signed certs
+$isProduction = getenv('APP_ENV') === 'production';
+$tlsInsecure = !$isProduction && getenv('MONGO_TLS_INSECURE') === 'true';
+
+$driverOptions = [];
+if ($tlsInsecure) {
+    $driverOptions['tlsInsecure'] = true;
+}
 
 $mongoClient = new MongoClient($mongoUri, [], $driverOptions);
 

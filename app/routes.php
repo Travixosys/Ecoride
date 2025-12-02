@@ -1,7 +1,6 @@
 <?php
 
 use Slim\App;
-use Slim\Views\Twig;
 use App\Controllers\UserController;
 use App\Controllers\CarpoolController;
 use App\Controllers\DriverController;
@@ -10,14 +9,12 @@ use App\Controllers\AdminController;
 use App\Controllers\ReviewController;
 use App\Controllers\EmployeeController;
 use App\Controllers\ProfileController;
-use MongoDB\Client as MongoDBClient;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface     as Response;
 
 return function (App $app) {
     $container = $app->getContainer();
-    $twig = Twig::create(__DIR__ . '/../app/templates');
     $twig = $container->get('view');
 
     if (session_status() === PHP_SESSION_NONE) session_start();
