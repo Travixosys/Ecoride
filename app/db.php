@@ -4,12 +4,13 @@
 use MongoDB\Client as MongoClient;
 
 // ────────────────────────────────────────────────────────────
-// 1) MySQL (PDO) — always from Heroku/AlwaysData ENV
+// 1) MySQL/TiDB (PDO) — from environment variables
 // ────────────────────────────────────────────────────────────
 $mysqlHost   = getenv('DB_HOST');
 $mysqlDbname = getenv('DB_NAME');
 $mysqlUser   = getenv('DB_USER');
 $mysqlPass   = getenv('DB_PASS');
+$mysqlPort   = getenv('DB_PORT') ?: '4000'; // TiDB uses 4000, MySQL uses 3306
 
 // Validate
 foreach (['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS'] as $v) {
@@ -19,15 +20,26 @@ foreach (['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS'] as $v) {
 }
 
 $dsn = sprintf(
-    'mysql:host=%s;dbname=%s;charset=utf8mb4',
+    'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
     $mysqlHost,
+    $mysqlPort,
     $mysqlDbname
 );
 
-$pdo = new PDO($dsn, $mysqlUser, $mysqlPass, [
+// PDO options - TiDB Cloud requires SSL
+$pdoOptions = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-]);
+];
+
+// Enable SSL for TiDB Cloud (when DB_SSL=true)
+if (getenv('DB_SSL') === 'true') {
+    $pdoOptions[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
+    // TiDB Cloud uses system CA certificates
+    $pdoOptions[PDO::MYSQL_ATTR_SSL_CA] = '/etc/ssl/certs/ca-certificates.crt';
+}
+
+$pdo = new PDO($dsn, $mysqlUser, $mysqlPass, $pdoOptions);
 
 // ────────────────────────────────────────────────────────────
 // 2) MongoDB Atlas — only from MONGO_URI ENV
