@@ -269,9 +269,10 @@ class RideController
             );
         } catch (\PDOException $e) {
             $this->db->rollBack();
+            error_log("acceptRide error: " . $e->getMessage());
             return $this->jsonResponse(
                 $response,
-                ['error' => 'Database error', 'details' => $e->getMessage()],
+                ['error' => 'An error occurred while accepting the ride'],
                 500
             );
         }
@@ -284,24 +285,31 @@ class RideController
     --------------------------------------------------------------------*/
     public function completeRide(Request $request, Response $response, array $args): Response
     {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'driver') {
+            return $this->jsonResponse($response, ['error' => 'Unauthorized'], 403);
+        }
+
         $rideId = $args['id'];
+        $driverId = $_SESSION['user']['id'];
 
         try {
             $this->db->beginTransaction();
 
             // Détails ride + passenger_count via jointure
+            // Verify driver ownership
             $stmt = $this->db->prepare("
                 SELECT r.*, rr.passenger_count
                 FROM rides r
                 JOIN ride_requests rr ON r.ride_request_id = rr.id
-                WHERE r.id = :ride_id
+                WHERE r.id = :ride_id AND r.driver_id = :driver_id
             ");
-            $stmt->execute(['ride_id' => $rideId]);
+            $stmt->execute(['ride_id' => $rideId, 'driver_id' => $driverId]);
             $ride = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$ride) {
                 $this->db->rollBack();
-                return $this->jsonResponse($response, ['error' => 'Ride not found'], 404);
+                return $this->jsonResponse($response, ['error' => 'Ride not found or not authorized'], 404);
             }
 
             /* 1) Statut completed */
@@ -318,9 +326,10 @@ class RideController
             return $this->jsonResponse($response, ['message' => 'Ride completed successfully']);
         } catch (\PDOException $e) {
             $this->db->rollBack();
+            error_log("completeRide error: " . $e->getMessage());
             return $this->jsonResponse(
                 $response,
-                ['error' => 'Database error', 'details' => $e->getMessage()],
+                ['error' => 'An error occurred while completing the ride'],
                 500
             );
         }
@@ -349,8 +358,8 @@ class RideController
             return $response->withHeader('Location', '/rides')->withStatus(302);
         }
 
-        // 2. Annule
-        $this->db->prepare("UPDATE ride_requests SET status='cancelled' WHERE id=?")
+        // 2. Annule (use 'canceled' for consistency across codebase)
+        $this->db->prepare("UPDATE ride_requests SET status='canceled' WHERE id=?")
             ->execute([$rideId]);
 
         // 3. Rembourse (passenger_count * 5)

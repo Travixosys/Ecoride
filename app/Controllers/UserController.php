@@ -77,13 +77,12 @@ class UserController
 
             return $this->jsonResponse($response, ['message' => 'Utilisateur enregistré avec succès / User registered successfully'], 201);
         } catch (PDOException $e) {
-            error_log("Erreur DB : " . $e->getMessage());
-            return $this->jsonResponse(
-                $response,
-                ['error' => $e->getMessage()],
-                400
-            );
-            //return $this->jsonResponse($response, ['error' => 'Erreur de base de données / Database error'], 500);
+            error_log("Registration DB Error: " . $e->getMessage());
+            // Check for duplicate email error
+            if ($e->getCode() == 23000) {
+                return $this->jsonResponse($response, ['error' => 'Email already registered / Email déjà utilisé'], 400);
+            }
+            return $this->jsonResponse($response, ['error' => 'Database error / Erreur de base de données'], 500);
         }
     }
 
@@ -98,82 +97,61 @@ class UserController
      */
     public function login(Request $request, Response $response): Response
     {
-        //  Enable error reporting for debugging
-        //  Active l'affichage des erreurs pour le débogage
-        ini_set('display_errors', 1);
-        error_reporting(E_ALL);
-
         try {
             // Parse the request body
-            // Analyse le corps de la requête
             $data = $request->getParsedBody();
 
-            // 🪵 Log the input data
-            // 🪵 Journalise les données reçues
-            error_log("Parsed Login Request Body: " . json_encode($data));
-
             // Check if body is empty or invalid
-            // Vérifie si le corps est vide ou invalide
             if ($data === null) {
-                error_log("Empty or invalid request body");
                 return $this->jsonResponse($response, [
-                    'error' => 'Invalid request data',
-                    'debug' => 'No data received'
+                    'error' => 'Invalid request data / Données invalides'
                 ], 400);
             }
 
-            //  Ensure both email and password are present
-            //  Vérifie que l'email et le mot de passe sont présents
+            // Ensure both email and password are present
             if (empty($data['email']) || empty($data['password'])) {
-                error_log("Missing Login Credentials");
                 return $this->jsonResponse($response, [
-                    'error' => 'Missing email or password',
-                    'received_data' => $data
+                    'error' => 'Missing email or password / Email ou mot de passe manquant'
                 ], 400);
             }
 
-            //  Retrieve user by email
-            //  Récupère l'utilisateur à partir de son email
+            // Retrieve user by email
             $user = $this->userModel->findByEmail($data['email']);
 
+            // Use generic error message to prevent user enumeration
             if (!$user) {
-                // No user found
-                // Aucun utilisateur trouvé
-                error_log("User not found: " . $data['email']);
+                error_log("Login failed: user not found for email");
                 return $this->jsonResponse($response, [
-                    'error' => 'User not found',
-                    'email' => $data['email']
-                ], 404);
+                    'error' => 'Invalid credentials / Identifiants invalides'
+                ], 401);
             }
 
             // Check if account is suspended
-            // Vérifie si le compte est suspendu
             if (!empty($user['suspended']) && $user['suspended']) {
-                error_log("Login attempt by suspended user: " . $data['email']);
+                error_log("Login attempt by suspended user");
                 return $this->jsonResponse($response, [
                     'error' => 'Account is suspended. Please contact support.',
                     'fr' => 'Votre compte est suspendu. Veuillez contacter le support.'
                 ], 403);
             }
 
-            //Validate password
-            //Vérifie le mot de passe
+            // Validate password - use same generic error to prevent enumeration
             if (!password_verify($data['password'], $user['password'])) {
-                error_log("Invalid password for email: " . $data['email']);
+                error_log("Login failed: invalid password");
                 return $this->jsonResponse($response, [
-                    'error' => 'Invalid credentials',
-                    'fr' => 'Identifiants invalides'
+                    'error' => 'Invalid credentials / Identifiants invalides'
                 ], 401);
             }
 
             // Start session if not already started
-            // Démarre une session si elle n'est pas déjà active
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
 
+            // Regenerate session ID to prevent session fixation attacks
+            session_regenerate_id(true);
+
             // Save user data to session
-            // Enregistre les données utilisateur dans la session
             $_SESSION['user'] = [
                 "id" => $user['id'],
                 "name" => $user['name'],
@@ -182,28 +160,20 @@ class UserController
             ];
 
             // Successful login response
-            // Réponse de connexion réussie
             return $this->jsonResponse($response, [
-                'message' => 'Login successful',
-                'fr' => 'Connexion réussie',
+                'message' => 'Login successful / Connexion réussie',
                 'user' => $_SESSION['user']
             ]);
         } catch (PDOException $e) {
-            // Database error handling
-            // Gestion des erreurs de base de données
+            // Log error details server-side only
             error_log("Login Database Error: " . $e->getMessage());
-            error_log("Error Code: " . $e->getCode());
-            error_log("Trace: " . $e->getTraceAsString());
 
+            // Return generic error to client
             return $this->jsonResponse($response, [
-                'error' => 'Database error',
-                'fr' => 'Erreur base de données',
-                'details' => $e->getMessage()
+                'error' => 'An error occurred. Please try again. / Une erreur est survenue.'
             ], 500);
         }
     }
-
-    // Existing jsonResponse method...
 
     /**
      * User logout
@@ -226,17 +196,6 @@ class UserController
 
         // POST – JSON response
         return $this->jsonResponse($response, ['message' => 'Déconnexion réussie / Logout successful']);
-    }
-
-
-    /**
-     * Update profile (stub – to be implemented)
-     * Mise à jour du profil (à compléter)
-     */
-    public function updateProfile($request, $response)
-    {
-        $data = $request->getParsedBody();
-        return $response->withJson(['message' => 'Profile updated (stub)']);
     }
 
     /**

@@ -161,14 +161,6 @@ class CarpoolController
                 ->withHeader('Location', "/register?redirect=/carpools/{$carpoolId}")
                 ->withStatus(302);
         }
-        // Un conducteur ne peut pas se joindre à son propre trajet
-        if ($role === 'driver') {
-            return $this->reloadCarpoolWithMessage(
-                $response,
-                $carpoolId,
-                "Drivers cannot join carpools."
-            );
-        }
 
         /* --- Lecture des données formulaire ---------------------------
            FR : Nombre de places demandées, coût et commission par place
@@ -183,94 +175,126 @@ class CarpoolController
         $commission  = $requestedSeats * $commissionPerSeat; // part plateforme
         // (le net conducteur sera versé lors de la complétion)
 
-        /* --- Chargement du covoiturage ------------------------------- */
-        $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ?");
-        $stmt->execute([$carpoolId]);
-        $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$carpool) {
-            $response->getBody()->write("Carpool not found.");
-            return $response->withStatus(404);
-        }
+        try {
+            // Start transaction to prevent race conditions
+            $this->db->beginTransaction();
 
-        /* --- Vérification des places disponibles --------------------- */
-        $availableSeats = $carpool['total_seats'] - $carpool['occupied_seats'];
-        if ($requestedSeats > $availableSeats) {
+            /* --- Chargement du covoiturage avec verrouillage ------------- */
+            // Use FOR UPDATE to lock the row and prevent concurrent bookings
+            $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ? FOR UPDATE");
+            $stmt->execute([$carpoolId]);
+            $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$carpool) {
+                $this->db->rollBack();
+                $response->getBody()->write("Carpool not found.");
+                return $response->withStatus(404);
+            }
+
+            /* --- Driver cannot join their OWN carpool -------------------- */
+            if ((int)$carpool['driver_id'] === (int)$userId) {
+                $this->db->rollBack();
+                return $this->reloadCarpoolWithMessage(
+                    $response,
+                    $carpoolId,
+                    "You cannot join your own carpool."
+                );
+            }
+
+            /* --- Vérification des places disponibles --------------------- */
+            $availableSeats = $carpool['total_seats'] - $carpool['occupied_seats'];
+            if ($requestedSeats > $availableSeats) {
+                $this->db->rollBack();
+                return $this->reloadCarpoolWithMessage(
+                    $response,
+                    $carpoolId,
+                    "Not enough available seats. Only {$availableSeats} left."
+                );
+            }
+
+            /* --- Vérification des crédits passager ----------------------- */
+            $stmt = $this->db->prepare("SELECT credits FROM users WHERE id = ? FOR UPDATE");
+            $stmt->execute([$userId]);
+            $userCredits = $stmt->fetchColumn();
+            if ($userCredits === false || $userCredits < $totalCost) {
+                $this->db->rollBack();
+                return $this->reloadCarpoolWithMessage(
+                    $response,
+                    $carpoolId,
+                    "You need {$totalCost} credits to join. You have " . ($userCredits ?? 0) . "."
+                );
+            }
+
+            /* --- Prévention des doubles réservations --------------------- */
+            $stmt = $this->db->prepare("
+                SELECT id FROM ride_requests
+                WHERE passenger_id = ? AND carpool_id = ?
+            ");
+            $stmt->execute([$userId, $carpoolId]);
+            if ($stmt->fetch()) {
+                $this->db->rollBack();
+                return $this->reloadCarpoolWithMessage(
+                    $response,
+                    $carpoolId,
+                    "You have already joined this ride."
+                );
+            }
+
+            /* --- INSERT réservation + commission ------------------------- */
+            $this->db->prepare("
+                INSERT INTO ride_requests
+                   (passenger_id, driver_id, carpool_id,
+                    pickup_location, dropoff_location,
+                    passenger_count, status, created_at, commission)
+                VALUES (?, ?, ?, ?, ?, ?, 'accepted', NOW(), ?)
+            ")->execute([
+                $userId,
+                $carpool['driver_id'],
+                $carpoolId,
+                $carpool['pickup_location'],
+                $carpool['dropoff_location'],
+                $requestedSeats,
+                $commission
+            ]);
+
+            /* ---------------------------------------------------------------
+               FR : Incrémente le nombre de sièges occupés
+               EN : Increment occupied seat count
+            --------------------------------------------------------------- */
+            $this->db->prepare("
+                UPDATE carpools
+                   SET occupied_seats = occupied_seats + ?
+                 WHERE id = ?
+            ")->execute([$requestedSeats, $carpoolId]);
+
+            /* ---------------------------------------------------------------
+               FR : Débite le passager du montant total
+               EN : Debit passenger's credits
+            --------------------------------------------------------------- */
+            $this->db->prepare("
+                UPDATE users
+                   SET credits = credits - ?
+                 WHERE id = ?
+            ")->execute([$totalCost, $userId]);
+
+            // Commit the transaction
+            $this->db->commit();
+
+            // Retourne la page détail avec message de succès
             return $this->reloadCarpoolWithMessage(
                 $response,
                 $carpoolId,
-                "Not enough available seats. Only {$availableSeats} left."
+                "Successfully joined. {$totalCost} credits deducted (platform cut: {$commission})."
             );
-        }
 
-        /* --- Vérification des crédits passager ----------------------- */
-        $stmt = $this->db->prepare("SELECT credits FROM users WHERE id = ?");
-        $stmt->execute([$userId]);
-        $userCredits = $stmt->fetchColumn();
-        if ($userCredits === false || $userCredits < $totalCost) {
+        } catch (\PDOException $e) {
+            $this->db->rollBack();
+            error_log("joinCarpool error: " . $e->getMessage());
             return $this->reloadCarpoolWithMessage(
                 $response,
                 $carpoolId,
-                "You need {$totalCost} credits to join. You have " . ($userCredits ?? 0) . "."
+                "An error occurred while processing your request. Please try again."
             );
         }
-
-        /* --- Prévention des doubles réservations --------------------- */
-        $stmt = $this->db->prepare("
-            SELECT id FROM ride_requests
-            WHERE passenger_id = ? AND carpool_id = ?
-        ");
-        $stmt->execute([$userId, $carpoolId]);
-        if ($stmt->fetch()) {
-            return $this->reloadCarpoolWithMessage(
-                $response,
-                $carpoolId,
-                "You have already joined this ride."
-            );
-        }
-
-        /* --- INSERT réservation + commission ------------------------- */
-        $this->db->prepare("
-            INSERT INTO ride_requests
-               (passenger_id, driver_id, carpool_id,
-                pickup_location, dropoff_location,
-                passenger_count, status, created_at, commission)
-            VALUES (?, ?, ?, ?, ?, ?, 'accepted', NOW(), ?)
-        ")->execute([
-            $userId,
-            $carpool['driver_id'],
-            $carpoolId,
-            $carpool['pickup_location'],
-            $carpool['dropoff_location'],
-            $requestedSeats,
-            $commission
-        ]);
-
-        /* ---------------------------------------------------------------
-           FR : Incrémente le nombre de sièges occupés
-           EN : Increment occupied seat count
-        --------------------------------------------------------------- */
-        $this->db->prepare("
-            UPDATE carpools
-               SET occupied_seats = occupied_seats + ?
-             WHERE id = ?
-        ")->execute([$requestedSeats, $carpoolId]);
-
-        /* ---------------------------------------------------------------
-           FR : Débite le passager du montant total
-           EN : Debit passenger’s credits
-        --------------------------------------------------------------- */
-        $this->db->prepare("
-            UPDATE users
-               SET credits = credits - ?
-             WHERE id = ?
-        ")->execute([$totalCost, $userId]);
-
-        // Retourne la page détail avec message de succès
-        return $this->reloadCarpoolWithMessage(
-            $response,
-            $carpoolId,
-            "Successfully joined. {$totalCost} credits deducted (platform cut: {$commission})."
-        );
     }
 
 
@@ -282,15 +306,23 @@ class CarpoolController
     ------------------------------------------------------------------ */
     public function startCarpool(Request $request, Response $response, array $args): Response
     {
-        $carpoolId = (int)$args['id'];
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'driver') {
+            $response->getBody()->write(json_encode(['error' => 'Unauthorized']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
 
-        $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ?");
-        $stmt->execute([$carpoolId]);
+        $carpoolId = (int)$args['id'];
+        $driverId = $_SESSION['user']['id'];
+
+        // Verify ownership: only the driver who created the carpool can start it
+        $stmt = $this->db->prepare("SELECT * FROM carpools WHERE id = ? AND driver_id = ?");
+        $stmt->execute([$carpoolId, $driverId]);
         $carpool = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // 404 si le trajet n’existe pas • 404 if carpool not found
+        // 404 si le trajet n'existe pas ou n'appartient pas au conducteur
         if (!$carpool) {
-            $response->getBody()->write("Carpool not found.");
+            $response->getBody()->write("Carpool not found or not authorized.");
             return $response->withStatus(404);
         }
 
@@ -300,7 +332,7 @@ class CarpoolController
             return $response->withStatus(400);
         }
 
-        // Passage au statut “in progress”
+        // Passage au statut "in progress"
         $this->db->prepare("UPDATE carpools SET status = 'in progress' WHERE id = ?")
             ->execute([$carpoolId]);
 
@@ -395,12 +427,12 @@ class CarpoolController
                 ->withHeader('Location', '/driver/dashboard')
                 ->withStatus(302);
         } catch (\PDOException $e) {
-            /* Rollback + retour JSON 500 en cas d’erreur SQL
+            /* Rollback + retour JSON 500 en cas d'erreur SQL
                   Rollback + return JSON 500 on DB error */
             $this->db->rollBack();
+            error_log("completeCarpool error: " . $e->getMessage());
             $payload = json_encode([
-                'error'   => 'Database error',
-                'details' => $e->getMessage()
+                'error' => 'An error occurred while completing the carpool'
             ]);
             $response->getBody()->write($payload);
             return $response
@@ -428,30 +460,78 @@ class CarpoolController
 
     /* ------------------------------------------------------------------
           storeCarpool()
-          FR : Enregistre un nouveau trajet (status = ‘upcoming’)
+          FR : Enregistre un nouveau trajet (status = 'upcoming')
           EN : Persist a new upcoming carpool
        ------------------------------------------------------------------ */
     public function storeCarpool(Request $request, Response $response): Response
     {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+
+        // Authorization check - only drivers can create carpools
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'driver') {
+            $response->getBody()->write(json_encode(['error' => 'Unauthorized']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+        }
+
         $data   = $request->getParsedBody();
-        $userId = $_SESSION['user']['id'] ?? null;
+        $userId = $_SESSION['user']['id'];
 
-        $stmt = $this->db->prepare("
-               INSERT INTO carpools
-                   (driver_id, vehicle_id, pickup_location, dropoff_location,
-                    departure_time, total_seats, occupied_seats, status)
-               VALUES (?, ?, ?, ?, ?, ?, 0, 'upcoming')
-           ");
-        $stmt->execute([
-            $userId,
-            $data['vehicle_id'],
-            $data['pickup_location'],
-            $data['dropoff_location'],
-            $data['departure_time'],
-            $data['total_seats']
-        ]);
+        // Input validation
+        $vehicleId = $data['vehicle_id'] ?? null;
+        $pickup = trim($data['pickup_location'] ?? '');
+        $dropoff = trim($data['dropoff_location'] ?? '');
+        $departureTime = $data['departure_time'] ?? null;
+        $totalSeats = (int)($data['total_seats'] ?? 0);
 
-        return $response->withHeader('Location', '/carpools')->withStatus(302);
+        // Validate required fields
+        if (empty($vehicleId) || empty($pickup) || empty($dropoff) || empty($departureTime) || $totalSeats < 1) {
+            $_SESSION['flash_error'] = 'All fields are required and seats must be at least 1.';
+            return $response->withHeader('Location', '/driver/carpools/create')->withStatus(302);
+        }
+
+        // Validate vehicle belongs to this driver
+        $stmt = $this->db->prepare("SELECT id FROM vehicles WHERE id = ? AND driver_id = ?");
+        $stmt->execute([$vehicleId, $userId]);
+        if (!$stmt->fetch()) {
+            $_SESSION['flash_error'] = 'Invalid vehicle selected.';
+            return $response->withHeader('Location', '/driver/carpools/create')->withStatus(302);
+        }
+
+        // Validate departure time is in the future
+        $departureTimestamp = strtotime($departureTime);
+        if ($departureTimestamp === false || $departureTimestamp <= time()) {
+            $_SESSION['flash_error'] = 'Departure time must be in the future.';
+            return $response->withHeader('Location', '/driver/carpools/create')->withStatus(302);
+        }
+
+        // Validate seats (reasonable limit)
+        if ($totalSeats > 50) {
+            $_SESSION['flash_error'] = 'Maximum 50 seats allowed.';
+            return $response->withHeader('Location', '/driver/carpools/create')->withStatus(302);
+        }
+
+        try {
+            $stmt = $this->db->prepare("
+                   INSERT INTO carpools
+                       (driver_id, vehicle_id, pickup_location, dropoff_location,
+                        departure_time, total_seats, occupied_seats, status, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, 0, 'upcoming', NOW())
+               ");
+            $stmt->execute([
+                $userId,
+                $vehicleId,
+                $pickup,
+                $dropoff,
+                $departureTime,
+                $totalSeats
+            ]);
+
+            return $response->withHeader('Location', '/carpools')->withStatus(302);
+        } catch (\PDOException $e) {
+            error_log("storeCarpool error: " . $e->getMessage());
+            $_SESSION['flash_error'] = 'An error occurred while creating the carpool.';
+            return $response->withHeader('Location', '/driver/carpools/create')->withStatus(302);
+        }
     }
 
     /* ------------------------------------------------------------------

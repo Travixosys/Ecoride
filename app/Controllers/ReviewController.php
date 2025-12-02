@@ -38,9 +38,9 @@ class ReviewController
             return $response->withStatus(400);
         }
 
-        // Prevent duplicate review
-        $check = $this->db->prepare("SELECT id FROM ride_reviews WHERE ride_request_id = ?");
-        $check->execute([$rideRequestId]);
+        // Prevent duplicate review (same reviewer for same ride request)
+        $check = $this->db->prepare("SELECT id FROM ride_reviews WHERE ride_request_id = ? AND reviewer_id = ?");
+        $check->execute([$rideRequestId, $userId]);
         if ($check->fetch()) {
             return $response->withHeader('Location', '/rides')->withStatus(302);
         }
@@ -110,11 +110,17 @@ class ReviewController
     }
 
     /**
-     * Approve a review (Employee)
-     * Approuver un avis (Employé)
+     * Approve a review (Employee/Admin only)
+     * Approuver un avis (Employé/Admin uniquement)
      */
     public function approve(Request $request, Response $response, array $args): Response
     {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        $role = $_SESSION['user']['role'] ?? null;
+        if (!in_array($role, ['employee', 'admin'], true)) {
+            return $response->withStatus(403);
+        }
+
         $reviewId = $args['id'] ?? null;
 
         if (!$reviewId) {
@@ -159,11 +165,17 @@ class ReviewController
 
     
     /**
-     * Delete a review (Admin/Employee)
-     * Supprimer un avis (Admin/Employé)
+     * Delete a review (Admin/Employee only)
+     * Supprimer un avis (Admin/Employé uniquement)
      */
     public function delete(Request $request, Response $response, array $args): Response
     {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        $role = $_SESSION['user']['role'] ?? null;
+        if (!in_array($role, ['employee', 'admin'], true)) {
+            return $response->withStatus(403);
+        }
+
         $reviewId = $args['id'] ?? null;
 
         if (!$reviewId) {

@@ -19,11 +19,37 @@ class EmployeeController
     }
 
     /**
+     * Check if current user is authorized as employee or admin
+     * Vérifie si l'utilisateur est autorisé (employé ou admin)
+     */
+    private function isAuthorized(): bool
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $role = $_SESSION['user']['role'] ?? null;
+        return in_array($role, ['employee', 'admin'], true);
+    }
+
+    /**
+     * Return unauthorized JSON response
+     */
+    private function unauthorizedResponse(Response $response): Response
+    {
+        $response->getBody()->write(json_encode(['error' => 'Unauthorized']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+    }
+
+    /**
      * Display employee dashboard (disputes, resolved rides, reviews)
      * Affiche le tableau de bord employé (litiges, trajets résolus, avis)
      */
     public function index(Request $request, Response $response): Response
     {
+        if (!$this->isAuthorized()) {
+            return $this->unauthorizedResponse($response);
+        }
+
         try {
             /**
              * 1. Fetch carpools marked as "disputed"
@@ -107,6 +133,10 @@ class EmployeeController
      */
     public function viewDispute(Request $request, Response $response, array $args): Response
     {
+        if (!$this->isAuthorized()) {
+            return $this->unauthorizedResponse($response);
+        }
+
         $carpoolId = $args['id'];
 
         try {
@@ -147,6 +177,10 @@ class EmployeeController
      */
     public function approveReview(Request $request, Response $response, array $args): Response
     {
+        if (!$this->isAuthorized()) {
+            return $this->unauthorizedResponse($response);
+        }
+
         $reviewId = $args['id'];
 
         $stmt = $this->db->prepare("UPDATE ride_reviews SET status = 'approved' WHERE id = ?");
@@ -161,6 +195,10 @@ class EmployeeController
      */
     public function rejectReview(Request $request, Response $response, array $args): Response
     {
+        if (!$this->isAuthorized()) {
+            return $this->unauthorizedResponse($response);
+        }
+
         $reviewId = $args['id'];
 
         $stmt = $this->db->prepare("UPDATE ride_reviews SET status = 'rejected' WHERE id = ?");
@@ -175,6 +213,10 @@ class EmployeeController
      */
     public function resolve(Request $request, Response $response, array $args): Response
     {
+        if (!$this->isAuthorized()) {
+            return $this->unauthorizedResponse($response);
+        }
+
         $carpoolId = $args['id'];
 
         $stmt = $this->db->prepare("UPDATE carpools SET status = 'resolved' WHERE id = ?");
