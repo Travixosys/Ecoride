@@ -37,7 +37,9 @@ class UserController
         }
 
         if (empty($data['name']) || empty($data['email']) || empty($data['password']) || empty($data['role'])) {
-            return $this->jsonResponse($response, ['error' => 'Champs requis manquants / Missing required fields'], 400);
+            if (session_status() === PHP_SESSION_NONE) session_start();
+            $_SESSION['flash_error'] = 'Champs requis manquants / Missing required fields';
+            return $response->withHeader('Location', '/register')->withStatus(302);
         }
 
         try {
@@ -47,7 +49,9 @@ class UserController
             if ($role === "passenger") {
                 $role = "user";
             } elseif (!in_array($role, ["user", "driver"])) {
-                return $this->jsonResponse($response, ['error' => 'Rôle non valide / Invalid role'], 400);
+                if (session_status() === PHP_SESSION_NONE) session_start();
+                $_SESSION['flash_error'] = 'Rôle non valide / Invalid role';
+                return $response->withHeader('Location', '/register')->withStatus(302);
             }
 
             $this->userModel->createUser([
@@ -65,7 +69,9 @@ class UserController
                     empty($data['make']) || empty($data['model']) || empty($data['year']) ||
                     empty($data['plate']) || empty($data['seats']) || empty($data['energy_type'])
                 ) {
-                    return $this->jsonResponse($response, ['error' => 'Détails du véhicule manquants / Missing vehicle details'], 400);
+                    if (session_status() === PHP_SESSION_NONE) session_start();
+                    $_SESSION['flash_error'] = 'Détails du véhicule manquants / Missing vehicle details';
+                    return $response->withHeader('Location', '/register')->withStatus(302);
                 }
 
                 $this->vehicleModel->create([
@@ -79,14 +85,20 @@ class UserController
                 ]);
             }
 
-            return $this->jsonResponse($response, ['message' => 'Utilisateur enregistré avec succès / User registered successfully'], 201);
+            // Success - redirect to login page
+            if (session_status() === PHP_SESSION_NONE) session_start();
+            $_SESSION['flash_success'] = 'Inscription réussie ! Connectez-vous. / Registration successful! Please login.';
+            return $response->withHeader('Location', '/login')->withStatus(302);
         } catch (PDOException $e) {
             error_log("Registration DB Error: " . $e->getMessage());
+            if (session_status() === PHP_SESSION_NONE) session_start();
             // Check for duplicate email error
             if ($e->getCode() == 23000) {
-                return $this->jsonResponse($response, ['error' => 'Email already registered / Email déjà utilisé'], 400);
+                $_SESSION['flash_error'] = 'Email already registered / Email déjà utilisé';
+                return $response->withHeader('Location', '/register')->withStatus(302);
             }
-            return $this->jsonResponse($response, ['error' => 'Database error / Erreur de base de données'], 500);
+            $_SESSION['flash_error'] = 'Database error / Erreur de base de données';
+            return $response->withHeader('Location', '/register')->withStatus(302);
         }
     }
 
