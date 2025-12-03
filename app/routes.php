@@ -32,7 +32,7 @@ return function (App $app) {
     // =========================
     // AUTHENTICATION
     // =========================
-    $app->get('/login', fn($req, $res) => Twig::fromRequest($req)->render($res, 'login.twig'));
+    $app->get('/login', fn($req, $res) => $twig->render($res, 'login.twig'));
     $app->post('/login', [UserController::class, 'login']);
     $app->get('/logout', [UserController::class, 'logout']);
     $app->post('/logout', [UserController::class, 'logout']);
