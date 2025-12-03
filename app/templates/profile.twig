@@ -97,6 +97,7 @@
 
 			{# Formulaire masqué par défaut / hidden edit form #}
 			<form action="/profile" method="POST" id="preferences-form" class="space-y-3 hidden mt-4">
+				{{ csrf_tokens()|raw }}
 				<div>
 					<label class="block text-sm font-medium mb-1">Music Preference</label>
 					<input type="text" name="music_preference" placeholder="e.g. Jazz" value="{{ preferences.music_preference ?? '' }}" class="w-full border border-gray-300 p-2 rounded text-sm">

@@ -113,13 +113,7 @@ infoPanel.classList.add('hidden');
 });
 
 function logout() {
-fetch('/logout', {
-method: 'POST',
-credentials: 'same-origin'
-}).then(r => r.json()).then(d => {
-alert(d.message);
-window.location.href = "/";
-}).catch(() => alert("Logout Failed"));
+window.location.href = '/logout';
 }
 			</script>
 		</body>
