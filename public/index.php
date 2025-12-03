@@ -4,10 +4,10 @@
 // Environment detection (set APP_ENV=production in production)
 $isProduction = getenv('APP_ENV') === 'production';
 
-// Only show errors in development
-ini_set('display_errors', $isProduction ? '0' : '1');
-ini_set('display_startup_errors', $isProduction ? '0' : '1');
-error_reporting($isProduction ? 0 : E_ALL);
+// TEMPORARY: Show all errors for debugging
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
 
 // Start session once
 if (session_status() === PHP_SESSION_NONE) {
@@ -101,9 +101,9 @@ $app->add($csrf);
 // Error handling (environment-aware)
 // ────────────────────────────────────────────────────────────
 $errorMiddleware = $app->addErrorMiddleware(
-    !$isProduction,  // displayErrorDetails - only in dev
-    true,            // logErrors - always log
-    true             // logErrorDetails - always log details
+    true,  // TEMPORARY: displayErrorDetails - always show for debugging
+    true,  // logErrors - always log
+    true   // logErrorDetails - always log details
 );
 
 // ────────────────────────────────────────────────────────────
