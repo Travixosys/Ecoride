@@ -3,16 +3,28 @@ document
   .addEventListener("submit", async function (event) {
     event.preventDefault();
 
+    const form = event.target;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
+
+    // Get CSRF tokens from hidden form fields
+    const csrfName = form.querySelector('input[name="csrf_name"]');
+    const csrfValue = form.querySelector('input[name="csrf_value"]');
 
     try {
       console.log(" Sending:", { email, password });
 
+      // Build request body with CSRF tokens
+      const body = { email, password };
+      if (csrfName && csrfValue) {
+        body.csrf_name = csrfName.value;
+        body.csrf_value = csrfValue.value;
+      }
+
       const response = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(body),
       });
 
       const data = await response.json();

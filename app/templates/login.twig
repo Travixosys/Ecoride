@@ -7,9 +7,10 @@
 		{# Titre de la page / Page heading #}
 		<h2 class="text-xl font-semibold text-center">Login</h2>
 
-		{# Formulaire d’authentification / Authentication form #}
+		{# Formulaire d'authentification / Authentication form #}
 		<form
 			id="login-form" class="mt-4">
+			{{ csrf_tokens()|raw }}
 
 			{# Champ email / Email field #}
 			<div class="mb-4">
