@@ -49,7 +49,7 @@ class CarpoolController
 
         // --- 2. Requête de base (trajets à venir + places libres) -------
         $sql = "
-            SELECT c.*, u.name AS driver_name, v.energy_type
+            SELECT c.*, u.name AS driver_name, v.make, v.model
             FROM carpools c
             JOIN users    u ON c.driver_id  = u.id
             JOIN vehicles v ON c.vehicle_id = v.id
@@ -72,13 +72,6 @@ class CarpoolController
         if ($minSeats) {
             $conditions[] = '(c.total_seats - c.occupied_seats) >= ?'; // places min
             $values[]     = (int)$minSeats;
-        }
-        if ($energy) {
-            $conditions[] = 'v.energy_type = ?';          // type énergie
-            $values[]     = $energy;
-        }
-        if ($eco === '1') {
-            $conditions[] = "(v.energy_type IN ('electric','hybrid'))"; // option éco
         }
 
         if ($conditions) {
@@ -109,7 +102,7 @@ class CarpoolController
         // Chargement trajet + véhicule + conducteur
         $stmt = $this->db->prepare("
             SELECT c.*, u.name AS driver_name, u.driver_rating,
-                   v.make, v.model, v.energy_type
+                   v.make, v.model
             FROM carpools c
             JOIN users    u ON c.driver_id  = u.id
             JOIN vehicles v ON c.vehicle_id = v.id
@@ -544,7 +537,7 @@ class CarpoolController
         // Re-charge les infos trajet + véhicule + conducteur
         $stmt = $this->db->prepare("
                SELECT c.*, u.name AS driver_name, u.driver_rating,
-                      v.make, v.model, v.energy_type
+                      v.make, v.model
                FROM carpools c
                JOIN users    u ON c.driver_id  = u.id
                JOIN vehicles v ON c.vehicle_id = v.id
