@@ -1,6 +1,11 @@
 <?php
 // app/db.php
 
+// Enable error reporting for debugging
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+
 use MongoDB\Client as MongoClient;
 
 // ────────────────────────────────────────────────────────────
@@ -35,13 +40,17 @@ $pdoOptions = [
 // Auto-detect TiDB Cloud (tidbcloud in hostname or port 4000) OR explicit DB_SSL=true
 $isTiDBCloud = strpos($mysqlHost, 'tidbcloud') !== false || $mysqlPort === '4000';
 if ($isTiDBCloud || getenv('DB_SSL') === 'true') {
-    // TiDB Cloud requires SSL - use system CA certificates
-    // Heroku uses Ubuntu which has CA certs at this path
-    $pdoOptions[PDO::MYSQL_ATTR_SSL_CA] = '/etc/ssl/certs/ca-certificates.crt';
-    $pdoOptions[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+    // TiDB Cloud requires SSL
+    // Use MYSQL_ATTR_SSL_CA with true to enable SSL using system defaults
+    $pdoOptions[PDO::MYSQL_ATTR_SSL_CA] = true;
 }
 
-$pdo = new PDO($dsn, $mysqlUser, $mysqlPass, $pdoOptions);
+try {
+    $pdo = new PDO($dsn, $mysqlUser, $mysqlPass, $pdoOptions);
+} catch (PDOException $e) {
+    error_log("Database connection failed: " . $e->getMessage());
+    throw $e;
+}
 
 // ────────────────────────────────────────────────────────────
 // 2) MongoDB Atlas — only from MONGO_URI ENV
