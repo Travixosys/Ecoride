@@ -29,8 +29,12 @@ class UserController
      */
     public function register(Request $request, Response $response): Response
     {
-        $body = $request->getBody()->getContents();
-        $data = json_decode($body, true) ?? [];
+        // Support both JSON and form data
+        $data = $request->getParsedBody();
+        if (empty($data)) {
+            $body = $request->getBody()->getContents();
+            $data = json_decode($body, true) ?? [];
+        }
 
         if (empty($data['name']) || empty($data['email']) || empty($data['password']) || empty($data['role'])) {
             return $this->jsonResponse($response, ['error' => 'Champs requis manquants / Missing required fields'], 400);
