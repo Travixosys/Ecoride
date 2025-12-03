@@ -90,10 +90,11 @@ $app->add(MethodOverrideMiddleware::class);
 // Twig view rendering
 $app->add(TwigMiddleware::create($app, $container->get('view')));
 
-// CSRF protection
+// CSRF protection with persistent storage
 /** @var ResponseFactoryInterface $responseFactory */
 $responseFactory = $app->getResponseFactory();
-$csrf = new Guard($responseFactory);
+$csrf = new Guard($responseFactory, 'csrf');
+$csrf->setPersistentTokenMode(true);
 $container->set('csrf', $csrf);
 $app->add($csrf);
 
