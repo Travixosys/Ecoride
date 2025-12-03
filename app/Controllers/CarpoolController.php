@@ -49,7 +49,7 @@ class CarpoolController
 
         // --- 2. Requête de base (trajets à venir + places libres) -------
         $sql = "
-            SELECT c.*, u.name AS driver_name, v.energy_type
+            SELECT c.*, u.name AS driver_name, v.make, v.model, v.energy_type
             FROM carpools c
             JOIN users    u ON c.driver_id  = u.id
             JOIN vehicles v ON c.vehicle_id = v.id
@@ -74,11 +74,11 @@ class CarpoolController
             $values[]     = (int)$minSeats;
         }
         if ($energy) {
-            $conditions[] = 'v.energy_type = ?';          // type énergie
+            $conditions[] = 'v.energy_type = ?';  // filtre type énergie
             $values[]     = $energy;
         }
-        if ($eco === '1') {
-            $conditions[] = "(v.energy_type IN ('electric','hybrid'))"; // option éco
+        if ($eco) {
+            $conditions[] = "v.energy_type IN ('electric', 'hybrid')"; // filtre écologique
         }
 
         if ($conditions) {

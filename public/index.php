@@ -90,10 +90,26 @@ $app->add(MethodOverrideMiddleware::class);
 // Twig view rendering
 $app->add(TwigMiddleware::create($app, $container->get('view')));
 
-// CSRF protection
+// CSRF protection with persistent storage
 /** @var ResponseFactoryInterface $responseFactory */
 $responseFactory = $app->getResponseFactory();
-$csrf = new Guard($responseFactory);
+$csrf = new Guard($responseFactory, 'csrf');
+$csrf->setPersistentTokenMode(true);
+
+// Exclude API-style auth endpoints from CSRF (they use JSON, not forms)
+$csrf->setFailureHandler(function ($request, $handler) {
+    $path = $request->getUri()->getPath();
+    // Allow login/register/logout without CSRF (JSON API endpoints)
+    $excludedPaths = ['/login', '/register', '/logout', '/register-driver'];
+    if (in_array($path, $excludedPaths)) {
+        return $handler->handle($request);
+    }
+    // For other routes, return CSRF error
+    $response = new \Slim\Psr7\Response();
+    $response->getBody()->write(json_encode(['error' => 'CSRF token validation failed']));
+    return $response->withStatus(403)->withHeader('Content-Type', 'application/json');
+});
+
 $container->set('csrf', $csrf);
 $app->add($csrf);
 
