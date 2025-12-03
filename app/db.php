@@ -40,9 +40,28 @@ $pdoOptions = [
 // Auto-detect TiDB Cloud (tidbcloud in hostname or port 4000) OR explicit DB_SSL=true
 $isTiDBCloud = strpos($mysqlHost, 'tidbcloud') !== false || $mysqlPort === '4000';
 if ($isTiDBCloud || getenv('DB_SSL') === 'true') {
-    // TiDB Cloud requires SSL
-    // Use MYSQL_ATTR_SSL_CA with true to enable SSL using system defaults
-    $pdoOptions[PDO::MYSQL_ATTR_SSL_CA] = true;
+    // TiDB Cloud requires SSL - find system CA certificates
+    $caPaths = [
+        '/etc/ssl/certs/ca-certificates.crt',  // Ubuntu/Debian/Heroku
+        '/etc/pki/tls/certs/ca-bundle.crt',    // CentOS/RHEL
+        '/etc/ssl/cert.pem',                    // Alpine/macOS
+        '/usr/local/etc/openssl/cert.pem',     // macOS Homebrew
+    ];
+
+    $caFile = null;
+    foreach ($caPaths as $path) {
+        if (file_exists($path)) {
+            $caFile = $path;
+            break;
+        }
+    }
+
+    if ($caFile) {
+        $pdoOptions[PDO::MYSQL_ATTR_SSL_CA] = $caFile;
+        $pdoOptions[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+    } else {
+        error_log("Warning: No CA certificate found for SSL. Tried: " . implode(', ', $caPaths));
+    }
 }
 
 try {
