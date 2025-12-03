@@ -35,9 +35,9 @@ $pdoOptions = [
 // Auto-detect TiDB Cloud (tidbcloud in hostname or port 4000) OR explicit DB_SSL=true
 $isTiDBCloud = strpos($mysqlHost, 'tidbcloud') !== false || $mysqlPort === '4000';
 if ($isTiDBCloud || getenv('DB_SSL') === 'true') {
-    // TiDB Cloud requires SSL - enable encrypted connection
-    // Set SSL_CA to empty string to use SSL without specific CA verification
-    $pdoOptions[PDO::MYSQL_ATTR_SSL_CA] = '';
+    // TiDB Cloud requires SSL - use system CA certificates
+    // Heroku uses Ubuntu which has CA certs at this path
+    $pdoOptions[PDO::MYSQL_ATTR_SSL_CA] = '/etc/ssl/certs/ca-certificates.crt';
     $pdoOptions[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
 }
 
