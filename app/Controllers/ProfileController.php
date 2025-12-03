@@ -47,7 +47,7 @@ class ProfileController
 
         /* 1) Infos utilisateur (MySQL) -------------------------------- */
         $stmt = $this->db->prepare("
-            SELECT id, name, email, role, driver_rating
+            SELECT id, name, email, role, driver_rating, credits
             FROM users
             WHERE id = ?
         ");
@@ -96,7 +96,7 @@ class ProfileController
 
             // Infos véhicule
             $stmt = $this->db->prepare("
-                SELECT make, model, year, plate, seats
+                SELECT make, model, year, plate, energy_type, seats
                 FROM vehicles
                 WHERE driver_id = ?
                 LIMIT 1

@@ -23,34 +23,36 @@ CREATE TABLE `users` (
   `phone_number` varchar(20) DEFAULT NULL,
   `license_number` varchar(255) DEFAULT NULL,
   `driver_rating` decimal(3,2) DEFAULT NULL,
-  `status` enum('active','suspended') DEFAULT 'active',
+  `suspended` tinyint(1) NOT NULL DEFAULT 0,
+  `credits` int DEFAULT 20,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 );
 
+-- Columns: id, name, email, password, role, phone_number, license_number, driver_rating, suspended, credits, created_at
 INSERT INTO `users` VALUES
-(1,'Admin One','admin1@ecoride.com','$2y$10$Ih/McIKtTQfYaj5e4Gzln.iNB63etNAEP78vPHDj9V5ycIsiUQjga','admin','1111111111',NULL,NULL,'active','2025-02-18 23:49:16'),
-(2,'Admin Two','admin2@ecoride.com','$2y$10$5PC/orq77OsnBULDoY1MSOGf63d/K3LOfN883Ry54J5BbZqZGVR.m','admin','2222222222',NULL,NULL,'active','2025-02-18 23:49:16'),
-(3,'Driver One','driver1@ecoride.com','$2y$10$p2t7XkRPFUsTfMd4PFGGQeNXDYpT9bvT407QeIamzlp.VdSETQMx2','driver','3333333333','DRV1001',4.80,'active','2025-02-18 23:49:16'),
-(4,'Driver Two','driver2@ecoride.com','$2y$10$eUPPwSZHEPZLLR6tIOVC5OoE8PPrJdybAhvAQqs1Fc32bX4sZJF3O','driver','4444444444','DRV1002',4.50,'active','2025-02-18 23:49:16'),
-(5,'Driver Three','driver3@ecoride.com','$2y$10$PLSi1tjb6MqcC/gkWvIMdOCoKtwmMKUcjN9N2WpTb55iL/Sk7L7wK','driver','5555555555','DRV1053',4.60,'active','2025-02-20 20:31:46'),
-(6,'Driver Four','driver4@ecoride.com','$2y$10$8ISu7o0OyceQOyeh0x3wqu9ThKXnmsGbzFT.JEf80W6pDPRcYc25e','driver','6666666666',NULL,NULL,'active','2025-02-18 23:49:16'),
-(7,'User One','user1@ecoride.com','$2y$10$Mag8eBGIQDroQH7rCJA4ROxnh8V1R9Z3qi0qo/lv6adDRGNWyY4Ry','user','7777777777',NULL,NULL,'active','2025-02-18 23:49:16'),
-(8,'User Two','user2@ecoride.com','$2y$10$JppaeyM7IfORRhNzBHFs0u9.125LQPJBCtUOqgi4OAFBJfSOMp7KC','user','8888888888',NULL,NULL,'active','2025-02-18 23:49:16'),
-(9,'User Three','user3@ecoride.com','$2y$10$gB1hztShz5I0t6aTrDDuHeXv7cC5EWBK/ZGqmyXHi/vR8tzE8jN5G','user','9999999999',NULL,NULL,'active','2025-02-18 23:49:16'),
-(10,'User Four','user4@ecoride.com','$2y$10$HCz0guZO4vtQy0uQHIfvxufMff09rAmbMRyqyNjMzguL3uEBdJz4e','user','1212121212',NULL,NULL,'active','2025-02-18 23:49:16'),
-(11,'User Five','user5@ecoride.com','$2y$10$feYccIVnRQhRIA8odg2t9eZQetBY7R8d36Pgq8KSatCmImx27mXYS','user','1313131313',NULL,NULL,'active','2025-02-18 23:49:16'),
-(12,'User Six','user6@ecoride.com','$2y$10$xTqjk9GKRzAnXMui476J6u33Lq5pL/t5A191NMipbkCvvDYGEbSFS','user','1414141414',NULL,NULL,'active','2025-02-18 23:49:16'),
-(13,'User Seven','user7@ecoride.com','$2y$10$Jqe2WVvTfvE2cAqGPXdaP.Ns5rvphktqk6iAFcSXM1iz8DH1JzbIu','user','1515151515',NULL,NULL,'active','2025-02-18 23:49:16'),
-(14,'User Eight','user8@ecoride.com','$2y$10$KeHnlLciuw7RKmnkM5Nj6ugv1XvhlffMw7FqrPg7uK3ZU5e1nao72','user','1616161616',NULL,NULL,'active','2025-02-18 23:49:17'),
-(15,'Alice','alice@ecoride.com','$2y$10$322nhNDADBsaIYGYZ.JLE.9q2.15p6ZbxCLfxnwD07/ariHlJyJ2q','user',NULL,NULL,NULL,'active','2025-02-19 17:30:57'),
-(16,'John Wick','wick@ecoride.com','$2y$10$n2G5j2iNKdrve7GQic5CAu0XU5OAKeD4Q9ei3OOVCsgecX.XyO7Ay','driver','0789258695',NULL,NULL,'active','2025-02-19 18:09:47'),
-(17,'Sheila Brown','sbrown@ecoride.com','$2y$10$sMgUAdO/pCAuYQnEtDK/UuBOZ4ap4wOT8RRYTw1OP6scTxg4zQ5qO','driver','0783357535','1578879',NULL,'active','2025-02-20 20:35:47'),
-(20,'John Doe','johndoe@ecoride.com','$2y$10$/4c5uEMoKCCYy2isbO/Qw.Kw0v9RNCq9RD1tET8eMu2.cWTY8T7/K','user','123456789',NULL,NULL,'active','2025-02-19 20:52:39'),
-(23,'John PET','johnpet@ecoride.com','$2y$10$xjEOnehTcPJ0TQcxqdz1EuNQwPT3X8wOKRRAN7T2ppXlyXGp5zQ/C','user','123456789',NULL,NULL,'active','2025-02-19 20:55:50'),
-(24,'Bob Smith','bob@ecoride.com','$2y$10$Gbjosv5POPVWh4D6glmMc.c0rfgWOxQ/4qe2mpte8shmX.X.gdy96','driver','987654321',NULL,NULL,'active','2025-02-19 20:57:01'),
-(25,'Employee One','employee1@ecoride.com','$2y$10$Ih/McIKtTQfYaj5e4Gzln.iNB63etNAEP78vPHDj9V5ycIsiUQjga','employee','5551234567',NULL,NULL,'active','2025-02-20 10:00:00');
+(1,'Admin One','admin1@ecoride.com','$2y$10$Ih/McIKtTQfYaj5e4Gzln.iNB63etNAEP78vPHDj9V5ycIsiUQjga','admin','1111111111',NULL,NULL,0,20,'2025-02-18 23:49:16'),
+(2,'Admin Two','admin2@ecoride.com','$2y$10$5PC/orq77OsnBULDoY1MSOGf63d/K3LOfN883Ry54J5BbZqZGVR.m','admin','2222222222',NULL,NULL,0,20,'2025-02-18 23:49:16'),
+(3,'Driver One','driver1@ecoride.com','$2y$10$p2t7XkRPFUsTfMd4PFGGQeNXDYpT9bvT407QeIamzlp.VdSETQMx2','driver','3333333333','DRV1001',4.80,0,20,'2025-02-18 23:49:16'),
+(4,'Driver Two','driver2@ecoride.com','$2y$10$eUPPwSZHEPZLLR6tIOVC5OoE8PPrJdybAhvAQqs1Fc32bX4sZJF3O','driver','4444444444','DRV1002',4.50,0,20,'2025-02-18 23:49:16'),
+(5,'Driver Three','driver3@ecoride.com','$2y$10$PLSi1tjb6MqcC/gkWvIMdOCoKtwmMKUcjN9N2WpTb55iL/Sk7L7wK','driver','5555555555','DRV1053',4.60,0,20,'2025-02-20 20:31:46'),
+(6,'Driver Four','driver4@ecoride.com','$2y$10$8ISu7o0OyceQOyeh0x3wqu9ThKXnmsGbzFT.JEf80W6pDPRcYc25e','driver','6666666666',NULL,NULL,0,20,'2025-02-18 23:49:16'),
+(7,'User One','user1@ecoride.com','$2y$10$Mag8eBGIQDroQH7rCJA4ROxnh8V1R9Z3qi0qo/lv6adDRGNWyY4Ry','user','7777777777',NULL,NULL,0,20,'2025-02-18 23:49:16'),
+(8,'User Two','user2@ecoride.com','$2y$10$JppaeyM7IfORRhNzBHFs0u9.125LQPJBCtUOqgi4OAFBJfSOMp7KC','user','8888888888',NULL,NULL,0,25,'2025-02-18 23:49:16'),
+(9,'User Three','user3@ecoride.com','$2y$10$gB1hztShz5I0t6aTrDDuHeXv7cC5EWBK/ZGqmyXHi/vR8tzE8jN5G','user','9999999999',NULL,NULL,0,30,'2025-02-18 23:49:16'),
+(10,'User Four','user4@ecoride.com','$2y$10$HCz0guZO4vtQy0uQHIfvxufMff09rAmbMRyqyNjMzguL3uEBdJz4e','user','1212121212',NULL,NULL,0,20,'2025-02-18 23:49:16'),
+(11,'User Five','user5@ecoride.com','$2y$10$feYccIVnRQhRIA8odg2t9eZQetBY7R8d36Pgq8KSatCmImx27mXYS','user','1313131313',NULL,NULL,0,30,'2025-02-18 23:49:16'),
+(12,'User Six','user6@ecoride.com','$2y$10$xTqjk9GKRzAnXMui476J6u33Lq5pL/t5A191NMipbkCvvDYGEbSFS','user','1414141414',NULL,NULL,0,20,'2025-02-18 23:49:16'),
+(13,'User Seven','user7@ecoride.com','$2y$10$Jqe2WVvTfvE2cAqGPXdaP.Ns5rvphktqk6iAFcSXM1iz8DH1JzbIu','user','1515151515',NULL,NULL,0,20,'2025-02-18 23:49:16'),
+(14,'User Eight','user8@ecoride.com','$2y$10$KeHnlLciuw7RKmnkM5Nj6ugv1XvhlffMw7FqrPg7uK3ZU5e1nao72','user','1616161616',NULL,NULL,0,20,'2025-02-18 23:49:17'),
+(15,'Alice','alice@ecoride.com','$2y$10$322nhNDADBsaIYGYZ.JLE.9q2.15p6ZbxCLfxnwD07/ariHlJyJ2q','user',NULL,NULL,NULL,0,20,'2025-02-19 17:30:57'),
+(16,'John Wick','wick@ecoride.com','$2y$10$n2G5j2iNKdrve7GQic5CAu0XU5OAKeD4Q9ei3OOVCsgecX.XyO7Ay','driver','0789258695',NULL,NULL,0,20,'2025-02-19 18:09:47'),
+(17,'Sheila Brown','sbrown@ecoride.com','$2y$10$sMgUAdO/pCAuYQnEtDK/UuBOZ4ap4wOT8RRYTw1OP6scTxg4zQ5qO','driver','0783357535','1578879',NULL,0,20,'2025-02-20 20:35:47'),
+(20,'John Doe','johndoe@ecoride.com','$2y$10$/4c5uEMoKCCYy2isbO/Qw.Kw0v9RNCq9RD1tET8eMu2.cWTY8T7/K','user','123456789',NULL,NULL,0,20,'2025-02-19 20:52:39'),
+(23,'John PET','johnpet@ecoride.com','$2y$10$xjEOnehTcPJ0TQcxqdz1EuNQwPT3X8wOKRRAN7T2ppXlyXGp5zQ/C','user','123456789',NULL,NULL,0,20,'2025-02-19 20:55:50'),
+(24,'Bob Smith','bob@ecoride.com','$2y$10$Gbjosv5POPVWh4D6glmMc.c0rfgWOxQ/4qe2mpte8shmX.X.gdy96','driver','987654321',NULL,NULL,0,20,'2025-02-19 20:57:01'),
+(25,'Employee One','employee1@ecoride.com','$2y$10$Ih/McIKtTQfYaj5e4Gzln.iNB63etNAEP78vPHDj9V5ycIsiUQjga','employee','5551234567',NULL,NULL,0,20,'2025-02-20 10:00:00');
 
 -- =============================================
 -- 2. VEHICLES TABLE (depends on users)
@@ -62,6 +64,7 @@ CREATE TABLE `vehicles` (
   `model` varchar(255) NOT NULL,
   `year` int NOT NULL,
   `plate` varchar(255) NOT NULL,
+  `energy_type` varchar(50) DEFAULT NULL,
   `seats` int NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -70,13 +73,15 @@ CREATE TABLE `vehicles` (
   CONSTRAINT `vehicles_ibfk_1` FOREIGN KEY (`driver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 );
 
+-- Columns: id, driver_id, make, model, year, plate, energy_type, seats, created_at
 INSERT INTO `vehicles` VALUES
-(1,3,'Toyota','Corolla',2020,'ABC123',4,'2025-02-19 00:17:26'),
-(2,4,'Honda','Civic',2019,'XYZ789',3,'2025-02-19 00:17:26'),
-(3,5,'Ford','Focus',2021,'LMN456',4,'2025-02-19 00:17:26'),
-(4,16,'Porsche','Cayenne',2010,'ABC-789-KING',2,'2025-02-19 18:09:47'),
-(5,17,'Porsche','Cayenne',2018,'king-85',4,'2025-02-19 19:08:39'),
-(6,24,'Toyota','Corolla',2022,'XYZ123',4,'2025-02-19 20:57:01');
+(1,3,'Renault','Zoe',2021,'FR-301-ZOE','electric',4,'2025-05-22 08:48:55'),
+(2,4,'Peugeot','208',2020,'FR-402-PEU','petrol',4,'2025-05-22 08:48:55'),
+(3,5,'Citroen','Ami',2022,'FR-503-AMI','electric',2,'2025-05-22 08:48:55'),
+(4,6,'Dacia','Spring',2021,'FR-604-SPR','hybrid',3,'2025-05-22 08:48:55'),
+(5,16,'Porsche','Cayenne',2010,'ABC-789-KING','petrol',2,'2025-02-19 18:09:47'),
+(6,17,'Porsche','Cayenne',2018,'king-85','hybrid',4,'2025-02-19 19:08:39'),
+(7,24,'Toyota','Corolla',2022,'XYZ123','petrol',4,'2025-02-19 20:57:01');
 
 -- =============================================
 -- 3. RIDES TABLE (depends on users, vehicles)
@@ -159,7 +164,9 @@ CREATE TABLE `ride_requests` (
   `dropoff_location` text NOT NULL,
   `passenger_count` int NOT NULL DEFAULT 1,
   `status` enum('pending','accepted','cancelled','completed','disputed') NOT NULL DEFAULT 'pending',
+  `commission` int DEFAULT 0,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `completed_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `passenger_id` (`passenger_id`),
   KEY `driver_id` (`driver_id`),
@@ -167,24 +174,25 @@ CREATE TABLE `ride_requests` (
   CONSTRAINT `ride_requests_ibfk_2` FOREIGN KEY (`driver_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 );
 
+-- Columns: id, passenger_id, driver_id, carpool_id, pickup_location, dropoff_location, passenger_count, status, commission, created_at, completed_at
 INSERT INTO `ride_requests` VALUES
-(1,7,3,1,'Paris','Lyon',1,'completed','2025-05-22 08:48:55'),
-(2,8,3,2,'Paris','Lille',1,'completed','2025-05-22 08:48:55'),
-(3,9,3,3,'Nice','Marseille',1,'completed','2025-05-22 08:48:55'),
-(4,10,3,4,'Nice','Geneva',1,'disputed','2025-05-22 08:48:55'),
-(5,11,4,5,'Lille','Brussels',1,'completed','2025-05-22 08:48:55'),
-(6,12,4,6,'Rouen','Caen',1,'accepted','2025-05-22 08:48:55'),
-(7,13,4,7,'Toulouse','Bordeaux',1,'completed','2025-05-22 08:48:55'),
-(8,14,5,8,'Dijon','Grenoble',1,'accepted','2025-05-22 08:48:55'),
-(9,8,5,9,'Nantes','Tours',1,'completed','2025-05-22 08:48:55'),
-(10,8,5,10,'Strasbourg','Nancy',1,'completed','2025-05-22 08:48:55'),
-(11,9,6,11,'Avignon','Montpellier',1,'pending','2025-05-22 08:48:55'),
-(12,10,6,12,'Clermont-Ferrand','Limoges',1,'accepted','2025-05-22 08:48:55'),
-(13,11,6,13,'Nice','Saint-Maur',1,'disputed','2025-05-22 08:48:55'),
-(14,12,6,14,'La Rochelle','Angers',1,'completed','2025-05-22 08:48:55'),
-(15,7,5,9,'Nantes','Tours',1,'completed','2025-05-22 08:48:55'),
-(16,8,6,11,'Avignon','Montpellier',1,'accepted','2025-05-23 12:21:01'),
-(17,7,3,15,'ourcq','jumia',2,'completed','2025-05-23 13:32:11');
+(1,7,3,1,'Paris','Lyon',1,'completed',2,'2025-05-22 08:48:55','2025-05-23 10:48:55'),
+(2,8,3,2,'Paris','Lille',1,'completed',2,'2025-05-22 08:48:55','2025-05-22 12:00:00'),
+(3,9,3,3,'Nice','Marseille',1,'completed',2,'2025-05-22 08:48:55','2025-05-20 14:00:00'),
+(4,10,3,4,'Nice','Geneva',1,'disputed',2,'2025-05-22 08:48:55',NULL),
+(5,11,4,5,'Lille','Brussels',1,'completed',2,'2025-05-22 08:48:55','2025-05-23 14:00:00'),
+(6,12,4,6,'Rouen','Caen',1,'accepted',2,'2025-05-22 08:48:55',NULL),
+(7,13,4,7,'Toulouse','Bordeaux',1,'completed',2,'2025-05-22 08:48:55','2025-05-20 14:00:00'),
+(8,14,5,8,'Dijon','Grenoble',1,'accepted',2,'2025-05-22 08:48:55',NULL),
+(9,8,5,9,'Nantes','Tours',1,'completed',2,'2025-05-22 08:48:55','2025-05-22 13:00:00'),
+(10,8,5,10,'Strasbourg','Nancy',1,'completed',2,'2025-05-22 08:48:55','2025-05-19 14:00:00'),
+(11,9,6,11,'Avignon','Montpellier',1,'pending',2,'2025-05-22 08:48:55',NULL),
+(12,10,6,12,'Clermont-Ferrand','Limoges',1,'accepted',2,'2025-05-22 08:48:55',NULL),
+(13,11,6,13,'Nice','Saint-Maur',1,'disputed',2,'2025-05-22 08:48:55',NULL),
+(14,12,6,14,'La Rochelle','Angers',1,'completed',2,'2025-05-22 08:48:55','2025-05-20 14:00:00'),
+(15,7,5,9,'Nantes','Tours',1,'completed',2,'2025-05-22 08:48:55','2025-05-22 13:00:00'),
+(16,8,6,11,'Avignon','Montpellier',1,'accepted',2,'2025-05-23 12:21:01',NULL),
+(17,7,3,15,'ourcq','jumia',2,'completed',4,'2025-05-23 13:32:11','2025-05-23 14:00:00');
 
 -- =============================================
 -- 6. RIDE_REVIEWS TABLE (depends on ride_requests, users)
